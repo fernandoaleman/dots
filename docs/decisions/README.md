@@ -24,4 +24,5 @@ setup has to recreate to "mirror Omarchy, minimally".
 | Shell (bash) | [shell.md](shell.md) |
 | Git | [git.md](git.md) |
 | Neovim | [nvim.md](nvim.md) |
+| tmux | [tmux.md](tmux.md) |
 | Packages | [packages.md](packages.md) |

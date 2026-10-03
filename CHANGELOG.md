@@ -24,6 +24,11 @@ once the first version is released.
   `grug-far.dots.lua` (`<A-h>`/`<A-i>` hidden/ignored toggles).
   `install.sh` merges our LazyVim Extras (sidekick plus language Extras)
   into Omarchy's `lazyvim.json`.
+- `tmux` stow package on top of Omarchy's tmux: `tmux.dots.conf` (prefix2
+  off, vim-tmux-navigator `Ctrl+h/j/k/l` with its nvim half, `prefix =`
+  synchronize panes, undercurl support, resurrect + continuum loaded last)
+  and a `prefix k` session picker (sessions + zoxide directories).
+  `install.sh` clones resurrect and continuum at pinned commits (no TPM).
 - `docs/guides/troubleshooting.md` ("it used to do X": dropped behaviors
   and how to re-enable each) and `docs/guides/ruby.md` (ruby-lsp, plus
   legacy Ruby 2.x projects).

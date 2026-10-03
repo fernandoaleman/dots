@@ -164,6 +164,71 @@ return { "iamcco/markdown-preview.nvim", init = function() vim.g.mkdp_theme = "l
 to the current theme). Change it with the Omarchy theme switcher; don't pin
 a colorscheme in dots.
 
+## tmux
+
+### Ctrl+l doesn't clear the screen / Ctrl+k doesn't delete to end of line (in tmux)
+
+**Why:** vim-tmux-navigator (`tmux.dots.conf`) uses `Ctrl+h/j/k/l` and
+`Ctrl+\` to move between panes whenever the pane isn't running vim/nvim or
+fzf, so a shell inside tmux never receives them. **Use:** `clear` (or
+`Ctrl+l` outside tmux). **Re-enable as prefix keys** (`tmux.dots.conf` or
+`tmux.local.conf`):
+
+```tmux
+bind C-l send-keys 'C-l'
+bind C-k send-keys 'C-k'
+```
+
+### A TUI in a tmux pane (opencode, codex, claude, lazygit…) ignores Ctrl+h/j/k/l
+
+**Why:** same as above: only vim/nvim and fzf are detected as "vim", so
+tmux takes those keys to switch panes. Use the app's other keys, or add
+its process name to `vim_pattern` in `tmux.dots.conf`.
+
+### tmux sessions weren't restored / continuum isn't auto-saving
+
+**Why / checks:** resurrect + continuum load from `tmux.dots.conf` (pinned
+clones in `~/.local/share/tmux/plugins/`). Continuum auto-saves every 15
+minutes **only if**:
+
+- its hook is in `status-right`: check
+  `tmux show -gv status-right | grep continuum_save`. Anything that
+  replaces `status-right` *after* continuum loads (a theme, a line in
+  `tmux.local.conf`, a future Omarchy migration appending to `tmux.conf`)
+  silently removes it. Continuum must stay the last thing loaded.
+- only **one** tmux server is running: by design it doesn't save when
+  another server exists (e.g. `tmux -L other`).
+
+Restore is manual: `prefix Ctrl+r` (save now: `prefix Ctrl+s`). Saves live
+in `~/.local/share/tmux/resurrect/`. Auto-restore on tmux start is off
+(continuum's default); `set -g @continuum-restore 'on'` turns it on.
+
+### `prefix k` opens a picker instead of killing the window
+
+**Why:** `tmux.dots.conf` rebinds `prefix k` to the session picker
+(replacing sesh). Omarchy's `prefix k` killed the window without asking.
+**Kill a window:** `prefix &` (asks first). Restore Omarchy's binding in
+`tmux.local.conf`: `bind k kill-window`.
+
+### No sesh / sesh's filters (`Ctrl+a/t/g/x/f`), `Ctrl+d` kill or preview
+
+**Why:** sesh was replaced by the minimal `prefix k` picker
+(`~/.config/tmux/session-picker`: sessions + zoxide directories). Ideas to
+add later: `fzf --bind 'ctrl-d:…'` to kill a session, `--preview` for a
+preview pane. Or go back to sesh: see "sesh: why it was dropped, and how to go back"
+in [tmux.md](../decisions/tmux.md).
+
+### Ctrl+b doesn't act as a tmux prefix
+
+**Why:** Omarchy's second prefix (`prefix2 C-b`) was turned off
+(`set -g prefix2 None`) so `Ctrl+b` reaches nvim and the shell. The prefix
+is `Ctrl+Space`.
+
+### `prefix |` / `prefix -` don't split panes
+
+**Why:** kept Omarchy's split keys: `prefix v` / `Alt+Shift+Enter` (side by
+side), `prefix h` / `Alt+Enter` (stacked).
+
 ## Shell
 
 ### `cd -2` / directory stack, `autocd`, `**` globs don't work

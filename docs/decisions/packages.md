@@ -63,12 +63,17 @@ them. `install.sh` runs the same commands, each guarded:
 |---|---|
 | `git` | Omarchy's config kept, plus a small `config.dots` (see [git.md](git.md)) |
 | `git-delta` | Dropped, not installed |
+| `neovim` | Omarchy's LazyVim plus `.dots` plugin files and Extras (see [nvim.md](nvim.md)); the separate `fernandoaleman/nvim` repo is retired (archived later, in the Mac phase) |
+| `tmux` | Omarchy's config plus `tmux.dots.conf` (see [tmux.md](tmux.md)) |
+| `sesh` | Dropped, replaced by the `prefix k` picker |
+| TPM | Dropped: resurrect + continuum are pinned clones |
+| `gitmux` | Dropped: it was never used in the status bar |
 
 ## Still to review
 
-- **Group A** (Omarchy installs it, the old repo had a config): `neovim` (the separate `fernandoaleman/nvim` repo), `tmux`
-  (+ `gitmux`, `sesh`, TPM, `tmux-ssh`), `starship`, `btop`, `lazygit`,
-  `lazydocker`, `mise`, `herdr`, `bat`.
+- **Group A** (Omarchy installs it, the old repo had a config): `starship`,
+  `btop`, `lazygit`, `lazydocker`, `mise`, `herdr`, `bat`. (`tmux-ssh` moves
+  to the bin scripts section.)
 - **Group D** (not installed): `act`, `bottom`, `colordiff`, `htop`,
   `markdownlint-cli2`, `ncdu`, `nmap`, `thefuck`, `todoist-cli`, `wget`,
   `yarn`, `rclone`, `awsvpnclient`, `espanso`, `alacritty`, `ghostty`, Slack,

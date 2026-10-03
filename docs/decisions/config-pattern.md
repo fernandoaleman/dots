@@ -111,6 +111,7 @@ outnumbering "include", revisit switching everything to pattern A.**
 | bash | `~/.bashrc` | `~/.bashrc.dots` (loads `~/.config/bash/aliases`, `completions`, `inputrc`) | yes: `source` | `~/.bashrc.local`, guarded with `[[ -r … ]]` | C |
 | git | `~/.config/git/config` | `~/.config/git/config.dots` | yes: `[include] path = …` (one line) | `~/.config/git/config.local`; git skips missing includes (tested) | C |
 | nvim plugins | `~/.config/nvim/lua/plugins/` (dir) | `lua/plugins/<name>.dots.lua` | yes: lazy.nvim loads every file in the dir | n/a (add a `<name>.local.lua` file; gitignored) | C |
+| tmux | `~/.config/tmux/tmux.conf` | `~/.config/tmux/tmux.dots.conf` (+ `session-picker`) | yes: `source-file -q` | `~/.config/tmux/tmux.local.conf` (`-q` skips if missing) | C |
 | LazyVim Extras | `~/.config/nvim/lazyvim.json` | none: `install.sh` merges our list with `jq` | **no** (JSON; LazyVim rewrites it) | `:LazyExtras` changes stay local | scripted merge |
 
-**Totals: include 3, no include 1.**
+**Totals: include 4, no include 1.**

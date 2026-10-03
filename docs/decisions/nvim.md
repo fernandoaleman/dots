@@ -1,7 +1,6 @@
 # Neovim
 
-Reviewed 2026-10-03 (all items done except vim-tmux-navigator, deferred to
-tmux, and the legacy-Ruby follow-up). Old source: the separate repo
+Reviewed 2026-10-03 (all items done except the legacy-Ruby follow-up). Old source: the separate repo
 [fernandoaleman/nvim](https://github.com/fernandoaleman/nvim) (LazyVim,
 cloned over `~/.config/nvim` by the old chezmoi setup). It will be archived
 once this review is done.
@@ -146,11 +145,10 @@ never removes). Extras toggled locally with `:LazyExtras` survive.
 
 Re-enable snippets: [troubleshooting](../guides/troubleshooting.md).
 
-### vim-tmux-navigator: deferred to the tmux review
+### vim-tmux-navigator: kept, `lua/plugins/vim-tmux-navigator.dots.lua`
 
-It's one half of a pair (nvim plus a tmux binding). The user uses
-`Ctrl+h/j/k/l` across nvim and tmux; Omarchy's tmux uses `Ctrl+Alt+Arrow`
-for panes.
+The nvim half of `Ctrl+h/j/k/l` movement across nvim splits and tmux
+panes; decided with its tmux half in [tmux.md](tmux.md).
 
 ### Ruby: LazyVim default `ruby_lsp`, legacy projects per project
 

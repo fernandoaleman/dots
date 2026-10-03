@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+#
+# tmux session picker (prefix k, in a popup). Lists running sessions first,
+# then zoxide directories (most-used first). Picking a session switches to
+# it; picking a directory switches to the session named after the folder,
+# creating it in that directory first if needed.
+set -euo pipefail
+
+choice=$(
+  {
+    tmux list-sessions -F '● #{session_name}'
+    zoxide query --list | sed "s|^$HOME|~|"
+  } | fzf --reverse --no-sort --prompt 'session> ' --border-label ' sessions & directories '
+) || exit 0
+
+if [[ $choice == "● "* ]]; then
+  name=${choice#● }
+else
+  dir=${choice/#\~/$HOME}
+  # tmux session names can't contain "." or ":"
+  name=$(basename "$dir" | tr '.:' '__')
+  tmux has-session -t "=$name" 2>/dev/null || tmux new-session -d -s "$name" -c "$dir"
+fi
+
+tmux switch-client -t "=$name"

@@ -12,7 +12,7 @@ set -euo pipefail
 
 REPO_URL="https://github.com/fernandoaleman/dots.git"
 DOTS_DIR="$HOME/Work/dots"
-PACKAGES=(bash git nvim)
+PACKAGES=(bash git nvim tmux)
 
 step() { printf '\n\033[1;34m==> %s\033[0m\n' "$1"; }
 ok() { printf '\033[1;32m✔ %s\033[0m\n' "$1"; }
@@ -105,6 +105,29 @@ add_line() {
 step "Hooking dots into Omarchy's config files"
 add_line "$HOME/.bashrc" "[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots"
 add_line "$HOME/.config/git/config" "[include] path = ~/.config/git/config.dots"
+add_line "$HOME/.config/tmux/tmux.conf" "source-file -q ~/.config/tmux/tmux.dots.conf"
+
+# tmux plugins, cloned at pinned commits (no TPM). Bump a pin deliberately.
+TMUX_PLUGINS_DIR="$HOME/.local/share/tmux/plugins"
+TMUX_PLUGINS=(
+  "tmux-resurrect https://github.com/tmux-plugins/tmux-resurrect cff343cf9e81983d3da0c8562b01616f12e8d548"
+  "tmux-continuum https://github.com/tmux-plugins/tmux-continuum 0698e8f4b17d6454c71bf5212895ec055c578da0"
+)
+step "Installing tmux plugins"
+for entry in "${TMUX_PLUGINS[@]}"; do
+  read -r name url commit <<<"$entry"
+  dir="$TMUX_PLUGINS_DIR/$name"
+  if [[ ! -d $dir/.git ]]; then
+    git clone --quiet "$url" "$dir"
+  fi
+  if [[ $(git -C "$dir" rev-parse HEAD) == "$commit" ]]; then
+    ok "$name already at ${commit:0:7}"
+  else
+    git -C "$dir" fetch --quiet origin
+    git -C "$dir" checkout --quiet "$commit"
+    ok "$name at ${commit:0:7}"
+  fi
+done
 
 # LazyVim Extras live in Omarchy's ~/.config/nvim/lazyvim.json, which LazyVim
 # itself rewrites (:LazyExtras), so it can't be stowed. Add ours to its list;
