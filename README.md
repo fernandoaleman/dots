@@ -78,6 +78,7 @@ make ssh
 | Package | Installs | What it does |
 |---|---|---|
 | `bash` | `~/.bashrc.dots`, `~/.config/bash/` (+ one line in Omarchy's `~/.bashrc`) | vi mode, a few aliases and git completion for `g` |
+| `nvim` | `~/.config/nvim/lua/plugins/*.dots.lua` (+ LazyVim Extras merged into Omarchy's `lazyvim.json`) | Omarchy's LazyVim plus super-tab completion keys, grug-far hidden/ignored toggles, and language Extras |
 | `git` | `~/.config/git/config.dots`, `~/.config/git/ignore` (+ one line in Omarchy's `~/.config/git/config`) | `fetch.prune`, `zdiff3` conflicts, gh as the GitHub HTTPS credential helper, a lean global gitignore |
 
 ## Repository layout
@@ -86,8 +87,10 @@ make ssh
 install.sh          bootstrap for a fresh install (curl | bash)
 bash/               stow package → $HOME
 git/                stow package → $HOME
+nvim/               stow package → $HOME
 docs/decisions/     what we kept or dropped, and what Omarchy already does
 docs/setup/         step-by-step fresh-install checklists (omarchy.md)
+docs/guides/        how-tos: troubleshooting.md ("it used to do X"), ruby.md
 Makefile            dev tasks (make help)
 prek.toml           git hooks: whitespace, toml/yaml, typos, shellcheck, commit messages
 committed.toml      conventional commit rules

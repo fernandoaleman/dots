@@ -19,6 +19,14 @@ once the first version is released.
   Omarchy's `~/.config/git/config`) with `fetch.prune`, `zdiff3` conflict
   style and gh as the GitHub HTTPS credential helper; a lean global
   `~/.config/git/ignore`. `install.sh` asks for the git name/email if unset.
+- `nvim` stow package on top of Omarchy's LazyVim: `blink.dots.lua`
+  (super-tab completion plus Enter and `<C-j>`/`<C-k>`) and
+  `grug-far.dots.lua` (`<A-h>`/`<A-i>` hidden/ignored toggles).
+  `install.sh` merges our LazyVim Extras (sidekick plus language Extras)
+  into Omarchy's `lazyvim.json`.
+- `docs/guides/troubleshooting.md` ("it used to do X": dropped behaviors
+  and how to re-enable each) and `docs/guides/ruby.md` (ruby-lsp, plus
+  legacy Ruby 2.x projects).
 - Optional machine-local `.local` layer loaded last by every `.dots` file
   (`~/.bashrc.local`, `~/.config/git/config.local`), ignored by git.
 - `install.sh` bootstrap: asks for sudo once (`omarchy-sudo-keepalive`),

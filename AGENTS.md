@@ -40,6 +40,12 @@ Dotfiles for Omarchy (and later macOS), managed with GNU Stow.
 - Record every decision, and what Omarchy does, in docs/decisions/.
 - Record only manual fresh-install steps that cannot be scripted
   in docs/setup/omarchy.md (later docs/setup/macos.md).
+- Put how-to procedures (not decisions, not fresh-install steps) in
+  docs/guides/.
+- When the user reports something "not working" or "used to do X", check
+  docs/guides/troubleshooting.md first: it lists deliberately dropped
+  behaviors with the snippet to re-enable each. Whenever a decision drops a
+  behavior the user might miss, add an entry there.
 - Add each change to CHANGELOG.md under [Unreleased].
 - Commits: Conventional Commits (committed.toml), subject <= 72 chars.
   Run `make lint` before committing.

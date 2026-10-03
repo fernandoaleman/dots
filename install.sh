@@ -12,7 +12,7 @@ set -euo pipefail
 
 REPO_URL="https://github.com/fernandoaleman/dots.git"
 DOTS_DIR="$HOME/Work/dots"
-PACKAGES=(bash git)
+PACKAGES=(bash git nvim)
 
 step() { printf '\n\033[1;34m==> %s\033[0m\n' "$1"; }
 ok() { printf '\033[1;32m✔ %s\033[0m\n' "$1"; }
@@ -105,6 +105,29 @@ add_line() {
 step "Hooking dots into Omarchy's config files"
 add_line "$HOME/.bashrc" "[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots"
 add_line "$HOME/.config/git/config" "[include] path = ~/.config/git/config.dots"
+
+# LazyVim Extras live in Omarchy's ~/.config/nvim/lazyvim.json, which LazyVim
+# itself rewrites (:LazyExtras), so it can't be stowed. Add ours to its list;
+# nothing is removed, so extras toggled locally are kept.
+NVIM_EXTRAS=(
+  ai.sidekick
+  lang.ansible lang.docker lang.git lang.go lang.json lang.markdown
+  lang.python lang.ruby lang.sql lang.terraform lang.toml lang.yaml
+)
+step "Adding LazyVim Extras"
+lazyvim_json="$HOME/.config/nvim/lazyvim.json"
+if [[ -f $lazyvim_json ]]; then
+  extras=$(printf 'lazyvim.plugins.extras.%s\n' "${NVIM_EXTRAS[@]}" | jq -R . | jq -s .)
+  merged=$(jq --argjson add "$extras" '.extras = ((.extras // []) + $add | unique)' "$lazyvim_json")
+  if [[ $merged == "$(jq . "$lazyvim_json")" ]]; then
+    ok "LazyVim Extras already added"
+  else
+    printf '%s\n' "$merged" >"$lazyvim_json"
+    ok "LazyVim Extras added (installed on next nvim start)"
+  fi
+else
+  warn "No ~/.config/nvim/lazyvim.json found; skipping LazyVim Extras"
+fi
 
 # Omarchy's installer sets these from the name and email you enter; ask once
 # if they were left blank. `git config --global` writes them to Omarchy's

@@ -23,4 +23,5 @@ setup has to recreate to "mirror Omarchy, minimally".
 | Config pattern (how we override Omarchy's configs) + tally | [config-pattern.md](config-pattern.md) |
 | Shell (bash) | [shell.md](shell.md) |
 | Git | [git.md](git.md) |
+| Neovim | [nvim.md](nvim.md) |
 | Packages | [packages.md](packages.md) |
