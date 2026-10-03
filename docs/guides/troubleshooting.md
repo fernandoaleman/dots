@@ -237,7 +237,7 @@ side), `prefix h` / `Alt+Enter` (stacked).
 Use zoxide (`cd <partial-name>`). For `**`: `shopt -s globstar`; for
 typing a directory name to cd: `shopt -s autocd` (`~/.bashrc.local`).
 
-### `[N]` appears at the start of the prompt
+### `[vim]` appears at the start of the prompt
 
 **Why:** that's the vi **command-mode** indicator (readline
 `show-mode-in-prompt` in `~/.config/bash/inputrc`); press `i` or `a` to go

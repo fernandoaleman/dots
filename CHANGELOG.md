@@ -24,7 +24,7 @@ once the first version is released.
   `grug-far.dots.lua` (`<A-h>`/`<A-i>` hidden/ignored toggles).
   `install.sh` merges our LazyVim Extras (sidekick plus language Extras)
   into Omarchy's `lazyvim.json`.
-- bash: vi command-mode indicator `[N]` in the prompt (readline
+- bash: vi command-mode indicator `[vim]` in the prompt (readline
   `show-mode-in-prompt`); starship stays Omarchy's.
 - `tmux` stow package on top of Omarchy's tmux: `tmux.dots.conf` (prefix2
   off, vim-tmux-navigator `Ctrl+h/j/k/l` with its nvim half, `prefix =`
