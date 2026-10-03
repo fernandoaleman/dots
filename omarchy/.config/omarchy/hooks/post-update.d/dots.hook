@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# dots: runs after every `omarchy update` (Omarchy runs every file in
+# post-update.d right after its migrations). Re-adds dots' include lines to
+# Omarchy's config files and reports drift (links replaced by migrations,
+# uncommitted changes in the repo) with one notification. Same checks as
+# `make doctor`. See docs/decisions/config-pattern.md.
+
+DOTS_DIR="$HOME/Work/dots"
+[[ -f $DOTS_DIR/lib/dots.sh ]] || exit 0
+
+# shellcheck source=../../../../../lib/dots.sh
+source "$DOTS_DIR/lib/dots.sh"
+dots_doctor --notify || true

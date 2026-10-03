@@ -26,6 +26,10 @@ once the first version is released.
   into Omarchy's `lazyvim.json`.
 - bash: vi command-mode indicator `[vim]` in the prompt (readline
   `show-mode-in-prompt`); starship stays Omarchy's.
+- `omarchy` stow package: a post-update hook (`dots.hook`) that re-adds
+  include lines and reports drift after every `omarchy update`; the same
+  checks as `make doctor`. `lib/dots.sh` is the shared source of packages,
+  include lines and checks.
 - `install.sh` installs the ChatGPT desktop app (Omarchy's installer) and
   Slack (workspace URL, explicit icon), Teams and Outlook web apps
   (`omarchy-webapp-install`); a launcher is recreated when its URL changes.

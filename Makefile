@@ -52,6 +52,11 @@ lint: ## Run all pre-commit hooks on every file
 lint-fix: ## Run fixable hooks (trailing-whitespace, end-of-file-fixer)
 	prek run trailing-whitespace end-of-file-fixer --all-files
 
+# ── Dots ───────────────────────────────────────────────
+.PHONY: doctor
+doctor: ## Re-add include lines and check for drift (also runs after omarchy update)
+	@DOTS_DIR="$(CURDIR)" bash -c 'source lib/dots.sh && dots_doctor'
+
 # ── Help ───────────────────────────────────────────────
 .PHONY: help
 help: ## Show this help

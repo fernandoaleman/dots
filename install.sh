@@ -6,13 +6,13 @@
 #
 # Safe to re-run. Installs prerequisites and apps (via Omarchy's own
 # installers), clones (or updates) the repo into ~/Work/dots, backs up any
-# real files that would block stow, stows every package in PACKAGES, then
-# adds one line to Omarchy's config files (e.g. ~/.bashrc) to load ours.
+# real files that would block stow, stows every package listed in
+# lib/dots.sh, then adds one line to Omarchy's config files (e.g. ~/.bashrc)
+# to load ours.
 set -euo pipefail
 
 REPO_URL="https://github.com/fernandoaleman/dots.git"
 DOTS_DIR="$HOME/Work/dots"
-PACKAGES=(bash git nvim tmux mise)
 
 step() { printf '\n\033[1;34m==> %s\033[0m\n' "$1"; }
 ok() { printf '\033[1;32m✔ %s\033[0m\n' "$1"; }
@@ -60,8 +60,9 @@ fi
 
 # Web apps (Chrome app windows), created with Omarchy's installer:
 # "Name|URL|icon URL". With no icon URL, Omarchy fetches the site's own icon
-# (that fails for Slack workspace subdomains, hence the explicit one). Opens in the default Chrome profile, so logins,
-# notification permissions and extensions are shared with Chrome.
+# (that fails for Slack workspace subdomains, hence the explicit one). They
+# open in the default Chrome profile, so logins, notification permissions
+# and extensions are shared with Chrome.
 WEBAPPS=(
   "Slack|https://1000bulbs.slack.com|https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/slack.png"
   "Teams|https://teams.cloud.microsoft"
@@ -98,6 +99,10 @@ else
   ok "Cloned into $DOTS_DIR"
 fi
 
+# Packages, include lines and drift checks shared with the Omarchy
+# post-update hook (omarchy/…/post-update.d/dots.hook) and `make doctor`
+source "$DOTS_DIR/lib/dots.sh"
+
 # stow refuses to replace real files, so move any in the way aside first.
 # Anything that already resolves into dots (a stowed file, or a file under a
 # stowed directory like ~/.config/bash) is left alone.
@@ -124,23 +129,17 @@ ok "Stowed"
 
 # Omarchy's own config files stay real files that Omarchy (and its update
 # migrations) can keep editing. Each gets one line, added last, that loads
-# our stowed file so our settings override Omarchy's.
-add_line() {
-  local file=$1 line=$2
-  if [[ ! -f $file ]]; then
-    warn "${file/#$HOME/\~} not found; skipping"
-  elif grep -qxF "$line" "$file"; then
-    ok "${file/#$HOME/\~} already loads dots"
-  else
-    printf '\n# Added by dots: https://github.com/fernandoaleman/dots\n%s\n' "$line" >>"$file"
-    ok "${file/#$HOME/\~} now loads dots"
-  fi
-}
-
+# our stowed file so our settings override Omarchy's (INCLUDES in lib/dots.sh).
 step "Hooking dots into Omarchy's config files"
-add_line "$HOME/.bashrc" "[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots"
-add_line "$HOME/.config/git/config" "[include] path = ~/.config/git/config.dots"
-add_line "$HOME/.config/tmux/tmux.conf" "source-file -q ~/.config/tmux/tmux.dots.conf"
+for entry in "${INCLUDES[@]}"; do
+  file=${entry%%|*} short=${entry%%|*}
+  short=${short/#$HOME/\~}
+  case $(dots_include "$file" "${entry#*|}") in
+  present) ok "$short already loads dots" ;;
+  added) ok "$short now loads dots" ;;
+  no-file) warn "$short not found; skipping" ;;
+  esac
+done
 
 # tmux plugins, cloned at pinned commits (no TPM). Bump a pin deliberately.
 TMUX_PLUGINS_DIR="$HOME/.local/share/tmux/plugins"
@@ -220,6 +219,9 @@ for key in user.name user.email; do
     fi
   fi
 done
+
+step "Checking dots"
+dots_doctor || true
 
 step "Done"
 echo "Open a new terminal to load the new shell config."
