@@ -105,14 +105,14 @@ them. `install.sh` runs the same commands, each guarded:
 
 | App | Decision |
 |---|---|
-| **Slack** | **Web app** `https://app.slack.com` via `omarchy-webapp-install` in `install.sh` (generic URL keeps the employer out of the public repo; you sign in once, the Chrome profile keeps it). Researched 2026-10-03: **drawing on shared screens is Mac/Windows desktop-app only**, so it's not possible on Linux with any client, including AUR `slack-desktop` (still *"beta"*, huddle screen share crashed until 4.51.180, July 2026). Huddles and screen sharing are supported in *"Google Chrome (… Linux)"*. Web-app notifications are normal system notifications (Omarchy's `quickshell` notification server), but only while the window is open: **keep it parked on a workspace**. The `bottelet.slack` Omarchy plugin is messaging-only (no huddles) and needs a personal Slack app token. Drawing sessions → use the Mac |
+| **Slack** | **Web app** `https://1000bulbs.slack.com` (the workspace URL) via `omarchy-webapp-install` in `install.sh`, with an explicit icon (dashboard-icons `slack.png`). The generic `https://app.slack.com` was tried first but loops: with two workspaces it shows a picker whose *Launch* link leaves the app window for a browser tab, which then tries the desktop app's `slack://` link ("Open With… No Apps available"). The workspace URL skips the picker. Omarchy's icon auto-fetch fails for workspace subdomains, hence the explicit icon. You sign in once; the shared Chrome profile keeps it. Researched 2026-10-03: **drawing on shared screens is Mac/Windows desktop-app only**, so it's not possible on Linux with any client, including AUR `slack-desktop` (still *"beta"*, huddle screen share crashed until 4.51.180, July 2026). Huddles and screen sharing are supported in *"Google Chrome (… Linux)"*. Web-app notifications are normal system notifications (Omarchy's `quickshell` notification server), but only while the window is open: **keep it parked on a workspace**. The `bottelet.slack` Omarchy plugin is messaging-only (no huddles) and needs a personal Slack app token. Drawing sessions → use the Mac |
 | **Teams**, **Outlook** | **Web apps** (`teams.cloud.microsoft`, `outlook.office.com`); Microsoft has no Linux Teams app |
 | **ChatGPT** | **ChatGPT desktop** via Omarchy's installer `omarchy-install-ai-chatgpt` (package `openai-codex-desktop` from Omarchy's repo: *"Official ChatGPT desktop app with Codex"*), guarded like the menu: `omarchy-pkg-missing openai-codex-desktop` |
 | Discord, Zoom | Omarchy's preinstalled web apps |
 | `claude`/`codex`/`opencode`… | Omarchy's mise launchers |
 | Apple Music, iCloud, Claude (old web apps), Loom, Raindrop.io | Dropped for now (re-add a line to `WEBAPPS` in `install.sh`) |
 
-Web-app icons are auto-fetched by `omarchy-webapp-install` (the old PNG icon files weren't kept). Making Slack open on a fixed workspace automatically is a **Desktop section** item.
+`WEBAPPS` entries are `"Name|URL|icon URL"`: without an icon URL, `omarchy-webapp-install` fetches the site's own icon (the old PNG icon files weren't kept). `install.sh` recreates a launcher whose URL changed. Making Slack open on a fixed workspace automatically is a **Desktop section** item.
 
 ## Still to review
 

@@ -278,11 +278,22 @@ parked on a workspace instead of closing it. Also check the notification
 permission (site permission icon in the app window) and Slack's own
 notification preferences.
 
-### Slack opened a workspace picker / asks to sign in
+### Slack: "Open With… No Apps available" / sign-in loop / workspace picker
 
-**Why:** the web app uses the generic `https://app.slack.com`; sign in
-once (the default Chrome profile keeps it). If several workspaces are
-signed in, pick yours once.
+**Why:** with the generic `https://app.slack.com`, Slack shows a workspace
+picker when you belong to more than one workspace; its *Launch* link opens
+a regular Chrome tab, which tries the desktop app (`slack://` link) that
+isn't installed. **Fix (already applied):** the Slack web app opens the
+workspace URL `https://1000bulbs.slack.com` directly. If it happens anyway:
+*Cancel*, then **"use Slack in your browser"**, and reopen the web app.
+
+### A web app was created without an icon / "Could not install the X web app"
+
+**Why:** `omarchy-webapp-install` fetches the site's icon automatically and
+fails when the site has none (e.g. Slack workspace subdomains). Give the
+entry an explicit icon URL in `WEBAPPS` in `install.sh`
+(`"Name|URL|icon URL"`, e.g. from
+`https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/<name>.png`).
 
 ## Missing tools
 

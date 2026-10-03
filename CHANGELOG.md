@@ -27,7 +27,8 @@ once the first version is released.
 - bash: vi command-mode indicator `[vim]` in the prompt (readline
   `show-mode-in-prompt`); starship stays Omarchy's.
 - `install.sh` installs the ChatGPT desktop app (Omarchy's installer) and
-  Slack, Teams and Outlook web apps (`omarchy-webapp-install`).
+  Slack (workspace URL, explicit icon), Teams and Outlook web apps
+  (`omarchy-webapp-install`); a launcher is recreated when its URL changes.
 - `install.sh` installs extra official-repo packages (`wget`, `nmap`) with
   `omarchy-pkg-add`; Todoist CLI (`td`) added as a mise tool.
 - `mise` stow package: `conf.d/config-dots.toml` with `.ruby-version`

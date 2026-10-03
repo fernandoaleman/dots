@@ -58,19 +58,23 @@ else
   ok "ChatGPT desktop already installed"
 fi
 
-# Web apps (Chrome app windows), created with Omarchy's installer; icons are
-# fetched from each site. Opens in the default Chrome profile, so logins,
+# Web apps (Chrome app windows), created with Omarchy's installer:
+# "Name|URL|icon URL". With no icon URL, Omarchy fetches the site's own icon
+# (that fails for Slack workspace subdomains, hence the explicit one). Opens in the default Chrome profile, so logins,
 # notification permissions and extensions are shared with Chrome.
 WEBAPPS=(
-  "Slack|https://app.slack.com"
+  "Slack|https://1000bulbs.slack.com|https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/slack.png"
   "Teams|https://teams.cloud.microsoft"
   "Outlook|https://outlook.office.com"
 )
 for webapp in "${WEBAPPS[@]}"; do
-  name=${webapp%%|*} url=${webapp#*|}
-  if [[ -f $HOME/.local/share/applications/$name.desktop ]]; then
+  IFS='|' read -r name url icon <<<"$webapp"
+  launcher="$HOME/.local/share/applications/$name.desktop"
+  # Skip when the launcher exists and already opens this URL; otherwise
+  # (re)create it, so a changed URL here updates the launcher too
+  if [[ -f $launcher ]] && grep -qF "\"$url\"" "$launcher"; then
     ok "$name web app already installed"
-  elif omarchy-webapp-install "$name" "$url" "" >/dev/null; then
+  elif omarchy-webapp-install "$name" "$url" "$icon" >/dev/null; then
     ok "$name web app installed"
   else
     warn "Could not install the $name web app (icon download failed?)"
