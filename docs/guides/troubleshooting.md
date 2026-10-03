@@ -229,6 +229,23 @@ is `Ctrl+Space`.
 **Why:** kept Omarchy's split keys: `prefix v` / `Alt+Shift+Enter` (side by
 side), `prefix h` / `Alt+Enter` (stacked).
 
+## lazygit
+
+### No file/branch icons in lazygit
+
+**Why:** lazygit runs on its defaults (Omarchy's `config.yml` is empty);
+icons are `gui.nerdFontsVersion`, which defaults to off (the old
+`showIcons` setting no longer exists). **Re-enable:** `nerdFontsVersion:
+"3"` (Omarchy ships Nerd Fonts). lazygit's YAML has no include; multiple
+files can be merged with `LG_CONFIG_FILE="a.yml,b.yml"`, but that env var
+must be set wherever lazygit starts (shell, nvim `<leader>gg`, launcher).
+
+### Staging selects whole hunks / discarding asks for confirmation
+
+**Why:** lazygit defaults (`useHunkModeInStagingView: true`,
+`skipDiscardChangeWarning: false`); the old config flipped both. Press
+`a` in the staging view to toggle hunk/line selection.
+
 ## Shell
 
 ### `cd -2` / directory stack, `autocd`, `**` globs don't work
