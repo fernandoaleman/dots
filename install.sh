@@ -25,6 +25,12 @@ step "Installing prerequisites"
 omarchy-pkg-add git stow
 ok "git and stow installed"
 
+# Extra packages from the official repos that Omarchy doesn't install
+PACMAN_PACKAGES=(wget nmap)
+step "Installing packages: ${PACMAN_PACKAGES[*]}"
+omarchy-pkg-add "${PACMAN_PACKAGES[@]}"
+ok "Packages installed"
+
 # Apps installed through Omarchy's own installers (the same commands the
 # Omarchy menu runs), each skipped when already done
 step "Installing apps with Omarchy's installers"
@@ -45,6 +51,31 @@ if [[ $(omarchy-default-browser) != chrome ]]; then
 else
   ok "Chrome already the default browser"
 fi
+
+if omarchy-pkg-missing openai-codex-desktop; then
+  omarchy-install-ai-chatgpt
+else
+  ok "ChatGPT desktop already installed"
+fi
+
+# Web apps (Chrome app windows), created with Omarchy's installer; icons are
+# fetched from each site. Opens in the default Chrome profile, so logins,
+# notification permissions and extensions are shared with Chrome.
+WEBAPPS=(
+  "Slack|https://app.slack.com"
+  "Teams|https://teams.cloud.microsoft"
+  "Outlook|https://outlook.office.com"
+)
+for webapp in "${WEBAPPS[@]}"; do
+  name=${webapp%%|*} url=${webapp#*|}
+  if [[ -f $HOME/.local/share/applications/$name.desktop ]]; then
+    ok "$name web app already installed"
+  elif omarchy-webapp-install "$name" "$url" "" >/dev/null; then
+    ok "$name web app installed"
+  else
+    warn "Could not install the $name web app (icon download failed?)"
+  fi
+done
 
 step "Getting dots"
 if [[ -d $DOTS_DIR/.git ]]; then

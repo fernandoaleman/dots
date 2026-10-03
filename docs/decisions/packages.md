@@ -77,12 +77,45 @@ them. `install.sh` runs the same commands, each guarded:
 | `bat` | **Omarchy's setup kept** (`BAT_THEME=ansi` in `default/bash/envs`: bat, man pages and fzf previews follow the terminal theme). The old `bat/themes/tokyonight_night.tmTheme` was dropped: it was never active (no `BAT_THEME`, no bat config, no `bat cache --build`) |
 | `starship` | **Omarchy's `starship.toml` kept as is**; the old one dropped. Its `disabled = true` modules were redundant (Omarchy's explicit `format` only renders directory, git branch, git status, character); `git_status` off and blue directories dropped; its prompt symbols referenced an undefined `color_green`/`color_red` palette; its `vimcmd_*` symbols don't work in bash (starship: *"only supported in cmd, fish and zsh"*). The vi-mode indicator moved to readline instead (see [shell.md](shell.md)). Starship has no include mechanism, so nothing stowed (tally unchanged) |
 
+## Group D: not installed by Omarchy
+
+### Command-line utilities
+
+| Tool | Decision |
+|---|---|
+| `wget`, `nmap` | **Added**: official repos, installed by `install.sh` via `omarchy-pkg-add` (`PACMAN_PACKAGES`) |
+| `todoist-cli` (`td`) | **Added** as a mise tool, `npm:@doist/todoist-cli` (not in Arch repos/AUR). The old Todoist "skills" setup was Mac-only; `td-login` → bin scripts section |
+| `bottom`, `htop` | Dropped: Omarchy's **btop** |
+| `ncdu` | Dropped: Omarchy's **dua** (`dua i`) |
+| `colordiff` | Dropped: `diff --color`, colored `git diff` |
+| `markdownlint-cli2` | Dropped: the LazyVim markdown Extra installs it via Mason for nvim |
+| `thefuck` | Dropped (last release 3.32, Jan 2022); its `settings.py` too |
+| `act` | Dropped |
+
+### Terminals
+
+| Item | Decision |
+|---|---|
+| Terminal | **foot, Omarchy's default** (decided 2026-10-03). Omarchy's foot/ghostty/alacritty configs already cover the old personal additions: Shift+Enter (`CSI 13;2u`, Claude Code), Super+C/V via `shift/control+insert`, theme include, padding 14, JetBrains Mono Nerd Font |
+| Personal tweaks | Dropped; Omarchy's kept: font size 9 (old 12), Regular (old Medium), no copy-on-select, no hide-mouse-while-typing; zsh shell dropped |
+| `alacritty`, `ghostty` | Not installed. Old configs (Omarchy-mirroring + Mac variants) stay in the old repo |
+| **Mac** | foot is Linux-only, so the Mac needs another terminal, most likely **ghostty** with Option-as-Alt for Omarchy's tmux Alt keys. If the two machines feel inconsistent, switch Omarchy to ghostty too: `omarchy-install-terminal ghostty` (installs it and makes it the default; add it to `install.sh`) so both run the same terminal and Omarchy config |
+
+### Apps
+
+| App | Decision |
+|---|---|
+| **Slack** | **Web app** `https://app.slack.com` via `omarchy-webapp-install` in `install.sh` (generic URL keeps the employer out of the public repo; you sign in once, the Chrome profile keeps it). Researched 2026-10-03: **drawing on shared screens is Mac/Windows desktop-app only**, so it's not possible on Linux with any client, including AUR `slack-desktop` (still *"beta"*, huddle screen share crashed until 4.51.180, July 2026). Huddles and screen sharing are supported in *"Google Chrome (… Linux)"*. Web-app notifications are normal system notifications (Omarchy's `quickshell` notification server), but only while the window is open: **keep it parked on a workspace**. The `bottelet.slack` Omarchy plugin is messaging-only (no huddles) and needs a personal Slack app token. Drawing sessions → use the Mac |
+| **Teams**, **Outlook** | **Web apps** (`teams.cloud.microsoft`, `outlook.office.com`); Microsoft has no Linux Teams app |
+| **ChatGPT** | **ChatGPT desktop** via Omarchy's installer `omarchy-install-ai-chatgpt` (package `openai-codex-desktop` from Omarchy's repo: *"Official ChatGPT desktop app with Codex"*), guarded like the menu: `omarchy-pkg-missing openai-codex-desktop` |
+| Discord, Zoom | Omarchy's preinstalled web apps |
+| `claude`/`codex`/`opencode`… | Omarchy's mise launchers |
+| Apple Music, iCloud, Claude (old web apps), Loom, Raindrop.io | Dropped for now (re-add a line to `WEBAPPS` in `install.sh`) |
+
+Web-app icons are auto-fetched by `omarchy-webapp-install` (the old PNG icon files weren't kept). Making Slack open on a fixed workspace automatically is a **Desktop section** item.
+
 ## Still to review
 
 - **Group A**: done. (`tmux-ssh` moves to the bin scripts
   section.)
-- **Group D** (not installed): `act`, `bottom`, `colordiff`, `htop`,
-  `markdownlint-cli2`, `ncdu`, `nmap`, `thefuck`, `todoist-cli`, `wget`,
-  `yarn`, `rclone`, `awsvpnclient`, `espanso`, `alacritty`, `ghostty`, Slack,
-  Microsoft Teams, ChatGPT, Loom, Raindrop.io, plus Omarchy's Discord/Zoom web
-  apps and the `claude`/`codex`/`opencode` mise stubs.
+- **Group D** (not installed): `yarn` (done: mise), `rclone`, `awsvpnclient`, `espanso`.

@@ -14,7 +14,16 @@ It asks for your git name and email if the Omarchy installer didn't set
 them. Then open a new terminal. See the [README](../../README.md#usage) for
 what `install.sh` does.
 
-## 2. Log in to GitHub
+## 2. Slack (and Teams/Outlook) web apps
+
+`install.sh` creates the Slack, Teams and Outlook web apps. Once:
+
+- Open **Slack** and sign in; allow notifications when Slack asks (or via
+  the site's permission icon in the app window).
+- Keep the Slack window **open, parked on a workspace**: a closed web app
+  sends no notifications.
+
+## 3. Log in to GitHub
 
 `gh` is preinstalled by Omarchy (through mise).
 
@@ -28,7 +37,7 @@ over HTTPS.
 Use HTTPS until SSH keys are installed, then run `make ssh` in
 `~/Work/dots` to switch the remote.
 
-## 3. Working on dots (optional)
+## 4. Working on dots (optional)
 
 Only needed to commit changes to this repo. `make setup` installs prek
 (via mise) and shellcheck (via `omarchy-pkg-add`), then activates the git

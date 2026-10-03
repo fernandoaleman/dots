@@ -246,6 +246,53 @@ must be set wherever lazygit starts (shell, nvim `<leader>gg`, launcher).
 `skipDiscardChangeWarning: false`); the old config flipped both. Press
 `a` in the staging view to toggle hunk/line selection.
 
+## Terminal
+
+### Terminal font looks small / text isn't copied on select
+
+**Why:** foot (Omarchy's default) with Omarchy's `~/.config/foot/foot.ini`:
+font size 9, no copy-on-select (the old ghostty/alacritty used size 12,
+Medium, copy-on-select). Change it in foot's config; foot supports
+`include=`, so tweaks could go in a `foot.dots.ini` via the config pattern.
+
+### Omarchy (foot) and the Mac terminal behave differently
+
+**Why:** foot is Linux-only, so the Mac runs a different terminal (likely
+ghostty). To make both identical, switch Omarchy to ghostty:
+`omarchy-install-terminal ghostty` (Omarchy's installer, also in the menu:
+Install → Terminal), then add that command to `install.sh`. See
+[packages.md](../decisions/packages.md) (Terminals).
+
+## Slack
+
+### Can't draw on someone's shared screen in a Slack huddle
+
+**Why:** Slack supports drawing on shared screens only in its **desktop
+app for Mac and Windows**; not in the browser, not on Linux (also not in
+AUR `slack-desktop`). **Use:** the Mac for demos/onboarding that need it.
+
+### Slack notifications stopped
+
+**Why:** the Slack web app only notifies while its window is open. Keep it
+parked on a workspace instead of closing it. Also check the notification
+permission (site permission icon in the app window) and Slack's own
+notification preferences.
+
+### Slack opened a workspace picker / asks to sign in
+
+**Why:** the web app uses the generic `https://app.slack.com`; sign in
+once (the default Chrome profile keeps it). If several workspaces are
+signed in, pick yours once.
+
+## Missing tools
+
+### `htop` / `btm` / `ncdu` / `colordiff` / `thefuck` / `act` not found
+
+**Why:** dropped in favor of what Omarchy ships: `btop` (system monitor),
+`dua i` (disk usage), `diff --color`. `thefuck` and `act` were dropped.
+**Re-add** an official-repo package to `PACMAN_PACKAGES` in `install.sh`
+(installed with `omarchy-pkg-add`).
+
 ## Shell
 
 ### `cd -2` / directory stack, `autocd`, `**` globs don't work
