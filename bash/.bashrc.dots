@@ -9,3 +9,6 @@ if [[ $- == *i* ]]; then
   bind -m vi-insert -f "$OMARCHY_PATH/default/bash/inputrc"
   bind -m vi-command -f "$OMARCHY_PATH/default/bash/inputrc"
 fi
+
+# Machine-local overrides, not stored in dots
+[[ -r ~/.bashrc.local ]] && source ~/.bashrc.local

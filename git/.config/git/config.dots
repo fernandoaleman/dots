@@ -1,0 +1,24 @@
+# Loaded by the last line of Omarchy's ~/.config/git/config (added by dots'
+# install.sh), after Omarchy's settings, so anything here overrides them.
+# Identity stays in Omarchy's file, not here.
+
+# Drop remote-tracking branches deleted on the remote (never local branches)
+[fetch]
+	prune = true
+
+# Conflict markers also show the original (base) text both sides changed
+[merge]
+	conflictStyle = zdiff3
+
+# Use gh's login for GitHub over HTTPS. Found on PATH, so it survives gh
+# upgrades (gh auth setup-git would hard-code a versioned path). The empty
+# helper resets any earlier helpers (e.g. macOS osxkeychain) for these hosts.
+[credential "https://github.com"]
+	helper =
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper =
+	helper = !gh auth git-credential
+
+# Machine-local overrides, not stored in dots (skipped if missing)
+[include] path = ~/.config/git/config.local

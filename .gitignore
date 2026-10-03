@@ -1,2 +1,6 @@
 # macOS
 .DS_Store
+
+# Machine-local overrides (<name>.local[.ext]) never belong in dots
+*.local
+*.local.*

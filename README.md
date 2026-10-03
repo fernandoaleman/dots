@@ -78,12 +78,14 @@ make ssh
 | Package | Installs | What it does |
 |---|---|---|
 | `bash` | `~/.bashrc.dots`, `~/.config/bash/` (+ one line in Omarchy's `~/.bashrc`) | vi mode, a few aliases and git completion for `g` |
+| `git` | `~/.config/git/config.dots`, `~/.config/git/ignore` (+ one line in Omarchy's `~/.config/git/config`) | `fetch.prune`, `zdiff3` conflicts, gh as the GitHub HTTPS credential helper, a lean global gitignore |
 
 ## Repository layout
 
 ```
 install.sh          bootstrap for a fresh install (curl | bash)
 bash/               stow package → $HOME
+git/                stow package → $HOME
 docs/decisions/     what we kept or dropped, and what Omarchy already does
 docs/setup/         step-by-step fresh-install checklists (omarchy.md)
 Makefile            dev tasks (make help)

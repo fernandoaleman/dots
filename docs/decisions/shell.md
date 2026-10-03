@@ -166,8 +166,7 @@ Aliases `co`, `br`, `ci`, `st`; `init.defaultBranch = master`;
 `diff.mnemonicPrefix = true`; `commit.verbose = true`; `column.ui = auto`;
 `branch.sort = -committerdate`; `tag.sort = -version:refname`;
 `rerere.enabled` + `autoupdate`.
-(Recorded here for reference; the git config itself is reviewed in the
-packages section.)
+(Reviewed in [git.md](git.md).)
 
 ### Work directory and per-repo `bin/`
 

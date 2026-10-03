@@ -32,7 +32,10 @@ Dotfiles for Omarchy (and later macOS), managed with GNU Stow.
 - Name the included file after the file that includes it, with `.dots`
   before the extension if it has one (`tmux.conf` -> `tmux.dots.conf`),
   otherwise appended (`config` -> `config.dots`, `.bashrc` ->
-  `.bashrc.dots`). Never `.local`.
+  `.bashrc.dots`).
+- End every `.dots` file with an include of its `.local` counterpart
+  (same naming, e.g. `config.local`) that is skipped when missing; `.local`
+  files are machine-local and never committed (.gitignore).
 - Don't use ~/.gitconfig unless absolutely necessary.
 - Record every decision, and what Omarchy does, in docs/decisions/.
 - Record only manual fresh-install steps that cannot be scripted

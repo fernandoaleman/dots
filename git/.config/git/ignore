@@ -1,0 +1,21 @@
+# Global gitignore: git reads ~/.config/git/ignore by default (no
+# core.excludesFile needed). Only personal, OS and editor files belong here;
+# project-specific patterns go in each project's .gitignore.
+
+# OS (also catches .DS_Store files copied over from a Mac)
+.DS_Store
+
+# Editors
+*.sw[nop]
+
+# Ruby debuggers / REPLs
+.byebug_history
+pry_history
+
+# Claude Code machine-local settings
+**/.claude/settings.local.json
+
+# Secrets (keep example files)
+.env
+.env.*
+!.env.example

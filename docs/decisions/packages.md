@@ -57,10 +57,16 @@ them. `install.sh` runs the same commands, each guarded:
 | Google Chrome (AUR `google-chrome`; also sets up browser policy, flags and theme) | Install → Browser → Chrome | `omarchy-install-browser chrome` | `omarchy-pkg-missing google-chrome` |
 | Chrome as default browser (Omarchy's default is Chromium) | Setup → Defaults → Browser → Chrome | `omarchy-default-browser chrome` | current value isn't `chrome` |
 
+## Group A: Omarchy installs it, the old repo had a config
+
+| Package | Decision |
+|---|---|
+| `git` | Omarchy's config kept, plus a small `config.dots` (see [git.md](git.md)) |
+| `git-delta` | Dropped, not installed |
+
 ## Still to review
 
-- **Group A** (Omarchy installs it, the old repo had a config): `git`
-  (+ `git-delta`), `neovim` (the separate `fernandoaleman/nvim` repo), `tmux`
+- **Group A** (Omarchy installs it, the old repo had a config): `neovim` (the separate `fernandoaleman/nvim` repo), `tmux`
   (+ `gitmux`, `sesh`, TPM, `tmux-ssh`), `starship`, `btop`, `lazygit`,
   `lazydocker`, `mise`, `herdr`, `bat`.
 - **Group D** (not installed): `act`, `bottom`, `colordiff`, `htop`,

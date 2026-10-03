@@ -12,7 +12,7 @@ set -euo pipefail
 
 REPO_URL="https://github.com/fernandoaleman/dots.git"
 DOTS_DIR="$HOME/Work/dots"
-PACKAGES=(bash)
+PACKAGES=(bash git)
 
 step() { printf '\n\033[1;34m==> %s\033[0m\n' "$1"; }
 ok() { printf '\033[1;32m✔ %s\033[0m\n' "$1"; }
@@ -104,6 +104,35 @@ add_line() {
 
 step "Hooking dots into Omarchy's config files"
 add_line "$HOME/.bashrc" "[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots"
+add_line "$HOME/.config/git/config" "[include] path = ~/.config/git/config.dots"
+
+# Omarchy's installer sets these from the name and email you enter; ask once
+# if they were left blank. `git config --global` writes them to Omarchy's
+# ~/.config/git/config (as long as no ~/.gitconfig exists), never into dots.
+step "Checking git identity"
+ask() {
+  if command -v gum &>/dev/null; then
+    gum input --prompt "$1: " --placeholder "$1"
+  else
+    read -rp "$1: " reply && printf '%s' "$reply"
+  fi
+}
+if [[ -e $HOME/.gitconfig ]]; then
+  warn "Found ~/.gitconfig; git config --global writes there instead of ~/.config/git/config"
+fi
+for key in user.name user.email; do
+  if [[ -n $(git config --global --get "$key") ]]; then
+    ok "git $key: $(git config --global --get "$key")"
+  else
+    value=$(ask "git $key")
+    if [[ -n $value ]]; then
+      git config --global "$key" "$value"
+      ok "git $key set"
+    else
+      warn "git $key left unset"
+    fi
+  fi
+done
 
 step "Done"
 echo "Open a new terminal to load the new shell config."

@@ -15,6 +15,12 @@ once the first version is released.
   mode (Omarchy's inputrc re-applied to the vi keymaps, fzf
   `^R`/`^T` verified), `ll`/`ln`/`mkdir`/`grep`/`path` aliases, and git
   completion for Omarchy's `g` alias.
+- `git` stow package: `~/.config/git/config.dots` (loaded by one line in
+  Omarchy's `~/.config/git/config`) with `fetch.prune`, `zdiff3` conflict
+  style and gh as the GitHub HTTPS credential helper; a lean global
+  `~/.config/git/ignore`. `install.sh` asks for the git name/email if unset.
+- Optional machine-local `.local` layer loaded last by every `.dots` file
+  (`~/.bashrc.local`, `~/.config/git/config.local`), ignored by git.
 - `install.sh` bootstrap: asks for sudo once (`omarchy-sudo-keepalive`),
   installs git and stow (`omarchy-pkg-add`), installs 1Password and Chrome
   and makes Chrome the default browser with Omarchy's own installers
