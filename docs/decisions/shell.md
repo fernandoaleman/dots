@@ -48,8 +48,10 @@ This is the structure to mirror on the Mac.
   events, not the shell.
 
 **Our layout copies that pattern** (named files, explicit order, no numbered
-`conf.d`): `~/.bashrc` stays the stock stub plus one line,
-`source ~/.config/bash/rc`, and our `rc` sources our own named files.
+`conf.d`). Following the [config pattern](config-pattern.md), `~/.bashrc`
+stays Omarchy's real stock file; `install.sh` appends one line,
+`[[ -r ~/.config/bash/rc ]] && source ~/.config/bash/rc`, and our `rc`
+sources our own named files.
 
 ---
 
@@ -251,8 +253,10 @@ packages section.)
 ## Files
 
 ```
+~/.bashrc                     Omarchy's real file (not stowed) + one line
+                              added by install.sh:
+                              [[ -r ~/.config/bash/rc ]] && source ~/.config/bash/rc
 bash/                         stow package → $HOME
-├── .bashrc                   /etc/skel/.bashrc + `source ~/.config/bash/rc`
 └── .config/bash/
     ├── rc                    sources aliases, completions; vi mode + inputrc re-apply
     ├── aliases               ll, ln, mkdir, grep, path
@@ -270,9 +274,9 @@ To make the Mac feel like Omarchy with bash 5+:
   pieces above that we rely on: the `rc` chain, the `envs`, `shell`,
   `inputrc` and `init` equivalents, the aliases, and the `fns/` we actually
   use (at least `ga`/`gd` and `n`).
-  Our `bash/.bashrc` and `rc` reference `$OMARCHY_PATH` and
-  `/usr/share/omarchy/...`, so the Mac needs a different `.bashrc` (or a
-  guarded one).
+  Our `rc` references `$OMARCHY_PATH` and `/usr/share/omarchy/...`, and
+  the Mac has no Omarchy `.bashrc` for `install.sh` to append to, so the
+  Mac needs its own `.bashrc` (or a guarded `rc`).
 - PATH: append `~/.local/bin` last; recreate the `~/Work/.mise.toml`
   `_.path = "{{ cwd }}/bin"` behavior.
 - XDG vars: nothing sets them on macOS; decide whether to export them.

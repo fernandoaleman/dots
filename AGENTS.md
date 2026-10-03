@@ -25,6 +25,11 @@ Dotfiles for Omarchy (and later macOS), managed with GNU Stow.
 
 - Each top-level directory with dotfiles is a stow package mirroring
   $HOME; list new packages in PACKAGES in install.sh and in README.
+- Never stow over an Omarchy-owned config file. Follow
+  docs/decisions/config-pattern.md: keep Omarchy's file real, have
+  install.sh append one include line (add_line) loading our stowed file,
+  and update the include/no-include tally there.
+- Don't use ~/.gitconfig unless absolutely necessary.
 - Record every decision, and what Omarchy does, in docs/decisions/.
 - Record only manual fresh-install steps that cannot be scripted
   in docs/setup/omarchy.md (later docs/setup/macos.md).

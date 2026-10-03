@@ -6,7 +6,8 @@
 #
 # Safe to re-run. Installs prerequisites and apps (via Omarchy's own
 # installers), clones (or updates) the repo into ~/Work/dots, backs up any
-# real files that would block stow, then stows every package in PACKAGES.
+# real files that would block stow, stows every package in PACKAGES, then
+# adds one line to Omarchy's config files (e.g. ~/.bashrc) to load ours.
 set -euo pipefail
 
 REPO_URL="https://github.com/fernandoaleman/dots.git"
@@ -62,9 +63,9 @@ else
   ok "Cloned into $DOTS_DIR"
 fi
 
-# stow refuses to replace real files (e.g. Omarchy's stock ~/.bashrc), so move
-# them aside first. Anything that already resolves into dots (a stowed file,
-# or a file under a stowed directory like ~/.config/bash) is left alone.
+# stow refuses to replace real files, so move any in the way aside first.
+# Anything that already resolves into dots (a stowed file, or a file under a
+# stowed directory like ~/.config/bash) is left alone.
 step "Backing up files that would conflict with stow"
 stamp="$(date +%Y%m%d%H%M%S)"
 backed_up=0
@@ -85,6 +86,24 @@ done
 step "Stowing packages: ${PACKAGES[*]}"
 stow --dir "$DOTS_DIR" --target "$HOME" --restow "${PACKAGES[@]}"
 ok "Stowed"
+
+# Omarchy's own config files stay real files that Omarchy (and its update
+# migrations) can keep editing. Each gets one line, added last, that loads
+# our stowed file so our settings override Omarchy's.
+add_line() {
+  local file=$1 line=$2
+  if [[ ! -f $file ]]; then
+    warn "${file/#$HOME/\~} not found; skipping"
+  elif grep -qxF "$line" "$file"; then
+    ok "${file/#$HOME/\~} already loads dots"
+  else
+    printf '\n# Added by dots: https://github.com/fernandoaleman/dots\n%s\n' "$line" >>"$file"
+    ok "${file/#$HOME/\~} now loads dots"
+  fi
+}
+
+step "Hooking dots into Omarchy's config files"
+add_line "$HOME/.bashrc" "[[ -r ~/.config/bash/rc ]] && source ~/.config/bash/rc"
 
 step "Done"
 echo "Open a new terminal to load the new shell config."

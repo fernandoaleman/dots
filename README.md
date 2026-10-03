@@ -30,9 +30,12 @@ The bootstrap itself is:
    - install 1Password and Chrome with Omarchy's own installers, and make
      Chrome the default browser (skipped when already done)
    - clone this repo to `~/Work/dots` over HTTPS (no SSH keys needed yet)
-   - move any real file that would block stow to `<file>.bak.<timestamp>`
-     (for example Omarchy's stock `~/.bashrc`); nothing is deleted
+   - move any real file that would block stow to `<file>.bak.<timestamp>`;
+     nothing is deleted
    - stow every package listed in `PACKAGES` in `install.sh`
+   - add one line to Omarchy's own config files (such as `~/.bashrc`) so
+     they load ours; Omarchy's files are never replaced
+     (see [docs/decisions/config-pattern.md](docs/decisions/config-pattern.md))
 
 3. Open a new terminal to load the new shell config.
 
@@ -51,7 +54,8 @@ stow --target ~ -n -v bash # dry run: show what would happen
 ```
 
 stow won't overwrite a real file. Move it aside first, or let `install.sh`
-do it for you.
+do it for you. Packages never contain Omarchy's own config files (such as
+`~/.bashrc`); `install.sh` adds a line to those instead.
 
 ### Updating
 
@@ -73,7 +77,7 @@ make ssh
 
 | Package | Installs | What it does |
 |---|---|---|
-| `bash` | `~/.bashrc`, `~/.config/bash/` | Omarchy's stock `.bashrc` plus `source ~/.config/bash/rc`, which adds vi mode, a few aliases and git completion for `g` |
+| `bash` | `~/.config/bash/` (+ one line in Omarchy's `~/.bashrc`) | vi mode, a few aliases and git completion for `g` |
 
 ## Repository layout
 

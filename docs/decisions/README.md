@@ -20,5 +20,6 @@ setup has to recreate to "mirror Omarchy, minimally".
 
 | Section | File |
 |---|---|
+| Config pattern (how we override Omarchy's configs) + tally | [config-pattern.md](config-pattern.md) |
 | Shell (bash) | [shell.md](shell.md) |
 | Packages | [packages.md](packages.md) |
