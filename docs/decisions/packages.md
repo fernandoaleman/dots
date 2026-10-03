@@ -68,11 +68,11 @@ them. `install.sh` runs the same commands, each guarded:
 | `sesh` | Dropped, replaced by the `prefix k` picker |
 | TPM | Dropped: resurrect + continuum are pinned clones |
 | `gitmux` | Dropped: it was never used in the status bar |
+| `starship` | **Omarchy's `starship.toml` kept as is**; the old one dropped. Its `disabled = true` modules were redundant (Omarchy's explicit `format` only renders directory, git branch, git status, character); `git_status` off and blue directories dropped; its prompt symbols referenced an undefined `color_green`/`color_red` palette; its `vimcmd_*` symbols don't work in bash (starship: *"only supported in cmd, fish and zsh"*). The vi-mode indicator moved to readline instead (see [shell.md](shell.md)). Starship has no include mechanism, so nothing stowed (tally unchanged) |
 
 ## Still to review
 
-- **Group A** (Omarchy installs it, the old repo had a config): `starship`,
-  `btop`, `lazygit`, `lazydocker`, `mise`, `herdr`, `bat`. (`tmux-ssh` moves
+- **Group A** (Omarchy installs it, the old repo had a config): `btop`, `lazygit`, `lazydocker`, `mise`, `herdr`, `bat`. (`tmux-ssh` moves
   to the bin scripts section.)
 - **Group D** (not installed): `act`, `bottom`, `colordiff`, `htop`,
   `markdownlint-cli2`, `ncdu`, `nmap`, `thefuck`, `todoist-cli`, `wget`,

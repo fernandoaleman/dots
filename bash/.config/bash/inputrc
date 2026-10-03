@@ -5,3 +5,8 @@ set keymap vi-insert
 "\C-a": beginning-of-line
 "\C-e": end-of-line
 "\C-k": kill-line
+
+# Show the vi mode in the prompt, only in command (normal) mode: "[N]"
+set show-mode-in-prompt on
+set vi-ins-mode-string ""
+set vi-cmd-mode-string "\1\e[1;33m\2[N]\1\e[0m\2 "

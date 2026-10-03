@@ -200,6 +200,11 @@ Aliases `co`, `br`, `ci`, `st`; `init.defaultBranch = master`;
     which is why this lives in `~/.bashrc.dots` (bash) and not in `inputrc`.
   - In vi-insert, `^A`/`^E`/`^K` are `self-insert` by default, so they are
     rebound to `beginning-of-line` / `end-of-line` / `kill-line`.
+  - **Mode indicator** (added 2026-10-03, replacing the old zsh-only starship
+    `vimcmd_symbol`): readline's `show-mode-in-prompt` shows a bold yellow
+    `[N]` before the prompt **only in command mode** (`vi-ins-mode-string`
+    empty), with the color codes wrapped in `\1`/`\2` so cursor math stays
+    right.
   - Not ported: `^P`, `^N`, `^Y`, `^Q`, `stty -ixon`. In vi-command mode,
     `v` already opens the line in `$EDITOR`.
 - **Aliases:** `ll='lsa'` (muscle memory; follows Omarchy's `lsa`),

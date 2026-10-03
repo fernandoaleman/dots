@@ -237,6 +237,21 @@ side), `prefix h` / `Alt+Enter` (stacked).
 Use zoxide (`cd <partial-name>`). For `**`: `shopt -s globstar`; for
 typing a directory name to cd: `shopt -s autocd` (`~/.bashrc.local`).
 
+### `[N]` appears at the start of the prompt
+
+**Why:** that's the vi **command-mode** indicator (readline
+`show-mode-in-prompt` in `~/.config/bash/inputrc`); press `i` or `a` to go
+back to insert mode. Change or remove it via `vi-cmd-mode-string` /
+`show-mode-in-prompt`.
+
+### Prompt shows git status symbols / cyan directory (not the old prompt)
+
+**Why:** Omarchy's `starship.toml` is used as is; the old one (git status
+off, blue directories, nerd-font symbols) was dropped. Starship has no
+include mechanism, so customizing means a full override: stow a
+`starship.toml`, or point `STARSHIP_CONFIG` at a dots file in
+`~/.bashrc.dots`.
+
 ### A git alias like `gs`, `gco`, `gp` is missing
 
 **Why:** all old git aliases were dropped to learn Omarchy's (`g`, `gcm`,
