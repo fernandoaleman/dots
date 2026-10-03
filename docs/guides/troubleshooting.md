@@ -260,3 +260,33 @@ for how to bring it back (`omarchy-pkg-add git-delta`; Omarchy's
 
 **Why:** dropped git aliases. Add to `~/.config/git/config.dots`, e.g.
 `[alias] pf = push --force-with-lease`.
+
+## Known Omarchy issues (not caused by dots)
+
+### Lazy reports `monokai-pro.nvim` "fetch failed: Repository not found"
+
+**Why:** Omarchy's `~/.config/nvim/lua/plugins/all-themes.lua` (seeded from
+`omarchy-nvim` 2026.8.13) points at `gthelding/monokai-pro.nvim`, which no
+longer exists on GitHub. Omarchy fixed its package source on 2026-09-21
+(`omacom/omarchy-pkgs` commit `b2e3469`: *"point monokai-pro at loctvl842
+(repo not found)"*); open issues: omacom/omarchy #12369, #12560, #12319,
+#10094. Harmless meanwhile: the plugin stays installed from cache, and no
+Omarchy 4 theme uses it.
+
+**Fix (applied 2026-10-03 on this machine; Omarchy's file, not dots):**
+
+```sh
+sed -i 's|"gthelding/monokai-pro.nvim"|"loctvl842/monokai-pro.nvim"|' \
+  ~/.config/nvim/lua/plugins/all-themes.lua
+nvim --headless "+Lazy! update monokai-pro.nvim" +qa   # switches the remote
+```
+
+`Lazy! install` alone doesn't change an installed plugin's remote; an
+update (of just that plugin) does. Not needed once an Omarchy release
+ships the fix *and* updates your copy.
+
+### Lazy shows "Breaking Changes" / "updates available"
+
+Not an error: lazy.nvim lists newer versions than the ones pinned in
+Omarchy's `lazy-lock.json`. Updating (`:Lazy update`) is optional and
+moves you off Omarchy's pinned versions.
