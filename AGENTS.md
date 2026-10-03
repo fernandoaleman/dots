@@ -49,6 +49,10 @@ Dotfiles for Omarchy (and later macOS), managed with GNU Stow.
   behaviors with the snippet to re-enable each. Whenever a decision drops a
   behavior the user might miss, add an entry there.
 - Add each change to CHANGELOG.md under [Unreleased].
+- Releases (semver, 0.x until Omarchy is complete incl. secrets): move
+  [Unreleased] to `## [x.y.z] - date` with compare links, commit
+  `chore(release): x.y.z`, annotated tag `vx.y.z`, then a GitHub Release
+  whose notes are that changelog section. Ask before publishing.
 - Commits: Conventional Commits (committed.toml), subject <= 72 chars.
   Run `make lint` before committing.
 - Never add attribution: no Co-Authored-By trailers and no
