@@ -4,3 +4,5 @@
 # Machine-local overrides (<name>.local[.ext]) never belong in dots
 *.local
 *.local.*
+# mise conf.d uses hyphens (dots select environments there)
+*-local.toml

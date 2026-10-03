@@ -70,15 +70,18 @@ them. `install.sh` runs the same commands, each guarded:
 | `gitmux` | Dropped: it was never used in the status bar |
 | `btop` | **Omarchy's `btop.conf` kept as is**. Only 3 real differences from the old file (the rest was `True`/`true` casing and newer btop 1.4.7 options): `color_theme` `"Default"` → Omarchy's `"current"` (follows the Omarchy theme; `omarchy-theme-set` restarts btop), `theme_background` false → true, `vim_keys` false → **true**. btop has no include mechanism and rewrites its config on exit (`save_config_on_exit`), so nothing is stowed; tweak it through btop's options menu (`o`) |
 | `lazygit` | **Omarchy's empty `config.yml` kept** (lazygit v0.65.0 defaults). Old file: `showFileTree`, `quit: q` already defaults; `editCommand`/`editCommandTemplate` outdated (lazygit uses `$EDITOR`, Omarchy's nvim launcher); `showIcons` no longer exists (icons are now `nerdFontsVersion`, default off). Dropped the real differences too: icons, line staging (`useHunkModeInStagingView` now defaults to true), skipping the discard confirmation |
+| `lazydocker` | Dropped: the old config was empty, Omarchy ships none, and Omarchy runs lazydocker as root via `pkexec` (Super+Shift+D), so a user config wouldn't apply anyway |
+| `mise` (settings) | `~/.config/mise/conf.d/config-dots.toml` (hyphen: mise reads dotted conf.d names as environments): **kept `idiomatic_version_file_enable_tools = ["ruby"]`** (default `[]`, so mise would ignore `.ruby-version`). Dropped `legacy_version_file` (already `true` by default) and **`ruby.compile = false`**, which would make Ruby 2.7.8 uninstallable (mise's precompiled `jdx/ruby` has no 2.7.x builds; unset = precompiled first, else compile). Omarchy's `config.toml` (written by `mise use -g` and Omarchy's AI/gh launchers) is never stowed |
+| mise **tools** | All `latest` in `config-dots.toml` (every `omarchy update` runs `mise up`, so they stay current; projects pin their own versions): `uv` (replaces `pipx`; mise's `pypi:` backend uses uv), `go`, `terraform`, `aws-cli`, `ansible` (pypi; exposes `ansible-core`'s commands), `yamllint`, `yarn`, `npm:confluence-cli`, `github:ankitpokhrel/jira-cli` (`exe = "jira"`). **Dropped as globals:** `node` (Omarchy installs it, and its `config.toml` wins over conf.d), `ruby` (system 3.4.10 + per-project `.ruby-version`), `python` (system 3.14.7; uv brings its own for tools). `install.sh` runs `mise install --yes`. All 9 verified installing and resolving |
 | `starship` | **Omarchy's `starship.toml` kept as is**; the old one dropped. Its `disabled = true` modules were redundant (Omarchy's explicit `format` only renders directory, git branch, git status, character); `git_status` off and blue directories dropped; its prompt symbols referenced an undefined `color_green`/`color_red` palette; its `vimcmd_*` symbols don't work in bash (starship: *"only supported in cmd, fish and zsh"*). The vi-mode indicator moved to readline instead (see [shell.md](shell.md)). Starship has no include mechanism, so nothing stowed (tally unchanged) |
 
 ## Still to review
 
-- **Group A** (Omarchy installs it, the old repo had a config): `lazygit`, `lazydocker`, `mise`, `herdr`, `bat`. (`tmux-ssh` moves
-  to the bin scripts section.)
+- **Group A** (Omarchy installs it, the old repo had a config): `herdr`,
+  `bat`. (`tmux-ssh` moves to the bin scripts
+  section.)
 - **Group D** (not installed): `act`, `bottom`, `colordiff`, `htop`,
   `markdownlint-cli2`, `ncdu`, `nmap`, `thefuck`, `todoist-cli`, `wget`,
   `yarn`, `rclone`, `awsvpnclient`, `espanso`, `alacritty`, `ghostty`, Slack,
   Microsoft Teams, ChatGPT, Loom, Raindrop.io, plus Omarchy's Discord/Zoom web
   apps and the `claude`/`codex`/`opencode` mise stubs.
-- **mise tools** from the old `mise/config.toml`.

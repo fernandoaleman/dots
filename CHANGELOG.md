@@ -26,6 +26,9 @@ once the first version is released.
   into Omarchy's `lazyvim.json`.
 - bash: vi command-mode indicator `[vim]` in the prompt (readline
   `show-mode-in-prompt`); starship stays Omarchy's.
+- `mise` stow package: `conf.d/config-dots.toml` with `.ruby-version`
+  support and global tools (all `latest`); `install.sh` runs
+  `mise install`.
 - `tmux` stow package on top of Omarchy's tmux: `tmux.dots.conf` (prefix2
   off, vim-tmux-navigator `Ctrl+h/j/k/l` with its nvim half, `prefix =`
   synchronize panes, undercurl support, resurrect + continuum loaded last)

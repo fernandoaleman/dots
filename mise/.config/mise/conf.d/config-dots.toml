@@ -1,0 +1,25 @@
+# Named with hyphens, not dots: mise treats a dotted conf.d filename suffix
+# as an environment selector (dotted names deprecated, removed in 2027.8.10).
+# Loaded automatically by mise (every *.toml in ~/.config/mise/conf.d/,
+# alphabetically). Omarchy's ~/.config/mise/config.toml takes precedence
+# over conf.d, so this file adds settings and tools rather than overriding
+# Omarchy's. Machine-local overrides: conf.d/config-local.toml (loads after
+# this file, so it wins).
+
+[settings]
+# Read .ruby-version files (mise ignores idiomatic version files by default)
+idiomatic_version_file_enable_tools = ["ruby"]
+
+# Global tools, all "latest": every `omarchy update` runs `mise up`, which
+# keeps them current. Projects pin their own versions (mise.toml,
+# .ruby-version...). node, ruby and python come from Omarchy/the system.
+[tools]
+uv = "latest"         # used by mise's pypi: backend (ansible, yamllint)
+go = "latest"
+terraform = "latest"
+aws-cli = "latest"
+ansible = "latest"
+yamllint = "latest"
+yarn = "latest"
+"npm:confluence-cli" = "latest"
+"github:ankitpokhrel/jira-cli" = { version = "latest", exe = "jira" }

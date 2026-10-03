@@ -26,6 +26,12 @@ comes from this repo. Several included files can then sit in one directory.
   `~/.config/git/config.dots`.
 - A hidden file's leading dot is not an extension: `~/.bashrc` includes
   `~/.bashrc.dots`.
+- **Exception: where the tool gives dots a meaning, use hyphens.** mise
+  `conf.d`: a dotted suffix is becoming an *environment selector*
+  (`config.dots.toml` would only load with `MISE_ENV=dots`; dotted names
+  are deprecated, removed in mise 2027.8.10), so ours is
+  `conf.d/config-dots.toml` and the local one `conf.d/config-local.toml`
+  (`.gitignore` also excludes `*-local.toml`).
 - Only the included **entry** file follows this rule; anything it loads in
   turn can live wherever makes sense (e.g. `~/.config/bash/aliases`).
 
@@ -112,6 +118,7 @@ outnumbering "include", revisit switching everything to pattern A.**
 | git | `~/.config/git/config` | `~/.config/git/config.dots` | yes: `[include] path = …` (one line) | `~/.config/git/config.local`; git skips missing includes (tested) | C |
 | nvim plugins | `~/.config/nvim/lua/plugins/` (dir) | `lua/plugins/<name>.dots.lua` | yes: lazy.nvim loads every file in the dir | n/a (add a `<name>.local.lua` file; gitignored) | C |
 | tmux | `~/.config/tmux/tmux.conf` | `~/.config/tmux/tmux.dots.conf` (+ `session-picker`) | yes: `source-file -q` | `~/.config/tmux/tmux.local.conf` (`-q` skips if missing) | C |
+| mise | `~/.config/mise/config.toml` (Omarchy, and `mise use -g` writes it) | `~/.config/mise/conf.d/config-dots.toml` (hyphen: naming exception) | yes: mise loads `conf.d/*.toml` automatically (no line needed). ⚠️ Omarchy's `config.toml` takes **precedence** over conf.d (tested), so ours can add but not override | `conf.d/config-local.toml` (alphabetically later, wins over `config-dots.toml`; tested) | C |
 | LazyVim Extras | `~/.config/nvim/lazyvim.json` | none: `install.sh` merges our list with `jq` | **no** (JSON; LazyVim rewrites it) | `:LazyExtras` changes stay local | scripted merge |
 
-**Totals: include 4, no include 1.**
+**Totals: include 5, no include 1.**

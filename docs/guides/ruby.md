@@ -45,6 +45,17 @@ Documented trade-offs:
   versions also need the older CLI flags (`--auto-correct` instead of
   conform's default `--server -a`).
 
+### Installing Ruby 2.7.8 with mise
+
+- mise reads `.ruby-version` (dots enables
+  `idiomatic_version_file_enable_tools = ["ruby"]`).
+- mise's **precompiled** Rubies (`jdx/ruby`) have **no 2.7.x builds**, so
+  2.7.8 is **compiled from source** (ruby-build). Don't set
+  `ruby.compile = false`, which would make the install fail.
+- **To verify:** Ruby 2.7 predates OpenSSL 3, which Arch ships, so the
+  source build may need extra steps (e.g. an OpenSSL 1.1 build). Check when
+  first installing and record what worked here.
+
 ### Setup (to be verified)
 
 1. **A dev-tools bundle on Ruby 3,** outside the project, e.g.

@@ -80,6 +80,7 @@ make ssh
 | `bash` | `~/.bashrc.dots`, `~/.config/bash/` (+ one line in Omarchy's `~/.bashrc`) | vi mode, a few aliases and git completion for `g` |
 | `nvim` | `~/.config/nvim/lua/plugins/*.dots.lua` (+ LazyVim Extras merged into Omarchy's `lazyvim.json`) | Omarchy's LazyVim plus super-tab completion keys, grug-far hidden/ignored toggles, and language Extras |
 | `tmux` | `~/.config/tmux/tmux.dots.conf`, `session-picker` (+ one line in Omarchy's `~/.config/tmux/tmux.conf`) | `Ctrl+h/j/k/l` nvim-aware pane movement, `prefix k` session picker, `prefix =` synchronize panes, undercurl, resurrect + continuum (pinned clones) |
+| `mise` | `~/.config/mise/conf.d/config-dots.toml` (mise loads `conf.d/` itself) | `.ruby-version` support and global tools (uv, go, terraform, aws-cli, ansible, yamllint, yarn, confluence-cli, jira-cli), all `latest` |
 | `git` | `~/.config/git/config.dots`, `~/.config/git/ignore` (+ one line in Omarchy's `~/.config/git/config`) | `fetch.prune`, `zdiff3` conflicts, gh as the GitHub HTTPS credential helper, a lean global gitignore |
 
 ## Repository layout
@@ -90,6 +91,7 @@ bash/               stow package → $HOME
 git/                stow package → $HOME
 nvim/               stow package → $HOME
 tmux/               stow package → $HOME
+mise/               stow package → $HOME
 docs/decisions/     what we kept or dropped, and what Omarchy already does
 docs/setup/         step-by-step fresh-install checklists (omarchy.md)
 docs/guides/        how-tos: troubleshooting.md ("it used to do X"), ruby.md

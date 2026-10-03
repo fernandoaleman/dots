@@ -12,7 +12,7 @@ set -euo pipefail
 
 REPO_URL="https://github.com/fernandoaleman/dots.git"
 DOTS_DIR="$HOME/Work/dots"
-PACKAGES=(bash git nvim tmux)
+PACKAGES=(bash git nvim tmux mise)
 
 step() { printf '\n\033[1;34m==> %s\033[0m\n' "$1"; }
 ok() { printf '\033[1;32m✔ %s\033[0m\n' "$1"; }
@@ -128,6 +128,12 @@ for entry in "${TMUX_PLUGINS[@]}"; do
     ok "$name at ${commit:0:7}"
   fi
 done
+
+# Global mise tools (ours in ~/.config/mise/conf.d/config-dots.toml, plus
+# Omarchy's); later kept current by `mise up` in every `omarchy update`
+step "Installing mise tools"
+mise install --yes
+ok "mise tools installed"
 
 # LazyVim Extras live in Omarchy's ~/.config/nvim/lazyvim.json, which LazyVim
 # itself rewrites (:LazyExtras), so it can't be stowed. Add ours to its list;
