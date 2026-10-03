@@ -100,12 +100,26 @@ downloads Omarchy's template from `github.com/omacom/omarchy` at a
 **pinned release tag**, copies it into place once if missing, and then adds
 the same include line. The pin is bumped deliberately.
 
-## Planned: post-update hook
+## Post-update hook and `make doctor`
 
-An Omarchy `post-update` hook (`~/.config/omarchy/hooks/post-update.d/`)
-that re-adds any missing include lines (for example after an
-`omarchy refresh`) and notifies about drift: stowed links replaced by real
-files, or uncommitted changes in `~/Work/dots`.
+`omarchy update` runs every file in `~/.config/omarchy/hooks/post-update.d/`
+(except `*.sample`) right after its migrations. dots stows
+**`dots.hook`** there (package `omarchy`), which runs `dots_doctor` from
+`lib/dots.sh`:
+
+1. **re-adds missing include lines** (e.g. after `omarchy refresh tmux`),
+2. reports dots files in `$HOME` **no longer linked** into the repo (a
+   migration's `sed -i` / `mv` replaced the link),
+3. reports **uncommitted changes** in `~/Work/dots` (a migration's `>>` /
+   `cp -f` wrote through a link, or your own unfinished edits).
+
+Silent apart from one line when all is well; otherwise details in the
+update terminal plus one Omarchy notification. `make doctor` runs the same
+checks any time; `install.sh` runs them at the end.
+
+`lib/dots.sh` is the single source for `PACKAGES` (what gets stowed) and
+`INCLUDES` (each Omarchy file and the line that loads our `.dots` file),
+shared by `install.sh`, the hook and `make doctor`.
 
 ## Tally
 

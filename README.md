@@ -32,7 +32,7 @@ The bootstrap itself is:
    - clone this repo to `~/Work/dots` over HTTPS (no SSH keys needed yet)
    - move any real file that would block stow to `<file>.bak.<timestamp>`;
      nothing is deleted
-   - stow every package listed in `PACKAGES` in `install.sh`
+   - stow every package listed in `PACKAGES` in `lib/dots.sh`
    - add one line to Omarchy's own config files (such as `~/.bashrc`) so
      they load ours; Omarchy's files are never replaced
      (see [docs/decisions/config-pattern.md](docs/decisions/config-pattern.md))
@@ -81,6 +81,7 @@ make ssh
 | `nvim` | `~/.config/nvim/lua/plugins/*.dots.lua` (+ LazyVim Extras merged into Omarchy's `lazyvim.json`) | Omarchy's LazyVim plus super-tab completion keys, grug-far hidden/ignored toggles, and language Extras |
 | `tmux` | `~/.config/tmux/tmux.dots.conf`, `session-picker` (+ one line in Omarchy's `~/.config/tmux/tmux.conf`) | `Ctrl+h/j/k/l` nvim-aware pane movement, `prefix k` session picker, `prefix =` synchronize panes, undercurl, resurrect + continuum (pinned clones) |
 | `mise` | `~/.config/mise/conf.d/config-dots.toml` (mise loads `conf.d/` itself) | `.ruby-version` support and global tools (uv, go, terraform, aws-cli, ansible, yamllint, yarn, confluence-cli, jira-cli), all `latest` |
+| `omarchy` | `~/.config/omarchy/hooks/post-update.d/dots.hook` | after every `omarchy update`: re-add include lines, report drift (same as `make doctor`) |
 | `git` | `~/.config/git/config.dots`, `~/.config/git/ignore` (+ one line in Omarchy's `~/.config/git/config`) | `fetch.prune`, `zdiff3` conflicts, gh as the GitHub HTTPS credential helper, a lean global gitignore |
 
 ## Repository layout
@@ -92,6 +93,8 @@ git/                stow package → $HOME
 nvim/               stow package → $HOME
 tmux/               stow package → $HOME
 mise/               stow package → $HOME
+omarchy/            stow package → $HOME (post-update hook)
+lib/dots.sh         shared: PACKAGES, INCLUDES, drift checks (dots_doctor)
 docs/decisions/     what we kept or dropped, and what Omarchy already does
 docs/setup/         step-by-step fresh-install checklists (omarchy.md)
 docs/guides/        how-tos: troubleshooting.md ("it used to do X"), ruby.md
@@ -107,6 +110,7 @@ committed.toml      conventional commit rules
 ```sh
 make setup    # install prek (mise) + shellcheck, activate the git hooks
 make lint     # run every hook on every file
+make doctor   # re-add include lines, check for drift
 make help     # list all targets
 ```
 

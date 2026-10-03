@@ -351,6 +351,23 @@ for how to bring it back (`omarchy-pkg-add git-delta`; Omarchy's
 **Why:** dropped git aliases. Add to `~/.config/git/config.dots`, e.g.
 `[alias] pf = push --force-with-lease`.
 
+## dots itself
+
+### Notification "dots needs attention" (after `omarchy update`)
+
+**Why:** the post-update hook (`dots.hook`, same as `make doctor`) found
+drift. Details are in the update output (also `/tmp/omarchy-update.log`),
+or run `make doctor` in `~/Work/dots`:
+
+- *Re-added the dots include line to …*: an Omarchy file was reset (e.g.
+  `omarchy refresh`); already fixed, nothing to do.
+- *… is not linked to dots*: something replaced a stowed link with a real
+  file. Compare it with the repo copy, keep what you want, then run
+  `install.sh` (it backs the real file up and restows).
+- *… has uncommitted changes*: review `git -C ~/Work/dots status`. Either
+  your own unfinished edits, or a migration wrote through a link into the
+  repo (commit or `git restore` it).
+
 ## Known Omarchy issues (not caused by dots)
 
 ### Lazy reports `monokai-pro.nvim` "fetch failed: Repository not found"

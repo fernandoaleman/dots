@@ -24,10 +24,11 @@ Dotfiles for Omarchy (and later macOS), managed with GNU Stow.
 ## Repo conventions
 
 - Each top-level directory with dotfiles is a stow package mirroring
-  $HOME; list new packages in PACKAGES in install.sh and in README.
+  $HOME; list new packages in PACKAGES in lib/dots.sh and in README.
 - Never stow over an Omarchy-owned config file. Follow
-  docs/decisions/config-pattern.md: keep Omarchy's file real, have
-  install.sh append one include line (add_line) loading our stowed file,
+  docs/decisions/config-pattern.md: keep Omarchy's file real, add its
+  include line to INCLUDES in lib/dots.sh (install.sh and the post-update
+  hook append it when missing),
   and update the include/no-include tally there.
 - Name the included file after the file that includes it, with `.dots`
   before the extension if it has one (`tmux.conf` -> `tmux.dots.conf`),
