@@ -10,8 +10,9 @@ once the first version is released.
 
 ### Added
 
-- `bash` stow package: `~/.config/bash/rc`, loaded by one line that
-  `install.sh` adds to Omarchy's own `~/.bashrc` (never replaced), with vi mode (Omarchy's inputrc re-applied to the vi keymaps, fzf
+- `bash` stow package: `~/.bashrc.dots`, loaded by one line that
+  `install.sh` adds to Omarchy's own `~/.bashrc` (never replaced), with vi
+  mode (Omarchy's inputrc re-applied to the vi keymaps, fzf
   `^R`/`^T` verified), `ll`/`ln`/`mkdir`/`grep`/`path` aliases, and git
   completion for Omarchy's `g` alias.
 - `install.sh` bootstrap: asks for sudo once (`omarchy-sudo-keepalive`),
@@ -21,7 +22,7 @@ once the first version is released.
   conflicting files, stows packages, and adds include lines to Omarchy's
   config files.
 - `docs/decisions/`: config pattern (Omarchy's files stay real; ours are
-  included) with an include/no-include tally, shell and package decisions, with a reference of what
+  included, named `<name>.dots[.ext]`) with an include/no-include tally, shell and package decisions, with a reference of what
   Omarchy already provides.
 - `docs/setup/omarchy.md`: fresh-install checklist of the steps that can't
   be scripted.

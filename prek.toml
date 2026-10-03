@@ -35,7 +35,7 @@ rev = "v1.50.3"
 hooks = [{ id = "typos" }]
 
 # ── Shell script linting ───────────────────────────────
-# bash/.config/bash/* files have no shebang or extension, so they are
+# The bash package files have no shebang or shell extension, so they are
 # listed explicitly in addition to files detected as shell.
 [[repos]]
 repo = "local"
@@ -43,5 +43,5 @@ hooks = [
   { id = "shellcheck", name = "shellcheck", language = "system", entry = "shellcheck", types = [
     "shell",
   ] },
-  { id = "shellcheck-bash-config", name = "shellcheck (bash config)", language = "system", entry = "shellcheck", files = "^bash/\\.config/bash/(rc|aliases|completions)$" },
+  { id = "shellcheck-bash-config", name = "shellcheck (bash config)", language = "system", entry = "shellcheck", files = "^bash/(\\.bashrc\\.dots|\\.config/bash/(aliases|completions))$" },
 ]

@@ -1,4 +1,5 @@
-# Sourced from ~/.bashrc after Omarchy's defaults, so anything here overrides them
+# Loaded by the last line of Omarchy's ~/.bashrc (added by dots' install.sh),
+# after Omarchy's defaults, so anything here overrides them
 source ~/.config/bash/aliases
 source ~/.config/bash/completions
 

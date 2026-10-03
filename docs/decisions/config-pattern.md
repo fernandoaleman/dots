@@ -12,6 +12,26 @@ Decided 2026-10-02. How dots customizes config files that Omarchy owns.
    stowed file. It goes last, so our settings override Omarchy's.
 3. **Only our own file is stowed**, and it holds only our changes.
 
+### Naming: `.dots`
+
+The file we include is named after the file that includes it, plus
+`.dots`, so it's obvious which Omarchy file it belongs to and that it
+comes from this repo. Several included files can then sit in one directory.
+
+- **Has an extension:** always put `.dots` before it, for consistency
+  (and so loaders and editors still see the real extension):
+  `tmux.conf` includes `tmux.dots.conf`, `hyprland.lua` includes
+  `hyprland.dots.lua`, `test.txt` → `test.dots.txt`.
+- **No extension:** append `.dots`: `~/.config/git/config` includes
+  `~/.config/git/config.dots`.
+- A hidden file's leading dot is not an extension: `~/.bashrc` includes
+  `~/.bashrc.dots`.
+- Only the included **entry** file follows this rule; anything it loads in
+  turn can live wherever makes sense (e.g. `~/.config/bash/aliases`).
+
+Not `.local`: by convention that means machine-local and uncommitted
+(`settings.local.json`, `.env.local`), which is the opposite of these files.
+
 Fallbacks:
 
 - **The format has no include mechanism:** stow a full-file override
@@ -48,6 +68,6 @@ outnumbering "include", revisit switching everything to pattern A.**
 
 | Config | Omarchy's file (kept real) | Our stowed file | Include mechanism | Pattern |
 |---|---|---|---|---|
-| bash | `~/.bashrc` | `~/.config/bash/rc` (+ `aliases`, `completions`, `inputrc`) | yes: `source` | C |
+| bash | `~/.bashrc` | `~/.bashrc.dots` (loads `~/.config/bash/aliases`, `completions`, `inputrc`) | yes: `source` | C |
 
 **Totals: include 1, no include 0.**

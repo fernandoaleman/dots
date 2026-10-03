@@ -77,7 +77,7 @@ make ssh
 
 | Package | Installs | What it does |
 |---|---|---|
-| `bash` | `~/.config/bash/` (+ one line in Omarchy's `~/.bashrc`) | vi mode, a few aliases and git completion for `g` |
+| `bash` | `~/.bashrc.dots`, `~/.config/bash/` (+ one line in Omarchy's `~/.bashrc`) | vi mode, a few aliases and git completion for `g` |
 
 ## Repository layout
 

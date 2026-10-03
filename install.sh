@@ -103,7 +103,7 @@ add_line() {
 }
 
 step "Hooking dots into Omarchy's config files"
-add_line "$HOME/.bashrc" "[[ -r ~/.config/bash/rc ]] && source ~/.config/bash/rc"
+add_line "$HOME/.bashrc" "[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots"
 
 step "Done"
 echo "Open a new terminal to load the new shell config."

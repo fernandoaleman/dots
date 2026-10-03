@@ -29,6 +29,10 @@ Dotfiles for Omarchy (and later macOS), managed with GNU Stow.
   docs/decisions/config-pattern.md: keep Omarchy's file real, have
   install.sh append one include line (add_line) loading our stowed file,
   and update the include/no-include tally there.
+- Name the included file after the file that includes it, with `.dots`
+  before the extension if it has one (`tmux.conf` -> `tmux.dots.conf`),
+  otherwise appended (`config` -> `config.dots`, `.bashrc` ->
+  `.bashrc.dots`). Never `.local`.
 - Don't use ~/.gitconfig unless absolutely necessary.
 - Record every decision, and what Omarchy does, in docs/decisions/.
 - Record only manual fresh-install steps that cannot be scripted

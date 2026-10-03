@@ -50,8 +50,9 @@ This is the structure to mirror on the Mac.
 **Our layout copies that pattern** (named files, explicit order, no numbered
 `conf.d`). Following the [config pattern](config-pattern.md), `~/.bashrc`
 stays Omarchy's real stock file; `install.sh` appends one line,
-`[[ -r ~/.config/bash/rc ]] && source ~/.config/bash/rc`, and our `rc`
-sources our own named files.
+`[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots` (named per the `.dots`
+rule), and `~/.bashrc.dots` sources our own named files in
+`~/.config/bash/`.
 
 ---
 
@@ -197,7 +198,7 @@ packages section.)
     same for `vi-command`). Nothing is copied, so Omarchy updates still
     flow through.
   - Readline's `$include` does **not** expand environment variables (tested),
-    which is why this lives in `rc` (bash) and not in `inputrc`.
+    which is why this lives in `~/.bashrc.dots` (bash) and not in `inputrc`.
   - In vi-insert, `^A`/`^E`/`^K` are `self-insert` by default, so they are
     rebound to `beginning-of-line` / `end-of-line` / `kill-line`.
   - Not ported: `^P`, `^N`, `^Y`, `^Q`, `stty -ixon`. In vi-command mode,
@@ -255,10 +256,10 @@ packages section.)
 ```
 ~/.bashrc                     Omarchy's real file (not stowed) + one line
                               added by install.sh:
-                              [[ -r ~/.config/bash/rc ]] && source ~/.config/bash/rc
+                              [[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots
 bash/                         stow package → $HOME
+├── .bashrc.dots              sources aliases, completions; vi mode + inputrc re-apply
 └── .config/bash/
-    ├── rc                    sources aliases, completions; vi mode + inputrc re-apply
     ├── aliases               ll, ln, mkdir, grep, path
     ├── completions           git completion for `g`
     └── inputrc               set editing-mode vi; ^A/^E/^K in vi-insert
@@ -274,9 +275,10 @@ To make the Mac feel like Omarchy with bash 5+:
   pieces above that we rely on: the `rc` chain, the `envs`, `shell`,
   `inputrc` and `init` equivalents, the aliases, and the `fns/` we actually
   use (at least `ga`/`gd` and `n`).
-  Our `rc` references `$OMARCHY_PATH` and `/usr/share/omarchy/...`, and
-  the Mac has no Omarchy `.bashrc` for `install.sh` to append to, so the
-  Mac needs its own `.bashrc` (or a guarded `rc`).
+  Our `~/.bashrc.dots` references `$OMARCHY_PATH` and
+  `/usr/share/omarchy/...`, and the Mac has no Omarchy `.bashrc` for
+  `install.sh` to append to, so the Mac needs its own `.bashrc` (or a
+  guarded `.bashrc.dots`).
 - PATH: append `~/.local/bin` last; recreate the `~/Work/.mise.toml`
   `_.path = "{{ cwd }}/bin"` behavior.
 - XDG vars: nothing sets them on macOS; decide whether to export them.
