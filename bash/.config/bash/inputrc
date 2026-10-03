@@ -1,0 +1,7 @@
+set editing-mode vi
+
+# Emacs-style line movement while in vi insert mode
+set keymap vi-insert
+"\C-a": beginning-of-line
+"\C-e": end-of-line
+"\C-k": kill-line

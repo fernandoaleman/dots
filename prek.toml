@@ -1,0 +1,47 @@
+# prek configuration (native TOML format)
+# Setup: prek install && prek install --hook-type commit-msg
+# Run:   prek run --all-files
+#
+
+default_install_hook_types = ["pre-commit", "commit-msg"]
+
+# ── Built-in hooks (Rust-native, no dependencies) ─────
+[[repos]]
+repo = "builtin"
+hooks = [
+  { id = "trailing-whitespace", args = [
+    "--markdown-linebreak-ext=md",
+  ] },
+  { id = "end-of-file-fixer" },
+  { id = "check-added-large-files", args = [
+    "--maxkb=500",
+  ] },
+  { id = "check-merge-conflict" },
+  { id = "check-toml" },
+  { id = "check-yaml" },
+]
+
+# ── Commit message linting ─────────────────────────────
+[[repos]]
+repo = "https://github.com/crate-ci/committed"
+rev = "v1.1.11"
+hooks = [{ id = "committed", stages = ["commit-msg"] }]
+
+# ── Spell checking ─────────────────────────────────────
+[[repos]]
+repo = "https://github.com/crate-ci/typos"
+# `prek autoupdate` picks the sub-crate tag `typos-dict-v*`; pin to the CLI `v*` release instead
+rev = "v1.50.3"
+hooks = [{ id = "typos" }]
+
+# ── Shell script linting ───────────────────────────────
+# bash/.config/bash/* files have no shebang or extension, so they are
+# listed explicitly in addition to files detected as shell.
+[[repos]]
+repo = "local"
+hooks = [
+  { id = "shellcheck", name = "shellcheck", language = "system", entry = "shellcheck", types = [
+    "shell",
+  ] },
+  { id = "shellcheck-bash-config", name = "shellcheck (bash config)", language = "system", entry = "shellcheck", files = "^bash/\\.config/bash/(rc|aliases|completions)$" },
+]

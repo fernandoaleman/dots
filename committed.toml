@@ -1,0 +1,30 @@
+# Configuration for https://github.com/crate-ci/committed
+# https://www.conventionalcommits.org
+
+allowed_types = [
+  "feat",     # New feature
+  "fix",      # Bug fix
+  "docs",     # Documentation only
+  "style",    # Formatting, no code change
+  "refactor", # Code restructuring, no feature/fix
+  "perf",     # Performance improvement
+  "test",     # Adding or updating tests
+  "build",    # Build system or dependencies
+  "ci",       # CI/CD configuration
+  "chore",    # Maintenance tasks
+  "revert",   # Reverting a previous commit
+]
+
+style = "conventional"
+
+# Allow merge commits
+merge_commit = true
+
+# Subject line rules
+subject_capitalized = false
+imperative_subject = true
+subject_not_punctuated = true
+subject_length = 72
+
+# Body line length (0 = disabled)
+line_length = 72

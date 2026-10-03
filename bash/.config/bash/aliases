@@ -1,0 +1,8 @@
+# File system
+alias ll='lsa'
+alias ln='ln -v'
+alias mkdir='mkdir -pv'
+alias grep='grep --color=auto'
+
+# Print PATH one entry per line
+alias path='echo $PATH | tr -s ":" "\n"'

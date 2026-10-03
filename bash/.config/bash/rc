@@ -1,0 +1,10 @@
+# Sourced from ~/.bashrc after Omarchy's defaults, so anything here overrides them
+source ~/.config/bash/aliases
+source ~/.config/bash/completions
+
+# Vi mode, then re-apply Omarchy's inputrc to the vi keymaps (it only targets emacs by default)
+if [[ $- == *i* ]]; then
+  bind -f ~/.config/bash/inputrc
+  bind -m vi-insert -f "$OMARCHY_PATH/default/bash/inputrc"
+  bind -m vi-command -f "$OMARCHY_PATH/default/bash/inputrc"
+fi
