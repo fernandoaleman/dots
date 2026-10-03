@@ -21,3 +21,4 @@ setup has to recreate to "mirror Omarchy, minimally".
 | Section | File |
 |---|---|
 | Shell (bash) | [shell.md](shell.md) |
+| Packages | [packages.md](packages.md) |

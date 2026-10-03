@@ -13,6 +13,10 @@ keep/drop decision, and what Omarchy does for each one, is recorded in
 
 ### Fresh Omarchy install
 
+Follow the full checklist in [docs/setup/omarchy.md](docs/setup/omarchy.md).
+It includes the manual steps (Omarchy menu installs, GitHub login and so on).
+The bootstrap itself is:
+
 1. Finish the Omarchy installer and log in.
 2. Open a terminal and run:
 
@@ -21,7 +25,10 @@ keep/drop decision, and what Omarchy does for each one, is recorded in
    ```
 
    This will:
-   - install `git` and `stow` with pacman (asks for your sudo password)
+   - ask for your sudo password once (`omarchy-sudo-keepalive`)
+   - install `git` and `stow` (`omarchy-pkg-add`)
+   - install 1Password and Chrome with Omarchy's own installers, and make
+     Chrome the default browser (skipped when already done)
    - clone this repo to `~/Work/dots` over HTTPS (no SSH keys needed yet)
    - move any real file that would block stow to `<file>.bak.<timestamp>`
      (for example Omarchy's stock `~/.bashrc`); nothing is deleted
@@ -74,6 +81,7 @@ make ssh
 install.sh          bootstrap for a fresh install (curl | bash)
 bash/               stow package → $HOME
 docs/decisions/     what we kept or dropped, and what Omarchy already does
+docs/setup/         step-by-step fresh-install checklists (omarchy.md)
 Makefile            dev tasks (make help)
 prek.toml           git hooks: whitespace, toml/yaml, typos, shellcheck, commit messages
 committed.toml      conventional commit rules
@@ -84,7 +92,7 @@ committed.toml      conventional commit rules
 ## Development
 
 ```sh
-make setup    # install prek (via mise) and activate the git hooks
+make setup    # install prek (mise) + shellcheck, activate the git hooks
 make lint     # run every hook on every file
 make help     # list all targets
 ```

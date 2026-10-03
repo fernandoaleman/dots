@@ -4,7 +4,7 @@
 # Must work on a bare machine BEFORE anything is installed, so it depends on
 # nothing this repo provides.
 .PHONY: setup
-setup: ## Install prek and activate git hooks
+setup: ## Install prek + shellcheck and activate git hooks
 	@command -v prek >/dev/null 2>&1 || { \
 		echo "Installing prek..."; \
 		if command -v mise >/dev/null 2>&1; then \
@@ -13,6 +13,16 @@ setup: ## Install prek and activate git hooks
 			brew install prek; \
 		else \
 			curl --proto '=https' --tlsv1.2 -LsSf https://github.com/j178/prek/releases/latest/download/prek-installer.sh | sh; \
+		fi; \
+	}
+	@command -v shellcheck >/dev/null 2>&1 || { \
+		echo "Installing shellcheck..."; \
+		if command -v omarchy-pkg-add >/dev/null 2>&1; then \
+			omarchy-pkg-add shellcheck; \
+		elif command -v brew >/dev/null 2>&1; then \
+			brew install shellcheck; \
+		else \
+			echo "Install shellcheck manually" >&2; exit 1; \
 		fi; \
 	}
 	prek install

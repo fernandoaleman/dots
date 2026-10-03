@@ -14,12 +14,18 @@ once the first version is released.
   with vi mode (Omarchy's inputrc re-applied to the vi keymaps, fzf
   `^R`/`^T` verified), `ll`/`ln`/`mkdir`/`grep`/`path` aliases, and git
   completion for Omarchy's `g` alias.
-- `install.sh` bootstrap: installs git and stow, clones to `~/Work/dots`,
-  backs up conflicting files, stows packages.
-- `docs/decisions/` with the shell-section decisions and a reference of
-  what Omarchy's bash setup provides.
+- `install.sh` bootstrap: asks for sudo once (`omarchy-sudo-keepalive`),
+  installs git and stow (`omarchy-pkg-add`), installs 1Password and Chrome
+  and makes Chrome the default browser with Omarchy's own installers
+  (skipped when already done), clones to `~/Work/dots`, backs up
+  conflicting files and stows packages.
+- `docs/decisions/`: shell and package decisions, with a reference of what
+  Omarchy already provides.
+- `docs/setup/omarchy.md`: fresh-install checklist of the steps that can't
+  be scripted.
 - README usage guide, MIT license, and this changelog.
 - `AGENTS.md` (imported by `CLAUDE.md`) with rules for any AI agent working
   in this repo, including no commit/PR attribution.
 - Dev tooling: prek hooks (whitespace, toml/yaml, typos, committed,
-  shellcheck), `.shellcheckrc`, and a `make setup` that installs prek via mise.
+  shellcheck), `.shellcheckrc`, and `make setup`, which installs prek (via
+  mise) and shellcheck (via `omarchy-pkg-add` or brew).
