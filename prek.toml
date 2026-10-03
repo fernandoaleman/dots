@@ -4,6 +4,9 @@
 #
 
 default_install_hook_types = ["pre-commit", "commit-msg"]
+# Hooks without their own `stages` run only at pre-commit (not again at
+# commit-msg); committed sets its own commit-msg stage.
+default_stages = ["pre-commit"]
 
 # ── Built-in hooks (Rust-native, no dependencies) ─────
 [[repos]]

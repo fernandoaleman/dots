@@ -36,5 +36,5 @@ once the first version is released.
 - `AGENTS.md` (imported by `CLAUDE.md`) with rules for any AI agent working
   in this repo, including no commit/PR attribution.
 - Dev tooling: prek hooks (whitespace, toml/yaml, typos, committed,
-  shellcheck), `.shellcheckrc`, and `make setup`, which installs prek (via
+  shellcheck; file checks run once, at pre-commit), `.shellcheckrc`, and `make setup`, which installs prek (via
   mise) and shellcheck (via `omarchy-pkg-add` or brew).
