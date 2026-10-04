@@ -134,3 +134,7 @@ console sign-in) stays where it is, tagged `dots/aws-mfa` with a note;
 `aws-role-login` finds it by that tag. Verified: key from `aws-role-switch`
 + `mfa_serial` from `.aws/config` + the item's OTP gives a 12-hour session
 with no typing ([bin.md](bin.md)).
+
+DRY: its IAM section duplicated the `aws-role-switch` key (same hashes),
+so the section was deleted; the item keeps only the console sign-in and the
+MFA code. The key lives only in `aws-role-switch`.
