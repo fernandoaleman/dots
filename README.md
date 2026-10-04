@@ -96,6 +96,7 @@ tmux/               stow package → $HOME
 mise/               stow package → $HOME
 omarchy/            stow package → $HOME (post-update hook)
 hypr/               stow package → $HOME (monitors)
+bin/                stow package → $HOME (~/.local/bin scripts)
 lib/dots.sh         shared: PACKAGES, INCLUDES, drift checks (dots_doctor)
 docs/decisions/     what we kept or dropped, and what Omarchy already does
 docs/setup/         step-by-step fresh-install checklists (omarchy.md)

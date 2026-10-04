@@ -13,6 +13,9 @@ Omarchy is complete, including secrets via 1Password.
 
 - `install.sh` installs `tmux-ssh` to `~/.local/bin` at a pinned commit
   (SHA-256 checked).
+- `bin` package (`~/.local/bin`): `aws-role-login` starts the daily AWS
+  MFA session with the code from 1Password (no typing); writes `[mfa]`
+  with `aws configure set`.
 
 ## [0.2.0] - 2026-10-04
 
