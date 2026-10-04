@@ -11,7 +11,18 @@ bash <(curl -fsSL https://raw.githubusercontent.com/fernandoaleman/dots/master/i
 ```
 
 It asks for your git name and email if the Omarchy installer didn't set
-them. Then open a new terminal. See the [README](../../README.md#usage) for
+them.
+
+**Secrets need 1Password signed in.** `install.sh` installs the 1Password
+app, but signing in can't be scripted. On a fresh machine the secrets
+step is skipped with a warning; then:
+
+1. Open **1Password** and sign in.
+2. **Settings > Developer > Integrate with 1Password CLI**: on.
+3. Re-run `install.sh` and approve the 1Password prompt.
+
+It then installs the SSH keys, `~/.aws` files, the API token env file and
+incoming SSH (sshd), and switches this repo's remote to SSH. Then open a new terminal. See the [README](../../README.md#usage) for
 what `install.sh` does.
 
 ## 2. Slack (and Teams/Outlook) web apps

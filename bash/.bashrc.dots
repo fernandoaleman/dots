@@ -10,5 +10,8 @@ if [[ $- == *i* ]]; then
   bind -m vi-command -f "$OMARCHY_PATH/default/bash/inputrc"
 fi
 
+# API tokens from 1Password (written by install.sh, tag dots/token)
+[[ -r ~/.config/dots/env ]] && source ~/.config/dots/env
+
 # Machine-local overrides, not stored in dots
 [[ -r ~/.bashrc.local ]] && source ~/.bashrc.local
