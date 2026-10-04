@@ -82,6 +82,7 @@ make ssh
 | `tmux` | `~/.config/tmux/tmux.dots.conf`, `session-picker` (+ one line in Omarchy's `~/.config/tmux/tmux.conf`) | `Ctrl+h/j/k/l` nvim-aware pane movement, `prefix k` session picker, `prefix =` synchronize panes, undercurl, resurrect + continuum (pinned clones) |
 | `mise` | `~/.config/mise/conf.d/config-dots.toml` (mise loads `conf.d/` itself) | `.ruby-version` support and global tools (uv, go, terraform, aws-cli, ansible, yamllint, yarn, confluence-cli, jira-cli), all `latest` |
 | `omarchy` | `~/.config/omarchy/hooks/post-update.d/dots.hook` | after every `omarchy update`: re-add include lines, report drift (same as `make doctor`) |
+| `hypr` | `~/.config/hypr/monitors.dots.lua` (+ one line in Omarchy's `monitors.lua`) | desk monitors matched by description (model + serial), workspace bindings; other screens use Omarchy's defaults |
 | `git` | `~/.config/git/config.dots`, `~/.config/git/ignore` (+ one line in Omarchy's `~/.config/git/config`) | `fetch.prune`, `zdiff3` conflicts, gh as the GitHub HTTPS credential helper, a lean global gitignore |
 
 ## Repository layout
@@ -94,6 +95,7 @@ nvim/               stow package → $HOME
 tmux/               stow package → $HOME
 mise/               stow package → $HOME
 omarchy/            stow package → $HOME (post-update hook)
+hypr/               stow package → $HOME (monitors)
 lib/dots.sh         shared: PACKAGES, INCLUDES, drift checks (dots_doctor)
 docs/decisions/     what we kept or dropped, and what Omarchy already does
 docs/setup/         step-by-step fresh-install checklists (omarchy.md)

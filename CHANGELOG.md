@@ -9,6 +9,12 @@ Omarchy is complete, including secrets via 1Password.
 
 ## [Unreleased]
 
+### Added
+
+- `hypr` package: `monitors.dots.lua` (loaded by one line in Omarchy's
+  `monitors.lua`) with desk monitors matched by description and workspace
+  bindings; other screens keep Omarchy's defaults.
+
 ## [0.1.0] - 2026-10-03
 
 First release: a fresh Omarchy install plus `install.sh` gives a complete,

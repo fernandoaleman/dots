@@ -263,6 +263,21 @@ ghostty). To make both identical, switch Omarchy to ghostty:
 Install → Terminal), then add that command to `install.sh`. See
 [packages.md](../decisions/packages.md) (Terminals).
 
+## Hyprland
+
+### A new monitor / laptop screen uses Omarchy's default layout
+
+**Why:** `monitors.dots.lua` matches the desk monitors by description
+(model + serial), so other screens fall back to Omarchy's catch-all rule
+(scale 1.6, auto position). Add a rule for it: `hyprctl monitors all`
+shows its description; put it in `monitors.dots.lua` (shared) or
+`monitors.local.lua` (this machine only).
+
+### `hyprctl dispatch workspace 2` errors
+
+**Why:** with Omarchy's Lua config, dispatch takes Lua:
+`hyprctl dispatch 'hl.dsp.focus({ workspace = "2" })'`.
+
 ## Slack
 
 ### Can't draw on someone's shared screen in a Slack huddle

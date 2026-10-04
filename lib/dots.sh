@@ -7,25 +7,27 @@
 DOTS_DIR="${DOTS_DIR:-$HOME/Work/dots}"
 
 # Stow packages (top-level directories mirroring $HOME)
-PACKAGES=(bash git nvim tmux mise omarchy)
+PACKAGES=(bash git nvim tmux mise omarchy hypr)
 
 # "Omarchy file|line that loads our .dots file" (appended when missing)
 INCLUDES=(
   "$HOME/.bashrc|[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots"
   "$HOME/.config/git/config|[include] path = ~/.config/git/config.dots"
   "$HOME/.config/tmux/tmux.conf|source-file -q ~/.config/tmux/tmux.dots.conf"
+  "$HOME/.config/hypr/monitors.lua|do local f = os.getenv(\"HOME\") .. \"/.config/hypr/monitors.dots.lua\"; local h = io.open(f); if h then h:close() dofile(f) end end"
 )
 
 # dots_include FILE LINE: append LINE to FILE if missing.
 # Prints "present", "added" or "no-file".
 dots_include() {
-  local file=$1 line=$2
+  local file=$1 line=$2 comment="#"
+  [[ $file == *.lua ]] && comment="--" # Lua comments start with --
   if [[ ! -f $file ]]; then
     echo no-file
   elif grep -qxF "$line" "$file"; then
     echo present
   else
-    printf '\n# Added by dots: https://github.com/fernandoaleman/dots\n%s\n' "$line" >>"$file"
+    printf '\n%s Added by dots: https://github.com/fernandoaleman/dots\n%s\n' "$comment" "$line" >>"$file"
     echo added
   fi
 }
