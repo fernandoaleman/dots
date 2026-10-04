@@ -198,6 +198,54 @@ else
   warn "No ~/.config/nvim/lazyvim.json found; skipping LazyVim Extras"
 fi
 
+# Docker's default bridge (172.17.0.0/16) clashes with a work VPN that
+# routes 172.17.x.x, and Docker's built-in pools for other networks (docker
+# compose) start there too. Move the bridge to $DOCKER_BRIDGE_IP/16 and the
+# pools to $DOCKER_POOL (lib/dots.sh). Omarchy points container DNS at the
+# bridge address in three places, so all three follow: "dns" in its
+# daemon.json (merged, its other settings kept), the resolved stub listener
+# (its 20-docker-dns.conf, cleared and replaced by our later drop-in) and
+# the firewall rule allowing container DNS.
+step "Moving Docker's networks off 172.17.0.0/16"
+daemon_json=/etc/docker/daemon.json
+if [[ -f $daemon_json ]]; then
+  docker_changed=0
+  desired=$(jq --arg ip "$DOCKER_BRIDGE_IP" --arg pool "$DOCKER_POOL" \
+    '.bip = "\($ip)/16" | .dns = [$ip] | ."default-address-pools" = [{base: $pool, size: 24}]' "$daemon_json")
+  if [[ $desired == "$(jq . "$daemon_json")" ]]; then
+    ok "Docker bridge already on $DOCKER_BRIDGE_IP/16"
+  else
+    printf '%s\n' "$desired" | sudo tee "$daemon_json" >/dev/null
+    ok "Docker bridge set to $DOCKER_BRIDGE_IP/16, other networks to $DOCKER_POOL"
+    docker_changed=1
+  fi
+
+  dns_dropin=$(printf '%s\n' "[Resolve]" \
+    "# Docker DNS on dots' bridge address, replacing Omarchy's 20-docker-dns.conf" \
+    "DNSStubListenerExtra=" "DNSStubListenerExtra=$DOCKER_BRIDGE_IP")
+  if [[ $(cat "$DOCKER_DNS_DROPIN" 2>/dev/null) == "$dns_dropin" ]]; then
+    ok "Container DNS already on $DOCKER_BRIDGE_IP"
+  else
+    printf '%s\n' "$dns_dropin" | sudo tee "$DOCKER_DNS_DROPIN" >/dev/null
+    sudo systemctl restart systemd-resolved
+    ok "Container DNS moved to $DOCKER_BRIDGE_IP"
+  fi
+
+  # Same rules as Omarchy's firewall.sh, for the new address (ufw skips
+  # rules that already exist)
+  for src in 172.16.0.0/12 192.168.0.0/16; do
+    sudo ufw allow in proto udp from "$src" to "$DOCKER_BRIDGE_IP" port 53 comment 'allow-docker-dns' >/dev/null
+  done
+  ok "Firewall allows container DNS to $DOCKER_BRIDGE_IP"
+
+  if ((docker_changed)) && systemctl is-active --quiet docker; then
+    sudo systemctl restart docker
+    ok "Docker restarted"
+  fi
+else
+  warn "No $daemon_json (Docker not installed?); skipping"
+fi
+
 # Omarchy's installer sets these from the name and email you enter; ask once
 # if they were left blank. `git config --global` writes them to Omarchy's
 # ~/.config/git/config (as long as no ~/.gitconfig exists), never into dots.
