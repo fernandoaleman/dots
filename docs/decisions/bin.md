@@ -99,6 +99,29 @@ files from 1Password, `~/.ssh/config` including `~/.ssh/aws`, and
   the timer can only succeed after the day's `aws-role-login` (the script
   already aborts safely on expired credentials). Alternative: run it right
   after `aws-role-login` succeeds. Decide in the secrets section.
+- **Where `IdentityFile` lives** (user's idea): instead of one per host
+  in the generated `~/.ssh/aws`, maybe set it once in the main
+  `~/.ssh/config` (e.g. per environment host pattern). Discuss when the
+  SSH keys are set up.
 
 **Mac:** same script (bash 4+ from Homebrew); a launchd agent instead of
 the systemd timer.
+
+## tmux-ssh: `install.sh`, pinned commit
+
+The user's own project ([tmux-ssh/tmux-ssh](https://github.com/tmux-ssh/tmux-ssh),
+MIT): `tmux-ssh host1 host2 …` or a group from
+`~/.config/tmux-ssh/tmux-ssh.conf` (written by `generate-ssh-config`)
+opens one synchronized SSH pane per host (`prefix =` toggles
+synchronization). The old setup downloaded `master` weekly
+(`.chezmoiexternal.toml`). Omarchy has nothing like it.
+
+**Kept** (2026-10-04): `install.sh` downloads it at a **pinned commit**
+(`TMUX_SSH_COMMIT`, with its `TMUX_SSH_SHA256`) to `~/.local/bin`, like
+the tmux plugins: re-runs skip it when the hash matches, a download that
+doesn't match is refused. Bump both deliberately; pin a release tag once
+the project has them ([TODO](../TODO.md)). It runs plain `ssh <host>`, so
+the SSH key setup from the secrets section applies to every pane.
+
+**Mac:** same download (`sha256sum` from Homebrew coreutils, or
+`shasum -a 256`).

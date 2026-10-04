@@ -9,6 +9,11 @@ Omarchy is complete, including secrets via 1Password.
 
 ## [Unreleased]
 
+### Added
+
+- `install.sh` installs `tmux-ssh` to `~/.local/bin` at a pinned commit
+  (SHA-256 checked).
+
 ## [0.2.0] - 2026-10-04
 
 Desktop: monitors and app workspaces, Docker networks clear of the work
