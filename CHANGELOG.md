@@ -16,7 +16,7 @@ Omarchy is complete, including secrets via 1Password.
   right at scale 1.6, with workspaces 1–3 / 4–6 / 7–9 bound to left /
   middle / right; other screens keep Omarchy's defaults.
 - `hypr` package: `hyprland.dots.lua` pins apps to workspaces (Chrome 1,
-  tmux terminal 4, Slack and Teams 7, Spotify 9); Super+Alt+Return gains
+  tmux terminal 4, Slack and Teams 7, Outlook 8, Spotify 9); Super+Alt+Return gains
   `--app-id=tmux` so its terminal can be matched.
 - `install.sh` installs Spotify with Omarchy's installer.
 

@@ -70,6 +70,7 @@ below"*), same `dofile`-if-exists pattern as monitors.
 | tmux terminal (Super+Alt+Return) | `tmux` | 4 (middle) |
 | Slack web app | `chrome-1000bulbs.slack.com__-Default` | 7 (right) |
 | Teams web app | `chrome-teams.cloud.microsoft__-Default` | 7 (right, side by side with Slack) |
+| Outlook web app | `chrome-outlook.office.com__-Default` | 8 (right) |
 | Spotify | `Spotify` | 9 (right) |
 
 - Window rules like `workspace` are **static**: evaluated once when the
@@ -81,7 +82,9 @@ below"*), same `dofile`-if-exists pattern as monitors.
   bash -c "tmux attach || tmux new -s Work"`; `xdg-terminal-exec` supports
   `--app-id`, so it works for any terminal). Other terminals (Super+Return)
   open wherever you are.
-- Launching a pinned app takes you to its workspace (not `silent`).
+- Launching a pinned app takes you to its workspace (not `silent`). A pin
+  only applies when the window opens; it can then be moved anywhere
+  (Super+Shift+N) and stays there.
 - Exec-with-rules (`hl.dsp.exec_cmd(cmd, { workspace = … })`) was not used:
   it tracks the spawned PID, and Omarchy launches apps through `uwsm-app`,
   so the window's PID differs.
