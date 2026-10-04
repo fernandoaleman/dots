@@ -173,6 +173,7 @@ repo) that bash loads. A new token is a 1Password-only change.
 | `JIRA_API_TOKEN` (was field `token`), `CONFLUENCE_API_TOKEN` (added, was missing), `CONFLUENCE_DOMAIN`, `CONFLUENCE_EMAIL` | Atlassian (work) |
 | `CLOUDFLARE_API_TOKEN` (was field `Claude`) | Cloudflare (work) |
 | `PAGERTREE_API_TOKEN` (was field `API Token - Claude`) | PagerTree (work), moved from `Private` |
+| `TODOIST_API_TOKEN` (added; `td` reads it, so no browser login) | Todoist (Personal), `Private` |
 
 Edits used piped JSON templates (values never on a command line);
 existing tags and notes kept (dots line appended). One auto-saved web-form

@@ -15,6 +15,8 @@ Omarchy is complete, including secrets via 1Password.
   API token env file (`~/.config/dots/env`, loaded by bash), incoming SSH
   (Omarchy's sshd script) and the repo remote switch, all from 1Password
   by tag; skipped with instructions when 1Password isn't signed in.
+- Todoist logs in through `TODOIST_API_TOKEN` from 1Password: no
+  `td auth login` step.
 - `install.sh` installs `tmux-ssh` to `~/.local/bin` at a pinned commit
   (SHA-256 checked).
 - `bin` package (`~/.local/bin`): `aws-role-login` starts the daily AWS

@@ -30,8 +30,8 @@ is a work repo; until then it stays in the old dotfiles repo.
 A wrapper: print `td auth status` when logged in, else run
 `td auth login "$@"` (browser OAuth; e.g. `--read-only`) and re-check.
 Nothing from 1Password. **Dropped** (2026-10-04): `td auth login` /
-`td auth status` do the same; the [setup step](../setup/omarchy.md) and
-`install.sh`'s logged-out warning cover it. **Mac:** same `td` commands.
+`td auth status` do the same; since then `td` logs in through
+`TODOIST_API_TOKEN` from 1Password, so no login step is needed at all. **Mac:** same `td` commands.
 
 ## aws-sso-login: dropped (two commands in troubleshooting)
 
