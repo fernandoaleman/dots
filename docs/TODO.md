@@ -119,7 +119,7 @@ was used (the user expects zero); if unused, drop `.aws/config.sso` and
 ### Work Claude Code plugins: automate or keep manual?
 
 The work plugin marketplace is installed by hand
-([setup step 5](setup/omarchy.md#5-work-claude-code-plugins)). The company
+([setup step 4](setup/omarchy.md#4-work-claude-code-plugins)). The company
 is evaluating a different way to distribute them; once decided, revisit
 whether `install.sh` should install them (with the names kept out of this
 public repo, e.g. a machine-local list or 1Password).

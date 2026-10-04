@@ -235,9 +235,14 @@ from our mise tools. **Ported** (2026-10-04), per machine:
   name isn't documented (drop one if it misbehaves).
 - `td` runs through `mise exec`, since mise's shims may not be on PATH
   during a fresh install.
-- Login (`td auth login`, browser OAuth) is a
-  [setup step](../setup/omarchy.md); `install.sh` only warns when logged
-  out. (The old `td-login` wrapper was dropped: [bin.md](bin.md).)
+- **No login step:** `td` accepts its token from `TODOIST_API_TOKEN`
+  (its source calls it the *"env override"*; `td auth status` shows
+  "Authenticated (TODOIST_API_TOKEN)"), so the token is a `dots/token`
+  field in the 1Password item `Todoist (Personal)` (Private) and lands in
+  `~/.config/dots/env` with the other tokens (changed 2026-10-04; the
+  browser `td auth login` step was removed). `install.sh` checks the login
+  after the secrets step. (The old `td-login` wrapper was dropped:
+  [bin.md](bin.md).)
 
 **Mac:** same commands and folders.
 

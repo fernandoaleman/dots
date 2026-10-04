@@ -218,12 +218,6 @@ for agent in claude-code universal; do
     ok "Todoist skill for $agent: ${state:-unknown}"
   fi
 done
-# Login is a browser OAuth flow: a manual step (docs/setup/omarchy.md)
-if td auth status &>/dev/null; then
-  ok "Todoist authenticated"
-else
-  warn "Todoist not authenticated; run: td auth login"
-fi
 
 # LazyVim Extras live in Omarchy's ~/.config/nvim/lazyvim.json, which LazyVim
 # itself rewrites (:LazyExtras), so it can't be stowed. Add ours to its list;
@@ -392,6 +386,15 @@ else
     $github_reply == *"successfully authenticated"* ]]; then
     make -C "$DOTS_DIR" --no-print-directory ssh
   fi
+fi
+
+# Todoist logs in through TODOIST_API_TOKEN (a dots/token field, written to
+# ~/.config/dots/env above), so there is no browser login to do
+step "Checking Todoist login"
+if (set -a && source "$HOME/.config/dots/env" 2>/dev/null && td auth status &>/dev/null); then
+  ok "Todoist authenticated (TODOIST_API_TOKEN)"
+else
+  warn "Todoist not authenticated: add TODOIST_API_TOKEN to a 1Password item tagged dots/token"
 fi
 
 # Omarchy's installer sets these from the name and email you enter; ask once
