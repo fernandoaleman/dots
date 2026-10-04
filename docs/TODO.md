@@ -54,6 +54,11 @@ desktop is locked, security (Tailscale-only listening, auth), and latency.
   (`TMUX_SSH_COMMIT` in `install.sh`).
 - Investigate whether tmux-ssh works inside herdr.
 
+### Audit 1Password for Rackspace leftovers
+
+The Rackspace AWS account was retired (2025). Archive every 1Password item
+related to it (logins, keys, notes) across vaults.
+
 ### AWS VPN Omarchy plugin
 
 Install the user's own AWS VPN client plugin (outside dots; see

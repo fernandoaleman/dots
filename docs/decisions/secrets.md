@@ -18,7 +18,7 @@ item name, so this public repo names no vault, company or work key.
 | Account | the one signed in to `op` | |
 | Vault | personal items in `Private`; work items in the work vault | `id_ed25519` in `Private` |
 | Title | exactly the file name it becomes on disk; the path under `~` when the bare name isn't unique | `id_ed25519` → `~/.ssh/id_ed25519`; `.aws/config` → `~/.aws/config` |
-| Category | SSH Key for keys; Document for whole files (AWS config, `.ovpn`); API Credential for tokens | |
+| Category | by what the secret is: **SSH Key** for keys; **Document** for a whole file whose contents are the secret and don't change (AWS config, `.ovpn`); **API Credential** for values dots writes into a file that other tools also change (`~/.aws/credentials`, tokens) | |
 | Tags | one nested tag per item: `dots/ssh`, `dots/aws`, `dots/token`, `dots/vpn` (the parent `dots` is implied: `op item list --tags dots` also matches `dots/ssh`, verified) | `dots/ssh` |
 | Notes | one line saying where dots puts it | "dots: installed to `~/.ssh/id_ed25519` (600) by install.sh" |
 
@@ -106,3 +106,23 @@ into `[mfa]`; the role profiles in `~/.aws/config` use
   the 10 identical `sso-session` blocks (same start URL, region, scopes)
   into one, so one `aws sso login` covers all 10 profiles. Hash verified;
   the AWS CLI parses all 10 profiles, each on the single session.
+
+### `aws-role-switch` (long-lived key in `~/.aws/credentials`): done
+
+- `~/.aws/credentials` is not stored as a Document: the daily login
+  rewrites its temporary `[mfa]` section, so a stored copy would be stale
+  the next day (and would hold a session token). Only the lasting secret
+  is stored, once: API Credential `aws-role-switch` (work vault, tag
+  `dots/aws`, fields `access key id` / `secret access key`, note).
+  Rotating the key is a single update.
+- Old repo and Mac Studio held the same key (hash); the old 1Password item
+  "AWS Access Key (faleman)" was a different, invalid key from the retired
+  Rackspace account: archived. New item created from a JSON template piped
+  from the Mac Studio (the key never on a command line); verified with
+  `aws sts get-caller-identity`.
+- `install.sh` will write `~/.aws/credentials` (600) with only
+  `[aws-role-switch]`. **Condition:** the old `aws-role-login` overwrote
+  lines 2-4 with `sed`, assuming `[mfa]` on line 1; on such a file it would
+  overwrite the long-lived key. The port must write `[mfa]` with
+  `aws configure set … --profile mfa` (creates the section if missing,
+  touches nothing else).
