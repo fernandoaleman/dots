@@ -72,3 +72,33 @@ Deferred (2026-10-04) to the secrets section, first among the AWS items:
   (console side; its config lives in the extension / Chrome sync).
 
 **Mac:** same AWS CLI and `op`.
+
+## generate-ssh-config: kept, deferred to the secrets section (daily use)
+
+**Run every day.** For each work environment it queries running EC2
+instances (`aws ec2 describe-instances` with that environment's profile),
+writes `~/.ssh/aws` (one `Host` per instance: Name tag, `-NN` suffix for
+duplicates, private IP, user `ubuntu`, the environment's key as
+`IdentityFile`, so `ssh <host>` needs no `-i`) and
+`~/.config/tmux-ssh/tmux-ssh.conf` (groups per environment from the Name
+tags: all ASG servers, `-web`, `-cron`, `-workers`, `-console`; used with
+tmux-ssh and `prefix =` synchronize panes). Safe by design: a failed query
+changes nothing, an empty result is never written, both files are replaced
+together with backups.
+
+**Kept** (2026-10-04), implemented in the secrets section with its
+dependencies: AWS credentials (`aws-role-login`), the SSH keys as real
+files from 1Password, `~/.ssh/config` including `~/.ssh/aws`, and
+`tmux-ssh`. Plan:
+
+- The script goes in dots **generic**: the environment, profile and key
+  table (employer names) moves to a machine-local file (gitignored, or
+  from 1Password).
+- **Run it automatically, daily** (user's idea): on Omarchy a systemd user
+  timer (cron isn't Omarchy's way); it needs valid AWS credentials, so
+  the timer can only succeed after the day's `aws-role-login` (the script
+  already aborts safely on expired credentials). Alternative: run it right
+  after `aws-role-login` succeeds. Decide in the secrets section.
+
+**Mac:** same script (bash 4+ from Homebrew); a launchd agent instead of
+the systemd timer.
