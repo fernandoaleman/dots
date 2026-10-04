@@ -60,6 +60,12 @@ Install the user's own AWS VPN client plugin (outside dots; see
 [desktop.md](decisions/desktop.md)) and review it for submission to the
 Omarchy plugin catalog.
 
+### Mac phase: Mac Studio sync scripts
+
+`push-to-mac-studio` / `pull-from-mac-studio` were dropped on Omarchy
+(remote desktop replaces syncing). Decide whether the Macs still need them
+once remote desktop into Omarchy works ([bin.md](decisions/bin.md)).
+
 ### Retire the old repos (Mac phase)
 
 Archive `fernandoaleman/nvim` once the Mac uses dots.

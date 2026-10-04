@@ -1,6 +1,6 @@
 # Bin scripts
 
-Started 2026-10-04 (in progress). Old source: `dotfiles/dot_local/bin/`
+Done 2026-10-04. Old source: `dotfiles/dot_local/bin/`
 (installed to `~/.local/bin`) plus `tmux-ssh` (downloaded from upstream by
 `.chezmoiexternal.toml`). Omarchy puts `~/.local/bin` on `PATH`
 (`default/bash/envs`).
@@ -159,3 +159,32 @@ removable drives mount under `/run/media/$USER/<label>` (not `/Volumes`);
 `~/Work` instead of `~/code`; `~/.bash_history` instead of the zsh
 history. Originals: `dotfiles/dot_local/bin/executable_{backup-to,import-from}-thumb-drive.tmpl`
 and `dotfiles/.chezmoitemplates/claude_sync_excludes.bash` in the old repo.
+
+## push-to-mac-studio / pull-from-mac-studio: dropped (revisit in the Mac phase)
+
+**Dropped** (2026-10-04) on Omarchy: remote desktop replaces syncing work
+between machines. **Mac phase:** revisit; if remote desktop from the Mac
+into this machine works, they may not be needed, but the Macs may still
+want them. Recorded in full.
+
+Mirror images over SSH to `faleman@mac-studio` (`10.0.0.100`, home LAN):
+push = this machine to the Mac Studio, pull = the reverse. Steps:
+
+1. Refuse to run on the Mac Studio (local IPs include `10.0.0.100`;
+   `ifconfig` on macOS, `ip -4 -o addr show` on Linux).
+2. Check SSH without prompting:
+   `ssh -q -o BatchMode=yes -o ConnectTimeout=5 faleman@mac-studio exit`.
+3. Confirm: *"Are you sure? (yes/no)"* (the other side is overwritten).
+4. `rsync -avz --progress`:
+   - `~/code/` with `--delete` (exact mirror);
+   - `~/.claude/` with `--update` and the `CLAUDE_EXCLUDES` list (see the
+     thumb-drive scripts above);
+   - Macs only: `~/.herdr/` with `--delete` (herdr's git worktrees; their
+     registrations live in `<repo>/.git/worktrees/`, carried by the
+     `~/code` sync, and reference absolute `/Users/faleman` paths, hence
+     Mac-to-Mac only) and the zsh history.
+
+**To bring back:** a `bin` stow package; `~/Work` instead of `~/code` on
+Omarchy; bash history instead of zsh's. Originals:
+`dotfiles/dot_local/bin/executable_{push-to,pull-from}-mac-studio.tmpl` in
+the old repo.
