@@ -281,6 +281,22 @@ Super+Shift+Alt+Arrow, or
 `hyprctl dispatch 'hl.dsp.workspace.move({ monitor = "DP-1" })'`; logging
 out also resets them.
 
+### An app opened on a different workspace than expected
+
+**Why:** `hyprland.dots.lua` pins apps: Chrome → 1, tmux terminal → 4,
+Slack/Teams → 7, Spotify → 9 (matched by window class when it opens).
+Windows opened before the rule existed stay put; move one with
+Super+Shift+N. Add or change pins in `hyprland.dots.lua` (or
+`hyprland.local.lua` for one machine). Find an app's class with
+`hyprctl clients`.
+
+### Super+Alt+Return terminal isn't on workspace 4 / other terminals aren't pinned
+
+**Why:** only the tmux terminal from **Super+Alt+Return** is pinned: dots
+rebinds that key to Omarchy's same command plus `--app-id=tmux`, which the
+rule matches. A terminal from Super+Return is a plain window and opens
+where you are (pinning every terminal would be too broad).
+
 ### `hyprctl dispatch workspace 2` errors
 
 **Why:** with Omarchy's Lua config, dispatch takes Lua:

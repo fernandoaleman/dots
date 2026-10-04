@@ -58,6 +58,12 @@ else
   ok "ChatGPT desktop already installed"
 fi
 
+if omarchy-pkg-missing spotify; then
+  omarchy-install-service-spotify
+else
+  ok "Spotify already installed"
+fi
+
 # Web apps (Chrome app windows), created with Omarchy's installer:
 # "Name|URL|icon URL". With no icon URL, Omarchy fetches the site's own icon
 # (that fails for Slack workspace subdomains, hence the explicit one). They

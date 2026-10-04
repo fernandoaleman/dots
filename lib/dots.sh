@@ -14,6 +14,7 @@ INCLUDES=(
   "$HOME/.bashrc|[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots"
   "$HOME/.config/git/config|[include] path = ~/.config/git/config.dots"
   "$HOME/.config/tmux/tmux.conf|source-file -q ~/.config/tmux/tmux.dots.conf"
+  "$HOME/.config/hypr/hyprland.lua|do local f = os.getenv(\"HOME\") .. \"/.config/hypr/hyprland.dots.lua\"; local h = io.open(f); if h then h:close() dofile(f) end end"
   "$HOME/.config/hypr/monitors.lua|do local f = os.getenv(\"HOME\") .. \"/.config/hypr/monitors.dots.lua\"; local h = io.open(f); if h then h:close() dofile(f) end end"
 )
 
