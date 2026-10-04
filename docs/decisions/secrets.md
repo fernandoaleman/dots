@@ -94,3 +94,15 @@ into `[mfa]`; the role profiles in `~/.aws/config` use
   (`op document edit … -`, never displayed), retitled `.aws/config`, tag
   `dots/aws`, note, moved to the work vault; hash verified equal to the
   Mac Studio's. No Rackspace profile in it.
+
+### `.aws/config.sso` (SSO profiles): done, review ~2026-11-03
+
+- Not read by the AWS CLI unless `AWS_CONFIG_FILE` points at it (nothing
+  in the old setup did); identical in the old repo and on the Mac Studio;
+  missing from 1Password. SSO is rarely used but kept (user's choice);
+  usage review in the [TODO](../TODO.md).
+- While streaming it into a new Document (work vault, `.aws/config.sso`,
+  tag `dots/aws`, note): removed `[rackspace]` (no longer used) and merged
+  the 10 identical `sso-session` blocks (same start URL, region, scopes)
+  into one, so one `aws sso login` covers all 10 profiles. Hash verified;
+  the AWS CLI parses all 10 profiles, each on the single session.
