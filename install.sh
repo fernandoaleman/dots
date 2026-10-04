@@ -353,8 +353,11 @@ else
           print "aws_access_key_id = " ENVIRON["AWS_KEY_ID"]
           print "aws_secret_access_key = " ENVIRON["AWS_SECRET"]
         }
-        $0 == "[" profile "]" { section(); found = 1; skip = 1; next } # replace in place
-        /^\[/ { if (skip) print ""; skip = 0 }
+        # Replace the section in place, keeping the file layout (blank
+        # lines) as the AWS CLI left it, so re-runs find nothing to change
+        $0 == "[" profile "]" { section(); found = 1; skip = 1; next }
+        /^\[/ { skip = 0 }
+        skip && /^[[:space:]]*$/ { print; next }
         !skip { print }
         END { if (!found) { if (NR) print ""; section() } }' "$( [[ -f $creds ]] && echo "$creds" || echo /dev/null)" |
       cat -s | put_secret "$creds" 600
