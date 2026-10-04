@@ -342,6 +342,11 @@ entry an explicit icon URL in `WEBAPPS` in `install.sh`
 (`"Name|URL|icon URL"`, e.g. from
 `https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/<name>.png`).
 
+### No ~/GoogleDrive or ~/iCloudDrive
+
+**Why:** the old rclone mounts weren't set up on Omarchy (by choice). See
+the [rclone guide](rclone.md) to bring them back.
+
 ## Missing tools
 
 ### `htop` / `btm` / `ncdu` / `colordiff` / `thefuck` / `act` not found

@@ -93,6 +93,15 @@ below"*), same `dofile`-if-exists pattern as monitors.
   open were moved with `hl.dsp.window.move({ window = "address:…",
   workspace = "N", follow = false })`.
 
+## Cloud drives (rclone): not set up
+
+Google Drive (`~/GoogleDrive`) and iCloud Drive (`~/iCloudDrive`) mounts
+from the old setup are **not installed** for now (2026-10-04). Findings, and
+the full steps to bring them back with updated unit files, are in the
+[rclone guide](../guides/rclone.md): the patched rclone fork is no longer
+needed (iCloud SRP sign-in shipped in rclone v1.74.0; Arch has 1.75.1),
+Omarchy only has `fusermount3`, and credentials would come from 1Password.
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here
