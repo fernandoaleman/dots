@@ -29,4 +29,4 @@ setup has to recreate to "mirror Omarchy, minimally".
 | Packages | [packages.md](packages.md) |
 | Bin scripts | [bin.md](bin.md) |
 | Secrets | [secrets.md](secrets.md) |
-| Small dotfiles (in progress) | [dotfiles.md](dotfiles.md) |
+| Small dotfiles | [dotfiles.md](dotfiles.md) |
