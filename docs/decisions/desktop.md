@@ -138,6 +138,20 @@ a post-dots idea ([TODO](../TODO.md)).
 
 **Mac:** no Compose key; Raycast snippets (free tier) cover this.
 
+## Apple keyboard F-keys (fnmode): Omarchy's
+
+The old `run_once_after_13-enable-mac-keyboard-fnmode` script wrote
+`options hid_apple fnmode=2` to `/etc/modprobe.d/hid_apple.conf` (the
+top row on Apple-style keyboards sends F1-F12; Fn gives the media keys).
+**Dropped** (2026-10-04): Omarchy's installer does the same in
+`install/hardware/fix-fkeys.sh` (run by `hardware/all.sh` on every install,
+*"Ensure that F-keys on Apple-like keyboards (such as Lofree Flow84) are
+always F-keys"*), writing the same line when the file is missing. Verified
+here: the file exists and `/sys/module/hid_apple/parameters/fnmode` is `2`.
+
+**Mac:** System Settings, Keyboard, "Use F1, F2, etc. keys as standard
+function keys" (Mac-phase, with the old `90-setup-osx-defaults`).
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here
