@@ -17,7 +17,7 @@ item name, so this public repo names no vault, company or work key.
 |---|---|---|
 | Account | the one signed in to `op` | |
 | Vault | personal items in `Private`; work items in the work vault | `id_ed25519` in `Private` |
-| Title | exactly the file name it becomes on disk | `id_ed25519` → `~/.ssh/id_ed25519` |
+| Title | exactly the file name it becomes on disk; the path under `~` when the bare name isn't unique | `id_ed25519` → `~/.ssh/id_ed25519`; `.aws/config` → `~/.aws/config` |
 | Category | SSH Key for keys; Document for whole files (AWS config, `.ovpn`); API Credential for tokens | |
 | Tags | one nested tag per item: `dots/ssh`, `dots/aws`, `dots/token`, `dots/vpn` (the parent `dots` is implied: `op item list --tags dots` also matches `dots/ssh`, verified) | `dots/ssh` |
 | Notes | one line saying where dots puts it | "dots: installed to `~/.ssh/id_ed25519` (600) by install.sh" |
@@ -78,3 +78,19 @@ ed25519 SSH Key and a different RSA key (a Document) that shared one
 **SSH keys in 1Password: complete.** Every key dots installs is an SSH Key
 item tagged `dots/ssh` (one personal in `Private`, six work in the work
 vault); `install.sh` support comes with the SSH setup decisions.
+
+## AWS
+
+The daily MFA flow: `~/.aws/credentials` `[aws-role-switch]` holds the
+long-lived access key; `aws-role-login` writes temporary MFA credentials
+into `[mfa]`; the role profiles in `~/.aws/config` use
+`source_profile = mfa`. `[mfa]` is regenerated daily and is not stored.
+
+### `.aws/config` (role profiles): done
+
+- Old repo and Mac Studio identical; 1Password's "aws config" (Private)
+  was an older version missing four profiles. User chose the current one.
+- Contents streamed from the Mac Studio into the existing Document
+  (`op document edit … -`, never displayed), retitled `.aws/config`, tag
+  `dots/aws`, note, moved to the work vault; hash verified equal to the
+  Mac Studio's. No Rackspace profile in it.
