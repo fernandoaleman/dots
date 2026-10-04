@@ -217,6 +217,30 @@ marketplace add` / `claude plugin install`. Omarchy has nothing for this
 change how the plugins are distributed ([TODO](../TODO.md)). The names
 stay out of this public repo.
 
+## Todoist CLI agent skills: `install.sh`
+
+The old `run_once_after_36-setup-todoist` (Mac only; its sync scripts
+copied the skill to other machines) installed the Todoist CLI's Claude Code
+skill and only *checked* the login. Omarchy has nothing for it; `td` comes
+from our mise tools. **Ported** (2026-10-04), per machine:
+
+- `install.sh` runs `td skill install` for **`claude-code`**
+  (`~/.claude/skills`: Claude Code, opencode) and **`universal`**
+  (`~/.agents/skills`: Codex, opencode), guarded by `td skill list`
+  (`td skill install` exits 0 even when the skill exists). Not `td`'s
+  `codex` option: it writes `~/.codex/skills`, which OpenAI's Codex docs no
+  longer list (Codex reads `$HOME/.agents/skills`). opencode reads
+  `~/.config/opencode/skills`, `~/.claude/skills` and `~/.agents/skills`
+  (opencode docs, *Skills*), so it sees both copies; whether it dedupes by
+  name isn't documented (drop one if it misbehaves).
+- `td` runs through `mise exec`, since mise's shims may not be on PATH
+  during a fresh install.
+- Login (`td auth login`, browser OAuth) is a
+  [setup step](../setup/omarchy.md); `install.sh` only warns when logged
+  out. The old `td-login` helper is reviewed with the bin scripts.
+
+**Mac:** same commands and folders.
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here

@@ -37,7 +37,16 @@ over HTTPS.
 Use HTTPS until SSH keys are installed, then run `make ssh` in
 `~/Work/dots` to switch the remote.
 
-## 4. Work Claude Code plugins
+## 4. Log in to Todoist
+
+`install.sh` installs the `td` CLI (mise) and its agent skills; logging in
+is a browser OAuth flow:
+
+```sh
+td auth login
+```
+
+## 5. Work Claude Code plugins
 
 Not automated (for now): after `gh auth login` (the marketplace repo is
 private), in Claude Code run `/plugin`, add the work plugin marketplace
@@ -47,7 +56,7 @@ are kept out of this public repo; the old chezmoi script
 
 Same on the Mac.
 
-## 5. Working on dots (optional)
+## 6. Working on dots (optional)
 
 Only needed to commit changes to this repo. `make setup` installs prek
 (via mise) and shellcheck (via `omarchy-pkg-add`), then activates the git

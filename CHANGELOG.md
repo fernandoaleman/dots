@@ -22,6 +22,8 @@ Omarchy is complete, including secrets via 1Password.
 - `install.sh` fills Omarchy's empty XCompose name/email snippets
   (CapsLock, Space, n / e) from the git identity.
 - `docs/TODO.md`: ideas and follow-ups for after the migration.
+- `install.sh` installs the Todoist CLI's agent skills for Claude Code
+  (`~/.claude/skills`) and Codex/opencode (`~/.agents/skills`).
 - `install.sh` moves Docker's bridge to `172.31.0.1/16` and other Docker
   networks to `192.168.128.0/17` (a work VPN routes `172.17.x.x`), with
   container DNS and firewall following; `make doctor` reports if reset.
