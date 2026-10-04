@@ -358,6 +358,31 @@ Add your own lines to `~/.XCompose`, then `omarchy-restart-xcompose`:
 (https://espanso.org/docs/install/linux/). The old config was stock, so
 there's nothing to restore.
 
+## Docker
+
+### Containers can't resolve DNS / VPN hosts on 172.17.x.x unreachable
+
+**Why:** `install.sh` moves Docker's bridge to `172.31.0.1/16` and its
+other networks to `192.168.128.0/17` (the VPN routes `172.17.x.x`), which
+also moves container DNS ([desktop.md](../decisions/desktop.md)). Check:
+
+```sh
+make doctor                              # reports if daemon.json was reset
+jq '.bip, .dns' /etc/docker/daemon.json  # "172.31.0.1/16", ["172.31.0.1"]
+resolvectl status | head                 # stub listener incl. 172.31.0.1
+sudo ufw status | grep docker-dns        # rules to 172.31.0.1
+```
+
+Re-run `install.sh` to restore all three. If an `omarchy update` left a
+`/etc/docker/daemon.json.pacnew`, merge Omarchy's new keys into
+`daemon.json` and re-run `install.sh`. Old compose networks still on
+`172.x`: recreate them (`docker network prune`).
+
+**Go back to Omarchy's defaults:** remove the step from `install.sh`, then
+`sudo rm /etc/systemd/resolved.conf.d/30-dots-docker-dns.conf`, restore
+`daemon.json` (`bip`/`dns` to `172.17.0.1`, drop `default-address-pools`)
+and restart `systemd-resolved` and `docker`.
+
 ## Missing tools
 
 ### `htop` / `btm` / `ncdu` / `colordiff` / `thefuck` / `act` not found

@@ -152,6 +152,56 @@ here: the file exists and `/sys/module/hid_apple/parameters/fnmode` is `2`.
 **Mac:** System Settings, Keyboard, "Use F1, F2, etc. keys as standard
 function keys" (Mac-phase, with the old `90-setup-osx-defaults`).
 
+## Docker networks: moved off 172.17.0.0/16 (overrides Omarchy)
+
+A work VPN routes `172.17.x.x`, which is Docker's default bridge network,
+so with Docker running those hosts are unreachable. The old
+`run_once_after_14-fix-docker-network-conflict` script replaced
+`/etc/docker/daemon.json`. **Ported** (2026-10-04), adapted to Omarchy.
+
+Docker's defaults (Docker docs, *Networking overview*): bridge
+`172.17.0.1/16`; every other network (each `docker compose` project) comes
+from `default-address-pools`, built-in `172.17`-`172.31` (/16 each), then
+`192.168.0.0/16` (/20).
+
+What Omarchy does (installed files), all tied to `172.17.0.1`:
+
+1. `/etc/docker/daemon.json` (package `omarchy-settings`, a pacman
+   *backup* file: local edits are kept on updates, Omarchy's later changes
+   arrive as `.pacnew`): log rotation (`json-file`, 10m x 5),
+   `"dns": ["172.17.0.1"]`, `"bip": "172.17.0.1/16"`.
+2. `/etc/systemd/resolved.conf.d/20-docker-dns.conf`:
+   `DNSStubListenerExtra=172.17.0.1` (the host's DNS answers containers on
+   the bridge address).
+3. `install/config/firewall.sh`: ufw allows container DNS from
+   `172.16.0.0/12` and `192.168.0.0/16` to `172.17.0.1` port 53. (Its
+   ufw-docker rules cover all of `10/8`, `172.16/12` and `192.168/16`, so
+   they need no change.)
+
+What `install.sh` does (values in `lib/dots.sh`), guarded:
+
+- **daemon.json:** `jq` merge setting `bip` `172.31.0.1/16`, `dns`
+  `["172.31.0.1"]` and `default-address-pools`
+  `[{base: "192.168.128.0/17", size: 24}]` (compose networks out of
+  `172.x` entirely); Omarchy's other keys kept. Restarts Docker if running.
+- **resolved:** our own drop-in `30-dots-docker-dns.conf`, loaded after
+  Omarchy's: `DNSStubListenerExtra=` (empty: *"all previous assignments are
+  cleared"*, `man resolved.conf`) then `DNSStubListenerExtra=172.31.0.1`.
+  Omarchy's file is left untouched.
+- **ufw:** the same two DNS allow rules for `172.31.0.1`. Omarchy's
+  `172.17.0.1` rules are left in place (harmless: nothing listens there).
+- **Drift:** `dots_doctor` (`make doctor`, the post-update hook) reports
+  when `bip` is no longer `172.31.0.1/16` or the drop-in is gone.
+
+Not the old home network: `192.168.128.0/17` is only Docker's pool for
+extra networks (the home LAN is `10.0.0.x`, outside every range here). The
+old `log-opts` were Omarchy's already. Existing compose networks keep their
+old subnets until recreated (`docker compose down && docker compose up`, or
+`docker network prune`).
+
+**Mac:** the old script was Linux-only; Docker Desktop keeps its bridge
+inside its VM (to confirm in the Mac phase).
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here

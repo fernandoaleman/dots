@@ -18,6 +18,13 @@ INCLUDES=(
   "$HOME/.config/hypr/monitors.lua|do local f = os.getenv(\"HOME\") .. \"/.config/hypr/monitors.dots.lua\"; local h = io.open(f); if h then h:close() dofile(f) end end"
 )
 
+# Docker networks moved off 172.17.0.0/16, which a work VPN routes: the
+# default bridge (and container DNS) to this address, other networks
+# (e.g. docker compose) to this pool. Applied by install.sh.
+DOCKER_BRIDGE_IP=172.31.0.1
+DOCKER_POOL=192.168.128.0/17
+DOCKER_DNS_DROPIN=/etc/systemd/resolved.conf.d/30-dots-docker-dns.conf
+
 # dots_include FILE LINE: append LINE to FILE if missing.
 # Prints "present", "added" or "no-file".
 dots_include() {
@@ -56,6 +63,13 @@ dots_doctor() {
       issues+=("$HOME/$rel is not linked to dots (replaced or missing; run install.sh)")
     fi
   done < <(git -C "$DOTS_DIR" ls-files -- "${PACKAGES[@]}")
+
+  # Docker moved off 172.17.0.0/16 (install.sh); Omarchy owns daemon.json,
+  # so an update could put it back
+  if [[ -f /etc/docker/daemon.json ]] &&
+    [[ $(jq -r '.bip // ""' /etc/docker/daemon.json) != "$DOCKER_BRIDGE_IP/16" || ! -f $DOCKER_DNS_DROPIN ]]; then
+    issues+=("Docker networks are on 172.17.0.0/16, which clashes with the work VPN (run install.sh)")
+  fi
 
   if [[ -n $(git -C "$DOTS_DIR" status --porcelain --untracked-files=no) ]]; then
     issues+=("$DOTS_DIR has uncommitted changes (review: git -C ${DOTS_DIR/#$HOME/\~} status)")
