@@ -237,3 +237,10 @@ exists and the key is already authorized. **Later, with Tailscale:**
 decide whether sshd answers on LAN + Tailscale or Tailscale only (outgoing
 SSH is unaffected either way; LAN devices without Tailscale would be
 refused in the second case). **Mac:** Remote Login + `authorized_keys`.
+
+### `generate-ssh-config` environment table: done
+
+Document `.config/generate-ssh-config/environments` (work vault, tag
+`dots/aws`, note): the five environments with their AWS profile and SSH key,
+taken from the Mac Studio's script (same as the old repo). See
+[bin.md](bin.md).
