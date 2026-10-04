@@ -33,24 +33,18 @@ Nothing from 1Password. **Dropped** (2026-10-04): `td auth login` /
 `td auth status` do the same; the [setup step](../setup/omarchy.md) and
 `install.sh`'s logged-out warning cover it. **Mac:** same `td` commands.
 
-## aws-sso-login: deferred to the secrets section
+## aws-sso-login: dropped (two commands in troubleshooting)
 
-Runs `aws sso login --profile <name>` for each of 10 hard-coded work
-profiles. Important (not daily; `aws-role-login` is); open to a better
-way. Deferred (2026-10-04)
-to the secrets section, with `~/.aws/config` (encrypted in the old repo):
-
-- With AWS CLI v2, profiles that share one `[sso-session]` share one
-  cached login: a single `aws sso login` (or `--sso-session <name>`) covers
-  them all (`aws sso login help`: *"By default, this command will login
-  using the SSO session configured as part of the requested profile"*).
-  If the config uses (or can use) an `sso-session`: drop the script.
-- Otherwise: a small version looping over `aws configure list-profiles`.
-- Either way, no profile names in this public repo (they name the
-  employer).
-
-`aws` (v2) comes from our mise tools; Omarchy has nothing for AWS.
-**Mac:** same.
+Ran `aws sso login --profile <name>` for 10 work profiles. **Dropped**
+(2026-10-04): against today's `~/.aws/config` (role profiles, no SSO
+settings) every login fails, so it only worked in an older setup; SSO is
+rarely used, since role + MFA (`aws-role-login`) covers the CLI. The SSO
+config stays (`~/.aws/config.sso`, one merged session, from 1Password;
+ignored by the AWS CLI unless `AWS_CONFIG_FILE` points at it); the two
+commands are in [troubleshooting](../guides/troubleshooting.md). A
+role/SSO mode switch (renaming config files) was rejected: rare use, and
+forgetting to switch back would break the daily role login. Usage review
+~2026-11-03 ([TODO](../TODO.md)).
 
 ## aws-role-login: `bin` package, code from 1Password (daily use)
 

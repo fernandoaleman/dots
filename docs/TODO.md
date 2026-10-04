@@ -65,6 +65,16 @@ Retitle items to `<Service> (<account>)` (e.g. `Cloudflare (1000Bulbs)`,
 ([secrets.md](decisions/secrets.md)): the `AWS …`, `GitHub - … - …` and
 other mixed styles.
 
+### Research: move AWS access to SSO (CLI and console)
+
+Today: CLI via role + MFA with a long-lived IAM key (`aws-role-login`);
+console via the Chrome extension *AWS Extend Switch Roles*. Research
+whether both can move to SSO (IAM Identity Center), so there is one way to
+sign in and no long-lived key to rotate: can the extension (or an
+alternative) work with SSO, do the SSO permission sets cover what the role
+profiles do, and what changes for `generate-ssh-config`. Needs time and
+testing; decide with the ~2026-11-03 SSO review.
+
 ### Audit 1Password for Rackspace leftovers
 
 The Rackspace AWS account was retired (2025). Archive every 1Password item
