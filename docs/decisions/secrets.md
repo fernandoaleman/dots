@@ -67,3 +67,14 @@ None of the keys has a passphrase.
   1Password app as SSH Key items (tag `dots/ssh`, note), verified
   (fingerprint, tag, note), then the local copies were deleted; dots
   installs them again later.
+
+### Obsolete keys: archived
+
+Not in the old repo, not on the Mac Studio, not referenced anywhere; the
+user confirmed them obsolete. Archived in 1Password (recoverable): an
+ed25519 SSH Key and a different RSA key (a Document) that shared one
+`.pem` name, and a DevOps ed25519 key.
+
+**SSH keys in 1Password: complete.** Every key dots installs is an SSH Key
+item tagged `dots/ssh` (one personal in `Private`, six work in the work
+vault); `install.sh` support comes with the SSH setup decisions.
