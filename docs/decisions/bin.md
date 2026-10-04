@@ -33,10 +33,11 @@ Nothing from 1Password. **Dropped** (2026-10-04): `td auth login` /
 `td auth status` do the same; the [setup step](../setup/omarchy.md) and
 `install.sh`'s logged-out warning cover it. **Mac:** same `td` commands.
 
-## aws-sso-login: deferred to the secrets section (daily use)
+## aws-sso-login: deferred to the secrets section
 
 Runs `aws sso login --profile <name>` for each of 10 hard-coded work
-profiles. **Used every day**; open to a better way. Deferred (2026-10-04)
+profiles. Important (not daily; `aws-role-login` is); open to a better
+way. Deferred (2026-10-04)
 to the secrets section, with `~/.aws/config` (encrypted in the old repo):
 
 - With AWS CLI v2, profiles that share one `[sso-session]` share one
@@ -50,3 +51,24 @@ to the secrets section, with `~/.aws/config` (encrypted in the old repo):
 
 `aws` (v2) comes from our mise tools; Omarchy has nothing for AWS.
 **Mac:** same.
+
+## aws-role-login: deferred to the secrets section (daily use)
+
+**Used every day**, together with the Chrome extension *AWS Extend Switch
+Roles* (console role switching). Run as `aws-role-login <MFA code>`: calls
+`aws sts get-session-token` with a long-lived key profile, the MFA device
+(kept in 1Password) and the code, then `sed`s the temporary key, secret and
+token over **lines 2-4** of `~/.aws/credentials` (its own comment: the MFA
+profile *"must be at the TOP"*), which the role profiles then use.
+Deferred (2026-10-04) to the secrets section, first among the AWS items:
+
+- Not in this public repo as-is: it hard-codes the AWS account ID (MFA
+  ARN); editing fixed lines of the credentials file is fragile.
+- Better ways to evaluate: native AWS CLI (`mfa_serial` + `role_arn` /
+  `source_profile` in `~/.aws/config`: the CLI prompts for the code once
+  and caches in `~/.aws/cli/cache` until expiry), or fully automatic with
+  1Password (`op item get <item> --otp`, e.g. via `credential_process`).
+- Check how the chosen way fits the AWS Extend Switch Roles extension
+  (console side; its config lives in the extension / Chrome sync).
+
+**Mac:** same AWS CLI and `op`.
