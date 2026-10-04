@@ -32,3 +32,21 @@ A wrapper: print `td auth status` when logged in, else run
 Nothing from 1Password. **Dropped** (2026-10-04): `td auth login` /
 `td auth status` do the same; the [setup step](../setup/omarchy.md) and
 `install.sh`'s logged-out warning cover it. **Mac:** same `td` commands.
+
+## aws-sso-login: deferred to the secrets section (daily use)
+
+Runs `aws sso login --profile <name>` for each of 10 hard-coded work
+profiles. **Used every day**; open to a better way. Deferred (2026-10-04)
+to the secrets section, with `~/.aws/config` (encrypted in the old repo):
+
+- With AWS CLI v2, profiles that share one `[sso-session]` share one
+  cached login: a single `aws sso login` (or `--sso-session <name>`) covers
+  them all (`aws sso login help`: *"By default, this command will login
+  using the SSO session configured as part of the requested profile"*).
+  If the config uses (or can use) an `sso-session`: drop the script.
+- Otherwise: a small version looping over `aws configure list-profiles`.
+- Either way, no profile names in this public repo (they name the
+  employer).
+
+`aws` (v2) comes from our mise tools; Omarchy has nothing for AWS.
+**Mac:** same.
