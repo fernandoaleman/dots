@@ -16,6 +16,9 @@ Omarchy is complete, including secrets via 1Password.
 - `bin` package (`~/.local/bin`): `aws-role-login` starts the daily AWS
   MFA session with the code from 1Password (no typing); writes `[mfa]`
   with `aws configure set`.
+- `ssh` package: `~/.ssh/config` (includes the generated `~/.ssh/aws` and
+  `~/.ssh/config.local`; hosts `mac-studio`, `omarchy`; `TERM` fix and
+  `accept-new`; Omarchy's keepalives kept; no agent).
 
 ## [0.2.0] - 2026-10-04
 

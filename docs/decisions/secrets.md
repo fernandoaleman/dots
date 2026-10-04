@@ -184,3 +184,39 @@ matches the Mac Studio by hash.
 Cloudflare (1000Bulbs) / (1000Bulbs devops) / (Personal), PagerTree
 (1000Bulbs) / (1000Bulbs bot, moved to the work vault). The rest of
 1Password follows in a later cleanup ([TODO](../TODO.md)).
+
+## SSH setup
+
+### `~/.ssh/config`: `ssh` stow package (decided 2026-10-04)
+
+Omarchy ships no `~/.ssh/config` (so no include line; not in the config
+pattern tally), only system defaults in
+`/etc/ssh/ssh_config.d/20-omarchy-keepalive.conf` (`ServerAliveInterval
+15`, `ServerAliveCountMax 3`, `ConnectTimeout 10`, for its `ssh` reconnect
+wrapper), which still apply. Ours (`ssh/.ssh/config`, public, generic):
+
+- `Include ~/.ssh/aws` (written by `generate-ssh-config`) and
+  `Include ~/.ssh/config.local` (machine-local, not committed).
+- **`IdentityFile` stays per host in the generated `~/.ssh/aws`**: it is
+  written from one environment-to-key table, so it is already a single
+  source; host patterns in the main config would put work names in this
+  public file and break on irregular names.
+- **No SSH agent:** no key has a passphrase, so there is nothing to
+  remember; `IdentityFile` (or the default `id_ed25519`) picks the key.
+  Dropped `AddKeysToAgent` (and `UseKeychain` on the Mac). If keys ever get
+  passphrases: enable `gcr-ssh-agent.socket` + `AddKeysToAgent yes`
+  ([troubleshooting](../guides/troubleshooting.md)).
+- `Host *`: **kept** `SetEnv TERM=xterm-256color` (inside tmux `TERM` is
+  `tmux-256color`, which many servers lack; `TERM` is sent regardless of
+  the server's `AcceptEnv`) and `StrictHostKeyChecking accept-new` (new
+  hosts added, changed keys refused). **Dropped** `ServerAliveInterval 120`
+  and `TCPKeepAlive no` (would override Omarchy's faster keepalives).
+- Hosts: `mac-studio` (`10.0.0.100`) and `omarchy` (this machine,
+  `10.0.0.200` via a DHCP reservation on the router); both `HostName`s
+  become their Tailscale names once Tailscale is set up. `arch` (old home
+  network) dropped.
+- Verified: `ssh mac-studio` works by name; `ssh -G` shows Omarchy's
+  keepalive values still in effect.
+
+**Mac:** same file; no Omarchy keepalive file there, so the Mac setup adds
+the same 15 / 3 / 10 values.

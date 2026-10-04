@@ -383,6 +383,28 @@ Re-run `install.sh` to restore all three. If an `omarchy update` left a
 `daemon.json` (`bip`/`dns` to `172.17.0.1`, drop `default-address-pools`)
 and restart `systemd-resolved` and `docker`.
 
+## SSH
+
+### `ssh` asks for a key passphrase every time
+
+**Why:** dots runs no SSH agent, because the keys have no passphrases
+([secrets.md](../decisions/secrets.md)). If a key gets one, enable Omarchy's
+installed keyring agent and let ssh add keys to it:
+
+```sh
+systemctl --user enable --now gcr-ssh-agent.socket
+# in ~/.bashrc.local:
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/gcr/ssh"
+# in ~/.ssh/config.local (or ssh/.ssh/config under Host *):
+#   AddKeysToAgent yes
+```
+
+### Connections take minutes to notice a drop
+
+**Why:** something overrides Omarchy's keepalives (15 s x 3). Check with
+`ssh -G <host> | grep -E "serveralive|connecttimeout"`; remove
+`ServerAliveInterval` from `~/.ssh/config` / `config.local`.
+
 ## Missing tools
 
 ### `htop` / `btm` / `ncdu` / `colordiff` / `thefuck` / `act` not found
