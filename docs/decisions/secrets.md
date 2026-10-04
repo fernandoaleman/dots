@@ -19,7 +19,7 @@ item name, so this public repo names no vault, company or work key.
 | Vault | personal items in `Private`; work items in the work vault | `id_ed25519` in `Private` |
 | Title | exactly the file name it becomes on disk; the path under `~` when the bare name isn't unique | `id_ed25519` → `~/.ssh/id_ed25519`; `.aws/config` → `~/.aws/config` |
 | Category | by what the secret is: **SSH Key** for keys; **Document** for a whole file whose contents are the secret and don't change (AWS config, `.ovpn`); **API Credential** for values dots writes into a file that other tools also change (`~/.aws/credentials`, tokens) | |
-| Tags | one nested tag per item: `dots/ssh`, `dots/aws`, `dots/token`, `dots/vpn` (the parent `dots` is implied: `op item list --tags dots` also matches `dots/ssh`, verified) | `dots/ssh` |
+| Tags | one nested `dots/…` tag per item (other tags an item already has are kept): `dots/ssh`, `dots/aws`, `dots/token`, `dots/vpn` (the parent `dots` is implied: `op item list --tags dots` also matches `dots/ssh`, verified) | `dots/ssh` |
 | Notes | one line saying where dots puts it | "dots: installed to `~/.ssh/id_ed25519` (600) by install.sh" |
 
 Adding an item later is a 1Password-only change: tag it and the next
@@ -138,3 +138,18 @@ with no typing ([bin.md](bin.md)).
 DRY: its IAM section duplicated the `aws-role-switch` key (same hashes),
 so the section was deleted; the item keeps only the console sign-in and the
 MFA code. The key lives only in `aws-role-switch`.
+
+## VPN profile: `1000bulbs.ovpn` (work vault): done
+
+- SAML sign-in (`auth-federate`), so no client certificate or key: the
+  profile holds the server endpoint, the CA and settings. Compared part by
+  part (hashes): 1Password's copy (2024) pointed to an **old** endpoint;
+  the latest download from the AWS self-service portal (Mac Studio,
+  2026-09) has the current one; the AWS VPN client's own profile (= old
+  repo) is that same file with `auth-federate` stripped on import.
+- User chose the latest download: streamed into the existing Document,
+  retitled `1000bulbs.ovpn`, tag `dots/vpn` added (an older, unrelated tag
+  kept), note; hash verified. Install path is decided with the AWS VPN
+  plugin ([TODO](../TODO.md)).
+- A separate GitHub-runner VPN profile (own client key) on the Mac Studio
+  was left out (not used).
