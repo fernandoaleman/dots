@@ -383,6 +383,19 @@ Re-run `install.sh` to restore all three. If an `omarchy update` left a
 `daemon.json` (`bip`/`dns` to `172.17.0.1`, drop `default-address-pools`)
 and restart `systemd-resolved` and `docker`.
 
+## AWS
+
+### `aws-sso-login` not found / I need an SSO login
+
+**Why:** dropped; daily access is role + MFA (`aws-role-login`). The SSO
+profiles live in `~/.aws/config.sso` (one session for all 10 profiles),
+which the AWS CLI reads only when told to:
+
+```sh
+AWS_CONFIG_FILE=~/.aws/config.sso aws sso login                  # one login, all profiles
+AWS_CONFIG_FILE=~/.aws/config.sso aws <command> --profile <name>
+```
+
 ## SSH
 
 ### `ssh` asks for a key passphrase every time
