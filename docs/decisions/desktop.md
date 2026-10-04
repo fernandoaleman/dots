@@ -285,6 +285,39 @@ isn't needed day to day. **Secrets section, first check:** is everything in
 those encrypted files also in 1Password? If yes, age is dropped; if not,
 decrypt once with the key and move the missing items into 1Password.
 
+## SSH agent, keys and server: deferred to the secrets section
+
+The old `run_once_after_12-setup-ssh-keychain` (Mac only, with secrets)
+added the personal and work SSH keys to the macOS Keychain
+(`ssh-add --apple-use-keychain`) so passphrases were remembered. Deferred
+(2026-10-04) to the secrets section, where the keys are installed from
+1Password as real files in `~/.ssh`. Wanted there:
+
+- **No passing keys on the command line:** `ssh <host>` picks the right
+  key by itself (`~/.ssh/config` `IdentityFile` per host) and passphrases
+  are remembered (an agent with `AddKeysToAgent`).
+- **SSH into this machine** from other computers.
+
+What Omarchy has (checked 2026-10-04):
+
+- **Agent:** none set up. Omarchy's defaults, configs and installers don't
+  mention `ssh-agent`, `SSH_AUTH_SOCK` or `gcr-ssh-agent`; `SSH_AUTH_SOCK`
+  is empty here. OpenSSH's `ssh-agent.socket` and GNOME's
+  `gcr-ssh-agent.socket` (keyring-backed, like the Mac Keychain) are
+  installed but disabled.
+- **Server:** `omarchy-setup-security-sshd` installs openssh, enables
+  `sshd`, `ufw limit 22/tcp` (rate limited) and authorizes a public key
+  (`--key=`, GitHub or pasted). `sshd` is already enabled and running on
+  this machine; Omarchy's hardening is in
+  `/etc/ssh/sshd_config.d/10-omarchy-hardening.conf`. In the secrets
+  section: run that script from `install.sh` (guarded), with the key from
+  1Password.
+- Also revisit with the bin scripts' `tmux-ssh`.
+
+**Mac:** Keychain via `ssh-add --apple-use-keychain` (+ `UseKeychain` /
+`AddKeysToAgent` in `~/.ssh/config`); Remote Login in System Settings for
+the server side.
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here
