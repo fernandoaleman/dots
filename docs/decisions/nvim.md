@@ -118,9 +118,13 @@ light. (The old `config =` also replaced LazyVim's config for it.)
   `lazyvim.json` (`/usr/share/omarchy-nvim/config/lazyvim.json`) enables
   the `editor.neo-tree` Extra, so `<leader>e` is "Explorer NeoTree".
   `neo-tree.dots.lua` sets `filtered_items` `hide_dotfiles = false`,
-  `hide_gitignored = true` (neo-tree defaults: both `true`). Its `H`
-  toggles *all* filtered items (dotfiles and ignored); there's no separate
-  ignored toggle.
+  `hide_gitignored = true` (neo-tree defaults: both `true`). neo-tree's own
+  `H` (`toggle_hidden`) flips `filtered_items.visible`, showing *every*
+  filtered item at once (upstream removed `toggle_gitignore`), so it can't
+  hide dotfiles that aren't filtered. `neo-tree.dots.lua` rebinds `H` to
+  flip `hide_dotfiles` and adds `I` to flip `hide_gitignored` (both rescan
+  with neo-tree's `refresh`; tested both ways), matching `<A-h>` / `<A-i>`
+  in the pickers.
 - Pickers: `snacks.dots.lua` sets `hidden = true` on the `files` and `grep`
   sources; `<A-h>` / `<A-i>` toggle (same keys in grug-far).
 - **`.git/` is never shown or searched:** neo-tree `never_show = { ".git" }`

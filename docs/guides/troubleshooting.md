@@ -20,7 +20,7 @@ git-ignored files are not (LazyVim's default). The old config searched everythin
 | Where | Hidden | Git-ignored |
 |---|---|---|
 | Snacks pickers | `<A-h>` | `<A-i>` |
-| neo-tree explorer (`<leader>e`) | shown by default | `H` (shows every filtered item) |
+| neo-tree explorer (`<leader>e`) | `H` | `I` |
 | grug-far | `<A-h>` | `<A-i>` |
 
 **Make ignored files the default too:** set `hide_gitignored = false` in
