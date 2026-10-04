@@ -327,6 +327,16 @@ config, which dots extends ([nvim.md](nvim.md)); the old repo is no longer
 cloned (archiving it is in the [TODO](../TODO.md)). **Mac:** not needed
 (the Mac seeds Omarchy's nvim config at a pinned tag).
 
+## Removing Omarchy's configs: dropped
+
+The old `run_once_before_05-remove-omarchy-conflicts` deleted Omarchy's
+nvim, alacritty, tmux, git config, btop, lazygit, starship and ghostty
+configs so chezmoi could replace them. **Dropped** (2026-10-04): the
+opposite of [config pattern C](config-pattern.md) (Omarchy's files stay
+real; ours load through one include line). `install.sh` backs up a real
+file that blocks stow instead of deleting anything. **Mac:** not
+applicable.
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here
