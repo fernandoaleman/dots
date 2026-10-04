@@ -54,3 +54,12 @@ Global RSpec defaults (`--color`, `--format documentation`, `--backtrace`,
 
 Projects keep their own `.rspec`; pass flags directly for one-offs.
 **Mac:** same.
+
+## `.hushlogin`: Mac phase only
+
+An empty file that makes `login`/SSH skip "Last login", the message of the
+day and similar banners. **Not added on Omarchy** (2026-10-04): an
+interactive `ssh omarchy` already prints nothing (empty `/etc/motd`, Arch's
+`PrintMotd no` in `/etc/ssh/sshd_config.d/99-archlinux.conf`), and Hyprland
+terminals never go through `login`. **Mac phase:** keep it (macOS prints
+"Last login: … on ttys000" in every new shell; the Mac Studio has it).
