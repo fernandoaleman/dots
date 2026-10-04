@@ -46,6 +46,14 @@ To research then: Omarchy's own way first, which server and client, which
 of the three monitors to share (or a headless output), sharing while the
 desktop is locked, security (Tailscale-only listening, auth), and latency.
 
+### tmux-ssh project
+
+- README: the install command uses `…/tmux-ssh/main/tmux-ssh`, which is a
+  404 (the branch is `master`).
+- Tag releases, so dots can pin a version instead of a commit
+  (`TMUX_SSH_COMMIT` in `install.sh`).
+- Investigate whether tmux-ssh works inside herdr.
+
 ### AWS VPN Omarchy plugin
 
 Install the user's own AWS VPN client plugin (outside dots; see
