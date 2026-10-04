@@ -33,13 +33,26 @@ To change the timings: `idle.screensaver` / `idle.lock` in `shell.json`
   apply to these exact monitors; any other screen (e.g. a laptop panel)
   falls back to Omarchy's catch-all (*"a fallback rule to use when no other
   rules match"*). Port names like `HDMI-A-1` aren't unique across machines.
-- Desk: three 32" curved LG UltraGear 1440p monitors, left to right; only
-  the left one (`407BOPY0E520`, 144Hz, on HDMI) is connected so far. Scale
-  1.6 (Omarchy's), so positions are in scaled pixels (next monitor at
-  x = 1600). Workspace 1 is bound to the left monitor; 2 and 3 get bound
-  when the other two are connected (TODO in the file).
-- Tested live (2026-10-03): no `hyprctl configerrors`; a workspace bound to
-  a **disconnected** monitor simply opens on the connected one; the
+- Desk: three 32" curved LG UltraGear 1440p monitors, scale 1.6 (Omarchy's),
+  positions in scaled pixels (2560 / 1.6 = 1600 per monitor):
+
+  | Position | Port | Description serial | Mode | Workspaces |
+  |---|---|---|---|---|
+  | left | `DP-1` | `408BOPY0P208` | 2560x1440@180 | 1, 2, 3 (default 1) |
+  | middle | `DP-2` | `407BOYQ0E522` | 2560x1440@180 | 4, 5, 6 (default 4) |
+  | right | `HDMI-A-1` | `407BOPY0E520` | 2560x1440@144 (HDMI max) | 7, 8, 9 (default 7) |
+
+  So `Super+N` always lands on the same physical monitor. (The old config
+  only bound 1–3, so 4+ opened wherever focus was.) Hyprland can't know the
+  physical order; it was identified by which workspace each bar showed.
+- Existing workspaces stay where they were created; to re-home one without
+  logging out, focus it and run
+  `hyprctl dispatch 'hl.dsp.workspace.move({ monitor = "DP-1" })'` (Omarchy
+  binds the same as Super+Shift+Alt+Arrow).
+- Tested live (2026-10-03): no `hyprctl configerrors`; new workspaces open
+  on their bound monitor from anywhere (Super+6 → middle, Super+8 → right);
+  a workspace bound to a **disconnected** monitor simply opens on the
+  connected one; the
   `monitors.local.lua` layer loads. (Under Lua config, `hyprctl dispatch`
   takes Lua: `hyprctl dispatch 'hl.dsp.focus({ workspace = "2" })'`.)
 - Old `monitors.conf` (hyprlang, port names, scale 1, `GDK_SCALE=1`):
