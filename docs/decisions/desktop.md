@@ -241,6 +241,20 @@ from our mise tools. **Ported** (2026-10-04), per machine:
 
 **Mac:** same commands and folders.
 
+## Repo remote to SSH: `make ssh` (manual until secrets)
+
+The old `run_once_after_90-set-chezmoi-remote-ssh` switched the dotfiles
+repo's `origin` from HTTPS to SSH unconditionally. **Dropped**
+(2026-10-04): dots has `make ssh` (HTTPS to SSH, no-op when already SSH),
+run by hand once SSH keys exist ([setup](../setup/omarchy.md)); switching
+before the keys are installed would break `install.sh`'s `git pull` on a
+fresh machine. Omarchy has nothing for this. **Secrets section:** once
+`install.sh` installs the SSH keys from 1Password, it runs `make ssh`
+itself (when the key exists and GitHub accepts it), and the manual step
+goes away.
+
+**Mac:** same.
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here
