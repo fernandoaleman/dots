@@ -220,3 +220,20 @@ wrapper), which still apply. Ours (`ssh/.ssh/config`, public, generic):
 
 **Mac:** same file; no Omarchy keepalive file there, so the Mac setup adds
 the same 15 / 3 / 10 values.
+
+### Incoming SSH (sshd): Omarchy's script in `install.sh` (decided 2026-10-04)
+
+State here: `omarchy-setup-security-sshd` was run at install (2026-10-02):
+sshd enabled, `ufw limit 22/tcp` (IPv4 + IPv6, `omarchy-sshd`), the key
+authorized, then password logins disabled
+(`/etc/ssh/sshd_config.d/10-omarchy-hardening.conf`). The authorized key,
+GitHub's `fernandoaleman.keys` and 1Password's `id_ed25519` are the same
+key (fingerprint). Verified: `ssh omarchy` (10.0.0.200) logs in by key.
+
+`install.sh` (secrets step) runs
+`omarchy-setup-security-sshd --key="$(op read "op://Private/id_ed25519/public key")"`
+(only that one key), skipped when sshd is active, the hardening file
+exists and the key is already authorized. **Later, with Tailscale:**
+decide whether sshd answers on LAN + Tailscale or Tailscale only (outgoing
+SSH is unaffected either way; LAN devices without Tailscale would be
+refused in the second case). **Mac:** Remote Login + `authorized_keys`.
