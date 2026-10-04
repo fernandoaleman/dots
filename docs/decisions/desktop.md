@@ -255,6 +255,15 @@ goes away.
 
 **Mac:** same.
 
+## Startup folders: Omarchy's
+
+The old `run_once_before_01-create-dirs` created `~/.local/bin`,
+`~/.local/state/zsh` and `~/.cache/zsh`. **Dropped** (2026-10-04): the zsh
+folders went with zsh; `~/.local/bin` exists from the Omarchy install and
+Omarchy's `default/bash/envs` puts it on `PATH`. Where bin scripts live is
+decided in the bin scripts section. **Mac:** created when the Mac mirrors
+Omarchy's bash setup.
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here
