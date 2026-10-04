@@ -318,6 +318,15 @@ What Omarchy has (checked 2026-10-04):
 `AddKeysToAgent` in `~/.ssh/config`); Remote Login in System Settings for
 the server side.
 
+## nvim folder check: dropped
+
+The old `run_before_04-check-nvim-dir` deleted `~/.config/nvim` (`rm -rf`)
+when it wasn't a git repo, so chezmoi could clone the separate nvim repo.
+**Dropped** (2026-10-04): on Omarchy that folder is Omarchy's LazyVim
+config, which dots extends ([nvim.md](nvim.md)); the old repo is no longer
+cloned (archiving it is in the [TODO](../TODO.md)). **Mac:** not needed
+(the Mac seeds Omarchy's nvim config at a pinned tag).
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here
