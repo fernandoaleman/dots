@@ -25,5 +25,5 @@ setup has to recreate to "mirror Omarchy, minimally".
 | Git | [git.md](git.md) |
 | Neovim | [nvim.md](nvim.md) |
 | tmux | [tmux.md](tmux.md) |
-| Desktop (in progress) | [desktop.md](desktop.md) |
+| Desktop | [desktop.md](desktop.md) |
 | Packages | [packages.md](packages.md) |
