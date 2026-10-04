@@ -73,39 +73,31 @@ it in place, a role profile assumes its role, the long-lived key is
 untouched, malformed codes are rejected. Nothing work-specific in the
 script. **Mac:** same script (`date -d` falls back to the raw expiry time).
 
-## generate-ssh-config: kept, deferred to the secrets section (daily use)
+## generate-ssh-config: `bin` package, runs after `aws-role-login` (daily use)
 
-**Run every day.** For each work environment it queries running EC2
-instances (`aws ec2 describe-instances` with that environment's profile),
-writes `~/.ssh/aws` (one `Host` per instance: Name tag, `-NN` suffix for
-duplicates, private IP, user `ubuntu`, the environment's key as
-`IdentityFile`, so `ssh <host>` needs no `-i`) and
-`~/.config/tmux-ssh/tmux-ssh.conf` (groups per environment from the Name
-tags: all ASG servers, `-web`, `-cron`, `-workers`, `-console`; used with
-tmux-ssh and `prefix =` synchronize panes). Safe by design: a failed query
-changes nothing, an empty result is never written, both files are replaced
-together with backups.
+For each work environment it queries running EC2 instances (`aws ec2
+describe-instances` with that environment's profile), writes `~/.ssh/aws`
+(one `Host` per instance: Name tag, `-NN` suffix for duplicates, private
+IP, the environment's user and key as `IdentityFile`, so `ssh <host>` needs
+no `-i`) and `~/.config/tmux-ssh/tmux-ssh.conf` (groups per environment
+from the Name tags: all ASG servers, `-web`, `-cron`, `-workers`,
+`-console`). Safe by design: a failed query changes nothing, an empty
+result is never written, both files are replaced together with backups.
 
-**Kept** (2026-10-04), implemented in the secrets section with its
-dependencies: AWS credentials (`aws-role-login`), the SSH keys as real
-files from 1Password, `~/.ssh/config` including `~/.ssh/aws`, and
-`tmux-ssh`. Plan:
+Ported 2026-10-04 to `bin/.local/bin/generate-ssh-config` (the Mac
+Studio's installed version, identical logic to the old repo):
 
-- The script goes in dots **generic**: the environment, profile and key
-  table (employer names) moves to a machine-local file (gitignored, or
-  from 1Password).
-- **Run it automatically, daily** (user's idea): on Omarchy a systemd user
-  timer (cron isn't Omarchy's way); it needs valid AWS credentials, so
-  the timer can only succeed after the day's `aws-role-login` (the script
-  already aborts safely on expired credentials). Alternative: run it right
-  after `aws-role-login` succeeds. Decide in the secrets section.
-- **Where `IdentityFile` lives** (user's idea): instead of one per host
-  in the generated `~/.ssh/aws`, maybe set it once in the main
-  `~/.ssh/config` (e.g. per environment host pattern). Discuss when the
-  SSH keys are set up.
-
-**Mac:** same script (bash 4+ from Homebrew); a launchd agent instead of
-the systemd timer.
+- **Generic:** the environment table (employer names) moved to
+  `~/.config/generate-ssh-config/environments`, one line per environment
+  (`<environment> <aws-profile> <ssh-key> [user, default ubuntu]`), a
+  Document in 1Password (work vault, tag `dots/aws`) installed by
+  `install.sh`. A new environment is one line there.
+- **Runs automatically after `aws-role-login`** (user's choice), the one
+  moment the MFA session is guaranteed fresh; `aws-role-login
+  --no-ssh-config` skips it. (A daily timer was rejected: it would fail on
+  days the login hadn't happened yet.)
+- Verified end to end in a throwaway home: 49 hosts and 18 groups,
+  identical to the Mac Studio's files (IPs excluded).
 
 ## tmux-ssh: `install.sh`, pinned commit
 
