@@ -58,7 +58,40 @@ To change the timings: `idle.screensaver` / `idle.lock` in `shell.json`
 - Old `monitors.conf` (hyprlang, port names, scale 1, `GDK_SCALE=1`):
   replaced.
 
+## Apps pinned to workspaces: `hyprland.dots.lua`
+
+Loaded by one line appended to Omarchy's `~/.config/hypr/hyprland.lua`
+(where Omarchy says *"Add any other personal Hyprland configuration
+below"*), same `dofile`-if-exists pattern as monitors.
+
+| App | Matched by (`initial_class`) | Workspace |
+|---|---|---|
+| Chrome | `google-chrome` | 1 (left) |
+| tmux terminal (Super+Alt+Return) | `tmux` | 4 (middle) |
+| Slack web app | `chrome-1000bulbs.slack.com__-Default` | 7 (right) |
+| Teams web app | `chrome-teams.cloud.microsoft__-Default` | 7 (right, side by side with Slack) |
+| Spotify | `Spotify` | 9 (right) |
+
+- Window rules like `workspace` are **static**: evaluated once when the
+  window opens, against `initialClass`/`initialTitle` (Hyprland wiki,
+  *Window rules*). A tmux terminal opens as a plain `foot` window and only
+  later gets its tmux title, so it can't be matched. Fix: **Super+Alt+Return
+  is rebound** (`hl.unbind` first, as Omarchy's guide requires) to Omarchy's
+  same command plus `--app-id=tmux` (`omarchy-launch-terminal --app-id=tmux
+  bash -c "tmux attach || tmux new -s Work"`; `xdg-terminal-exec` supports
+  `--app-id`, so it works for any terminal). Other terminals (Super+Return)
+  open wherever you are.
+- Launching a pinned app takes you to its workspace (not `silent`).
+- Exec-with-rules (`hl.dsp.exec_cmd(cmd, { workspace = … })`) was not used:
+  it tracks the spawned PID, and Omarchy launches apps through `uwsm-app`,
+  so the window's PID differs.
+- Verified live: a test tmux terminal opened with class `tmux` on
+  workspace 4; the Teams class matched the rule exactly. Windows already
+  open were moved with `hl.dsp.window.move({ window = "address:…",
+  workspace = "N", follow = false })`.
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here
-carries over.
+carries over. App-to-workspace pinning would need a macOS window manager
+(Mac-phase decision).

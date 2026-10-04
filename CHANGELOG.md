@@ -15,6 +15,10 @@ Omarchy is complete, including secrets via 1Password.
   `monitors.lua`): the three desk monitors matched by description, left to
   right at scale 1.6, with workspaces 1–3 / 4–6 / 7–9 bound to left /
   middle / right; other screens keep Omarchy's defaults.
+- `hypr` package: `hyprland.dots.lua` pins apps to workspaces (Chrome 1,
+  tmux terminal 4, Slack and Teams 7, Spotify 9); Super+Alt+Return gains
+  `--app-id=tmux` so its terminal can be matched.
+- `install.sh` installs Spotify with Omarchy's installer.
 
 ## [0.1.0] - 2026-10-03
 
