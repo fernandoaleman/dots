@@ -107,21 +107,28 @@ Comes with the markdown Extra (`<leader>cp`). The preview theme follows the
 system (Omarchy theme) light/dark preference instead of being forced
 light. (The old `config =` also replaced LazyVim's config for it.)
 
-### snacks: `snacks.dots.lua` (hidden files only)
+### Hidden files: `snacks.dots.lua` + `neo-tree.dots.lua`
 
-- **Hidden files shown by default** in the explorer and the files/grep
-  pickers (`hidden = true`; changed 2026-10-04: projects have many dot
-  files, and the old "everything hidden" default made files like
-  `.chezmoiscripts/*` unfindable). **Git-ignored files stay hidden**
-  (LazyVim's default; `node_modules`, `vendor`, `log/`, build output).
-  Toggle either with `<A-h>` / `<A-i>` (pickers, grug-far) and `H` / `I`
-  (explorer).
-- **`.git/` is never shown or searched:** the Snacks files/grep sources
-  always exclude it (`fd -E .git`, `rg --glob=!.git`, in
-  `snacks/picker/source/{files,grep}.lua`); the explorer doesn't, so
-  `snacks.dots.lua` sets `exclude = { "/.git" }` (with the slash: Snacks
-  globs are unanchored, so `".git"` would also hide `foo.git`); grug-far's
-  flag carries `--glob !.git/`.
+- **Hidden files shown by default** in the file explorer and the files/grep
+  pickers (changed 2026-10-04: projects have many dot files, and the old
+  "everything hidden" default made files like `.chezmoiscripts/*`
+  unfindable). **Git-ignored files stay hidden** (LazyVim's default;
+  `node_modules`, `vendor`, `log/`, build output).
+- **The explorer is neo-tree, not the Snacks explorer:** Omarchy's
+  `lazyvim.json` (`/usr/share/omarchy-nvim/config/lazyvim.json`) enables
+  the `editor.neo-tree` Extra, so `<leader>e` is "Explorer NeoTree".
+  `neo-tree.dots.lua` sets `filtered_items` `hide_dotfiles = false`,
+  `hide_gitignored = true` (neo-tree defaults: both `true`). Its `H`
+  toggles *all* filtered items (dotfiles and ignored); there's no separate
+  ignored toggle.
+- Pickers: `snacks.dots.lua` sets `hidden = true` on the `files` and `grep`
+  sources; `<A-h>` / `<A-i>` toggle (same keys in grug-far).
+- **`.git/` is never shown or searched:** neo-tree `never_show = { ".git" }`
+  (*"remains hidden even if visible is toggled to true"*, so `H` doesn't
+  reveal it either); the Snacks files/grep sources always exclude it
+  (`fd -E .git`, `rg --glob=!.git`, in
+  `snacks/picker/source/{files,grep}.lua`); grug-far's flag carries
+  `--glob !.git/`.
 - The old config also showed ignored files by default: not kept.
 - `<leader><space>` stays LazyVim's Find Files; last file is `<leader>bb`,
   `` <leader>` `` or `<C-^>`.
