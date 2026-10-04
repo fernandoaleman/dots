@@ -207,6 +207,16 @@ old subnets until recreated (`docker compose down && docker compose up`, or
 **Mac:** the old script was Linux-only; Docker Desktop keeps its bridge
 inside its VM (to confirm in the Mac phase).
 
+## Work Claude Code plugins: manual for now
+
+The old `run_once_after_35-setup-claude-plugins` script added the work
+plugin marketplace and installed its plugins with `claude plugin
+marketplace add` / `claude plugin install`. Omarchy has nothing for this
+(it only installs the `claude` CLI, through mise). **Kept manual**
+(2026-10-04): a [setup step](../setup/omarchy.md), since the company may
+change how the plugins are distributed ([TODO](../TODO.md)). The names
+stay out of this public repo.
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here
