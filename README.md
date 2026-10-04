@@ -100,6 +100,7 @@ lib/dots.sh         shared: PACKAGES, INCLUDES, drift checks (dots_doctor)
 docs/decisions/     what we kept or dropped, and what Omarchy already does
 docs/setup/         step-by-step fresh-install checklists (omarchy.md)
 docs/guides/        how-tos: troubleshooting.md ("it used to do X"), ruby.md, rclone.md
+docs/TODO.md        ideas and follow-ups for after the migration
 Makefile            dev tasks (make help)
 prek.toml           git hooks: whitespace, toml/yaml, typos, shellcheck, commit messages
 committed.toml      conventional commit rules
