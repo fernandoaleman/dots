@@ -401,6 +401,12 @@ and restart `systemd-resolved` and `docker`.
 for i in {1..7}; do echo " $(tput setaf $i)Text$(tput sgr0) $(tput bold)$(tput setaf $i)Text$(tput sgr0) $(tput smul)$(tput setaf $i)Text$(tput sgr0)  setaf $i"; done
 ```
 
+### `backup-to-thumb-drive` / `import-from-thumb-drive` not found
+
+**Why:** dropped; remote desktop into this machine replaces carrying work
+between computers. What they copied, the `~/.claude` exclude list and how
+to port them to Omarchy: [bin.md](../decisions/bin.md).
+
 ## Shell
 
 ### `cd -2` / directory stack, `autocd`, `**` globs don't work

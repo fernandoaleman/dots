@@ -125,3 +125,37 @@ the SSH key setup from the secrets section applies to every pane.
 
 **Mac:** same download (`sha256sum` from Homebrew coreutils, or
 `shasum -a 256`).
+
+## backup-to-thumb-drive / import-from-thumb-drive: dropped
+
+**Dropped** (2026-10-04): **remote desktop** from the Mac into this machine
+(over Tailscale, [TODO](../TODO.md)) replaces carrying work between
+computers. Recorded in full so they can be brought back.
+
+What they did (`rsync`, mirror images; backup = machine to drive, import =
+drive to machine, drive at `/Volumes/Backup/laptop/`):
+
+| What | rsync flags | Note |
+|---|---|---|
+| `~/Downloads/` | `-aWv --info=progress2` | copy |
+| `~/code/` | `-aWv --delete --info=progress2` | exact mirror (extra files removed) |
+| `~/.claude/` | `-aWv --update --info=progress2` + excludes | only newer files |
+| `~/.local/state/zsh/history` | `-aWv --info=progress2` | shell history |
+
+`~/.claude` excludes (runtime state and caches; transcripts, file-history,
+skills, plugins, memory, todos, CLAUDE.md and settings, including
+`settings.local.json`, do travel):
+
+```sh
+CLAUDE_EXCLUDES=(
+  --exclude 'cache/' --exclude 'paste-cache/' --exclude 'usage-data/'
+  --exclude 'telemetry/' --exclude 'shell-snapshots/' --exclude 'session-env/'
+  --exclude 'daemon/' --exclude 'daemon.log' --exclude 'debug/' --exclude 'ide/'
+)
+```
+
+**To bring back on Omarchy:** a `bin` stow package (to `~/.local/bin`);
+removable drives mount under `/run/media/$USER/<label>` (not `/Volumes`);
+`~/Work` instead of `~/code`; `~/.bash_history` instead of the zsh
+history. Originals: `dotfiles/dot_local/bin/executable_{backup-to,import-from}-thumb-drive.tmpl`
+and `dotfiles/.chezmoitemplates/claude_sync_excludes.bash` in the old repo.
