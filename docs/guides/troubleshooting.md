@@ -347,6 +347,12 @@ entry an explicit icon URL in `WEBAPPS` in `install.sh`
 **Why:** the old rclone mounts weren't set up on Omarchy (by choice). See
 the [rclone guide](rclone.md) to bring them back.
 
+### No AWS VPN client
+
+**Why:** dots no longer installs it (the old AUR package is unsupported by
+AWS). It's installed separately on Omarchy; see
+[desktop.md](../decisions/desktop.md).
+
 ## Missing tools
 
 ### `htop` / `btm` / `ncdu` / `colordiff` / `thefuck` / `act` not found

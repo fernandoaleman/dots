@@ -102,6 +102,19 @@ the full steps to bring them back with updated unit files, are in the
 needed (iCloud SRP sign-in shipped in rclone v1.74.0; Arch has 1.75.1),
 Omarchy only has `fusermount3`, and credentials would come from 1Password.
 
+## AWS VPN client: not via dots
+
+The old setup installed AUR `awsvpnclient` (5.3.1, which AWS now lists as
+*"No longer supported"*; AWS's current Linux client is 6.2.0, Sept 2026)
+and enabled `awsvpnclient.service`, with the connection profile kept
+encrypted. **Dropped** (2026-10-04): on Omarchy the VPN client will come from
+the user's own Omarchy plugin (installed separately, outside dots). Notes
+from the research: plain OpenVPN / NetworkManager works with AWS Client VPN
+only for certificate-based endpoints; SAML (browser sign-in) endpoints need
+AWS's own client.
+
+**Mac:** AWS VPN client via Homebrew, profile created by hand (one-time).
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here
