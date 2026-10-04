@@ -264,6 +264,27 @@ Omarchy's `default/bash/envs` puts it on `PATH`. Where bin scripts live is
 decided in the bin scripts section. **Mac:** created when the Mac mirrors
 Omarchy's bash setup.
 
+## Login shell: Omarchy's bash
+
+The old `run_once_after_10-set-shell` switched the login shell to zsh
+(`chsh`, adding it to `/etc/shells`) and, on Linux, replaced `~/.bashrc`
+with a stub that `exec`s zsh. **Dropped** (2026-10-04): the login shell is
+Omarchy's `/usr/bin/bash` (bash 5.3) and the shell decision is bash;
+replacing `.bashrc` would remove Omarchy's bash defaults and our
+`.bashrc.dots` include. **Mac phase:** the same idea for Homebrew's bash 5
+(macOS ships 3.2): add `/opt/homebrew/bin/bash` to `/etc/shells`, then
+`chsh`.
+
+## age key: deferred to the secrets section
+
+The old `run_once_before_02-setup-age-key` fetched the age key from
+1Password (`op document get`) so chezmoi could decrypt the repo's encrypted
+files (SSH keys, AWS config, API tokens, VPN profile). dots keeps nothing
+encrypted in the repo (secrets come from 1Password via `op`), so the key
+isn't needed day to day. **Secrets section, first check:** is everything in
+those encrypted files also in 1Password? If yes, age is dropped; if not,
+decrypt once with the key and move the missing items into 1Password.
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here
