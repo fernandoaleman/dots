@@ -193,6 +193,11 @@ What `install.sh` does (values in `lib/dots.sh`), guarded:
 - **Drift:** `dots_doctor` (`make doctor`, the post-update hook) reports
   when `bip` is no longer `172.31.0.1/16` or the drop-in is gone.
 
+Verified live (2026-10-04): `docker0` is `172.31.0.1/16` with no
+`172.17` route left; resolved listens on `172.31.0.1:53` only (Omarchy's
+`172.17.0.1` listener cleared); a container resolved `github.com` via
+`172.31.0.1`; a new network got `192.168.128.0/24`.
+
 Not the old home network: `192.168.128.0/17` is only Docker's pool for
 extra networks (the home LAN is `10.0.0.x`, outside every range here). The
 old `log-opts` were Omarchy's already. Existing compose networks keep their
