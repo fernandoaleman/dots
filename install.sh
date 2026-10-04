@@ -226,6 +226,34 @@ for key in user.name user.email; do
   fi
 done
 
+# Omarchy's ~/.XCompose types your name (CapsLock, Space, n) and email
+# (CapsLock, Space, e); its installer fills them from the name/email entered
+# at install time, so they can be left empty. Fill empty ones from git.
+step "Checking XCompose name/email snippets"
+xcompose="$HOME/.XCompose"
+if [[ -f $xcompose ]]; then
+  filled=0
+  for entry in "n|user.name" "e|user.email"; do
+    key=${entry%%|*}
+    empty="<Multi_key> <space> <$key> : \"\""
+    value=$(git config --global --get "${entry#*|}" || true)
+    if grep -qxF "$empty" "$xcompose" && [[ -n $value ]]; then
+      value=${value//\\/\\\\} value=${value//\"/\\\"} # XCompose string escapes
+      content=$(<"$xcompose")
+      printf '%s\n' "${content//"$empty"/"<Multi_key> <space> <$key> : \"$value\""}" >"$xcompose"
+      ok "XCompose <$key> set from git ${entry#*|}"
+      filled=1
+    fi
+  done
+  if ((filled)); then
+    omarchy-restart-xcompose || warn "Could not restart XCompose; log out and back in"
+  else
+    ok "XCompose name/email already set (or no git identity)"
+  fi
+else
+  warn "No ~/.XCompose found; skipping"
+fi
+
 step "Checking dots"
 dots_doctor || true
 
