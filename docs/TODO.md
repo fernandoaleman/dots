@@ -72,6 +72,14 @@ Archive `fernandoaleman/nvim` once the Mac uses dots.
 
 ## When it happens
 
+### Around 2026-11-03: is AWS SSO login still used?
+
+SSO login was kept as a rarely used alternative to the daily role + MFA
+login (`.aws/config.sso`, one merged `sso-session`; see
+[secrets.md](decisions/secrets.md)). After ~30 days, check how often it
+was used (the user expects zero); if unused, drop `.aws/config.sso` and
+`aws-sso-login`.
+
 ### Work Claude Code plugins: automate or keep manual?
 
 The work plugin marketplace is installed by hand
