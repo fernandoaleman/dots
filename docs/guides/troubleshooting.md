@@ -281,10 +281,18 @@ Super+Shift+Alt+Arrow, or
 `hyprctl dispatch 'hl.dsp.workspace.move({ monitor = "DP-1" })'`; logging
 out also resets them.
 
+### The bar skips some workspace numbers (e.g. 6 or 8)
+
+**Why:** Omarchy's workspaces widget always shows 1–5, and 6–10 only while
+that workspace exists (it has a window or a monitor is showing it).
+Pins don't affect it. It's the same list on every monitor. Kept as
+Omarchy's (2026-10-04); always showing 1–9 or per-monitor numbers would
+need `omarchy plugin clone omarchy.workspaces` and a custom edit.
+
 ### An app opened on a different workspace than expected
 
 **Why:** `hyprland.dots.lua` pins apps: Chrome → 1, tmux terminal → 4,
-Slack/Teams → 7, Spotify → 9 (matched by window class when it opens).
+Slack/Teams → 7, Outlook → 8, Spotify → 9 (matched by window class when it opens).
 Windows opened before the rule existed stay put; move one with
 Super+Shift+N. Add or change pins in `hyprland.dots.lua` (or
 `hyprland.local.lua` for one machine). Find an app's class with

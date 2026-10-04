@@ -82,7 +82,7 @@ make ssh
 | `tmux` | `~/.config/tmux/tmux.dots.conf`, `session-picker` (+ one line in Omarchy's `~/.config/tmux/tmux.conf`) | `Ctrl+h/j/k/l` nvim-aware pane movement, `prefix k` session picker, `prefix =` synchronize panes, undercurl, resurrect + continuum (pinned clones) |
 | `mise` | `~/.config/mise/conf.d/config-dots.toml` (mise loads `conf.d/` itself) | `.ruby-version` support and global tools (uv, go, terraform, aws-cli, ansible, yamllint, yarn, confluence-cli, jira-cli), all `latest` |
 | `omarchy` | `~/.config/omarchy/hooks/post-update.d/dots.hook` | after every `omarchy update`: re-add include lines, report drift (same as `make doctor`) |
-| `hypr` | `~/.config/hypr/monitors.dots.lua`, `hyprland.dots.lua` (+ one line each in Omarchy's `monitors.lua`, `hyprland.lua`) | desk monitors matched by description, workspaces 1–3/4–6/7–9 per monitor, apps pinned to workspaces (Chrome 1, tmux 4, Slack/Teams 7, Spotify 9) |
+| `hypr` | `~/.config/hypr/monitors.dots.lua`, `hyprland.dots.lua` (+ one line each in Omarchy's `monitors.lua`, `hyprland.lua`) | desk monitors matched by description, workspaces 1–3/4–6/7–9 per monitor, apps pinned to workspaces (Chrome 1, tmux 4, Slack/Teams 7, Outlook 8, Spotify 9) |
 | `git` | `~/.config/git/config.dots`, `~/.config/git/ignore` (+ one line in Omarchy's `~/.config/git/config`) | `fetch.prune`, `zdiff3` conflicts, gh as the GitHub HTTPS credential helper, a lean global gitignore |
 
 ## Repository layout
