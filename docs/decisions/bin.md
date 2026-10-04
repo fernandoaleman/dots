@@ -24,3 +24,11 @@ Docker Hub push, lint configs, README, initial commit. **Dropped**
 (2026-10-04): work tooling, not a dotfile, and it hard-codes the
 employer's Docker Hub and GitHub orgs (not for this public repo). Its home
 is a work repo; until then it stays in the old dotfiles repo.
+
+## td-login: dropped
+
+A wrapper: print `td auth status` when logged in, else run
+`td auth login "$@"` (browser OAuth; e.g. `--read-only`) and re-check.
+Nothing from 1Password. **Dropped** (2026-10-04): `td auth login` /
+`td auth status` do the same; the [setup step](../setup/omarchy.md) and
+`install.sh`'s logged-out warning cover it. **Mac:** same `td` commands.
