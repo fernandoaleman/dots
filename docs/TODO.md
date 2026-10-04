@@ -45,6 +45,8 @@ has a built-in VNC client; the Omarchy plugin catalog has `io.github.rsd.omavnc`
 To research then: Omarchy's own way first, which server and client, which
 of the three monitors to share (or a headless output), sharing while the
 desktop is locked, security (Tailscale-only listening, auth), and latency.
+When Tailscale is set up: name the devices `omarchy` and `mac-studio` and
+switch their `HostName`s in `ssh/.ssh/config` to those Tailscale names.
 
 ### tmux-ssh project
 
