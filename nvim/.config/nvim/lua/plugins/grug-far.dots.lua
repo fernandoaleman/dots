@@ -1,8 +1,12 @@
--- Inside a grug-far buffer: <A-h> toggles hidden files, <A-i> toggles
--- git-ignored files (LazyVim's <leader>sr respects both by default).
--- Uses `init`, not `config`, so LazyVim's grug-far setup is left intact.
+-- Search hidden files by default (never .git/), like the Snacks pickers;
+-- git-ignored files stay skipped. Inside a grug-far buffer: <A-h> toggles
+-- hidden files, <A-i> toggles git-ignored files. Uses `opts` + `init`, not
+-- `config`, so LazyVim's grug-far setup is left intact.
+local hidden_flags = { "--hidden", "--glob !.git/" }
+
 return {
   "MagicDuck/grug-far.nvim",
+  opts = { prefills = { flags = table.concat(hidden_flags, " ") } },
   init = function()
     vim.api.nvim_create_autocmd("FileType", {
       pattern = "grug-far",
@@ -12,7 +16,7 @@ return {
           vim.notify("grug-far: " .. label .. " " .. (state and "ON" or "OFF"))
         end
         vim.keymap.set({ "i", "n", "x" }, "<A-h>", function()
-          toggle({ "--hidden", "--glob !.git/" }, "hidden files")
+          toggle(hidden_flags, "hidden files")
         end, { desc = "Toggle Hidden Files", buffer = ev.buf })
         vim.keymap.set({ "i", "n", "x" }, "<A-i>", function()
           toggle({ "--no-ignore" }, "ignored files")

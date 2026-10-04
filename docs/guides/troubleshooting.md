@@ -8,12 +8,12 @@ snippet to bring it back. Snippets go in the `.dots` file named, or in its
 
 ## Neovim
 
-### Search / file picker doesn't find hidden or git-ignored files
+### Search / file picker doesn't find git-ignored files
 
-**Why:** LazyVim's pickers (`<leader><space>`, `<leader>ff`, `<leader>/`,
-`<leader>sg`) and grug-far (`<leader>sr`) respect `.gitignore` and skip
-hidden files by default. The old config searched everything
-([nvim.md](../decisions/nvim.md)).
+**Why:** hidden (dot) files are shown and searched by default
+(`snacks.dots.lua`, `grug-far.dots.lua`), but git-ignored files are not
+(LazyVim's default). The old config searched everything
+([nvim.md](../decisions/nvim.md)). `.git/` is never shown or searched.
 
 **Quick fix, no config:** toggle while searching:
 
@@ -21,24 +21,12 @@ hidden files by default. The old config searched everything
 |---|---|---|
 | Snacks pickers | `<A-h>` | `<A-i>` |
 | Snacks explorer (`<leader>e`) | `H` | `I` |
-| grug-far | `<A-h>` | `<A-i>` (added by `grug-far.dots.lua`) |
+| grug-far | `<A-h>` | `<A-i>` |
 
-**Make it the default again** (`lua/plugins/snacks.dots.lua`):
-
-```lua
-return {
-  "folke/snacks.nvim",
-  opts = {
-    picker = {
-      sources = {
-        explorer = { hidden = true },
-        files = { hidden = true, ignored = true, exclude = { ".git", "node_modules", ".cache", "__pycache__" } },
-        grep = { hidden = true, ignored = true, exclude = { ".git", "node_modules", ".cache", "__pycache__" } },
-      },
-    },
-  },
-}
-```
+**Make ignored files the default too:** add `ignored = true` to the
+`explorer`, `files` and `grep` sources in `lua/plugins/snacks.dots.lua`
+(and `--no-ignore` to the grug-far flags in `grug-far.dots.lua`). Expect
+`node_modules`, `vendor` and build output in results.
 
 ### lazygit popup (`<leader>gg`) has no dimmed background
 
