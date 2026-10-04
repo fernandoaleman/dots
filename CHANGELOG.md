@@ -27,7 +27,7 @@ Omarchy is complete, including secrets via 1Password.
 
 - Neovim shows and searches hidden files by default (explorer, file and
   grep pickers, grug-far); git-ignored files stay hidden and `.git/` is
-  never shown (new `snacks.dots.lua`).
+  never shown (new `neo-tree.dots.lua` and `snacks.dots.lua`).
 
 ### Removed
 
