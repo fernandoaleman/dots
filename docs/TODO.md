@@ -33,6 +33,19 @@ Things to settle then: the JSON format (Raycast's export vs. the plugin's),
 where the JSON lives (dots if nothing private, else 1Password), and the
 shared keybindings.
 
+### Remote desktop from the Mac into Omarchy (over Tailscale)
+
+See and use the full Omarchy desktop (GUI, not just SSH) from the Mac
+laptop when traveling or at the office, over Tailscale. Why: one machine
+holds the AI tools' state (Claude Code, opencode memories, sessions), so
+nothing has to be synced across machines or OSes.
+
+Known to be possible (Hyprland supports VNC servers such as `wayvnc`; macOS
+has a built-in VNC client; the Omarchy plugin catalog has `io.github.rsd.omavnc`).
+To research then: Omarchy's own way first, which server and client, which
+of the three monitors to share (or a headless output), sharing while the
+desktop is locked, security (Tailscale-only listening, auth), and latency.
+
 ### AWS VPN Omarchy plugin
 
 Install the user's own AWS VPN client plugin (outside dots; see
