@@ -44,6 +44,9 @@ Dotfiles for Omarchy (and later macOS), managed with GNU Stow.
   in docs/setup/omarchy.md (later docs/setup/macos.md).
 - Put how-to procedures (not decisions, not fresh-install steps) in
   docs/guides/.
+- When the user raises an idea or follow-up for later (after the
+  migration, or when something happens), add it to docs/TODO.md; when
+  one is picked up, record the outcome in docs/decisions/ and remove it.
 - When the user reports something "not working" or "used to do X", check
   docs/guides/troubleshooting.md first: it lists deliberately dropped
   behaviors with the snippet to re-enable each. Whenever a decision drops a
