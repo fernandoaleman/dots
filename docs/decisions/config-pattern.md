@@ -133,6 +133,7 @@ outnumbering "include", revisit switching everything to pattern A.**
 | nvim plugins | `~/.config/nvim/lua/plugins/` (dir) | `lua/plugins/<name>.dots.lua` | yes: lazy.nvim loads every file in the dir | n/a (add a `<name>.local.lua` file; gitignored) | C |
 | tmux | `~/.config/tmux/tmux.conf` | `~/.config/tmux/tmux.dots.conf` (+ `session-picker`) | yes: `source-file -q` | `~/.config/tmux/tmux.local.conf` (`-q` skips if missing) | C |
 | mise | `~/.config/mise/config.toml` (Omarchy, and `mise use -g` writes it) | `~/.config/mise/conf.d/config-dots.toml` (hyphen: naming exception) | yes: mise loads `conf.d/*.toml` automatically (no line needed). ⚠️ Omarchy's `config.toml` takes **precedence** over conf.d (tested), so ours can add but not override | `conf.d/config-local.toml` (alphabetically later, wins over `config-dots.toml`; tested) | C |
+| Hyprland monitors | `~/.config/hypr/monitors.lua` | `~/.config/hypr/monitors.dots.lua` | yes: appended Lua line, `dofile` by path if the file exists | `~/.config/hypr/monitors.local.lua` (same check; tested) | C |
 | LazyVim Extras | `~/.config/nvim/lazyvim.json` | none: `install.sh` merges our list with `jq` | **no** (JSON; LazyVim rewrites it) | `:LazyExtras` changes stay local | scripted merge |
 
-**Totals: include 5, no include 1.**
+**Totals: include 6, no include 1.**
