@@ -9,6 +9,11 @@ Omarchy is complete, including secrets via 1Password.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-04
+
+Desktop: monitors and app workspaces, Docker networks clear of the work
+VPN, Todoist agent skills, and hidden files in Neovim.
+
 ### Added
 
 - `hypr` package: `monitors.dots.lua` (loaded by one line in Omarchy's
@@ -101,5 +106,6 @@ bin scripts and secrets come in later releases.
 - prek hooks (whitespace, toml/yaml, typos, committed, shellcheck),
   `make setup`, `make lint`, `make doctor`.
 
-[Unreleased]: https://github.com/fernandoaleman/dots/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/fernandoaleman/dots/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/fernandoaleman/dots/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/fernandoaleman/dots/releases/tag/v0.1.0
