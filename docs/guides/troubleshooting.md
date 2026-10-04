@@ -401,7 +401,7 @@ and restart `systemd-resolved` and `docker`.
 for i in {1..7}; do echo " $(tput setaf $i)Text$(tput sgr0) $(tput bold)$(tput setaf $i)Text$(tput sgr0) $(tput smul)$(tput setaf $i)Text$(tput sgr0)  setaf $i"; done
 ```
 
-### `backup-to-thumb-drive` / `import-from-thumb-drive` not found
+### `backup-to-thumb-drive` / `import-from-thumb-drive` / `push-to-mac-studio` / `pull-from-mac-studio` not found
 
 **Why:** dropped; remote desktop into this machine replaces carrying work
 between computers. What they copied, the `~/.claude` exclude list and how
