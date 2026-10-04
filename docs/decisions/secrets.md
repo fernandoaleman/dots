@@ -153,3 +153,34 @@ MFA code. The key lives only in `aws-role-switch`.
   plugin ([TODO](../TODO.md)).
 - A separate GitHub-runner VPN profile (own client key) on the Mac Studio
   was left out (not used).
+
+## API tokens (`dots/token`): done
+
+Old zsh `40-api-tokens` variables (rclone ones dropped with rclone). Old
+repo and Mac Studio identical; all four tokens valid (HTTP 200 from each
+service's "who am I" endpoint). Jira and Confluence use two different
+tokens (the old comment saying "same token" was outdated).
+
+**Pattern (DRY):** each token stays in the Login item it belongs to; the
+field's **label is the variable name**; the item is tagged `dots/token`.
+`install.sh` exports every field of those items whose label matches
+`^[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$` (ALL_CAPS with an underscore, so a field
+like `MCP` is not exported) into one generated env file (600, outside the
+repo) that bash loads. A new token is a 1Password-only change.
+
+| Variable | Item (work vault) |
+|---|---|
+| `JIRA_API_TOKEN` (was field `token`), `CONFLUENCE_API_TOKEN` (added, was missing), `CONFLUENCE_DOMAIN`, `CONFLUENCE_EMAIL` | Atlassian (1000Bulbs) |
+| `CLOUDFLARE_API_TOKEN` (was field `Claude`) | Cloudflare (1000Bulbs) |
+| `PAGERTREE_API_TOKEN` (was field `API Token - Claude`) | PagerTree (1000Bulbs), moved from `Private` |
+
+Edits used piped JSON templates (values never on a command line);
+existing tags and notes kept (dots line appended). One auto-saved web-form
+field without ID or label was labeled `unlabeled form field` (templates
+can't round-trip it; value unchanged). Verified: every exported variable
+matches the Mac Studio by hash.
+
+**Titles:** `<Service> (<account>)`: Atlassian (1000Bulbs) / (Personal),
+Cloudflare (1000Bulbs) / (1000Bulbs devops) / (Personal), PagerTree
+(1000Bulbs) / (1000Bulbs bot, moved to the work vault). The rest of
+1Password follows in a later cleanup ([TODO](../TODO.md)).

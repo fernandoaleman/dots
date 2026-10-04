@@ -54,6 +54,13 @@ desktop is locked, security (Tailscale-only listening, auth), and latency.
   (`TMUX_SSH_COMMIT` in `install.sh`).
 - Investigate whether tmux-ssh works inside herdr.
 
+### 1Password naming cleanup
+
+Retitle items to `<Service> (<account>)` (e.g. `Cloudflare (1000Bulbs)`,
+`Atlassian (Personal)`), as started in the secrets section
+([secrets.md](decisions/secrets.md)): the `AWS …`, `GitHub - … - …` and
+other mixed styles.
+
 ### Audit 1Password for Rackspace leftovers
 
 The Rackspace AWS account was retired (2025). Archive every 1Password item
