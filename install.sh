@@ -386,8 +386,10 @@ else
   fi
 
   # Switch the dots remote to SSH once GitHub accepts the key
-  if [[ $(git -C "$DOTS_DIR" remote get-url origin) == https://* ]] &&
-    ssh -o BatchMode=yes -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+  # (ssh -T exits 1 even on success, GitHub gives no shell: match the reply)
+  github_reply=$(ssh -o BatchMode=yes -T git@github.com 2>&1 || true)
+  if [[ $(git -C "$DOTS_DIR" remote get-url origin) == https://* &&
+    $github_reply == *"successfully authenticated"* ]]; then
     make -C "$DOTS_DIR" --no-print-directory ssh
   fi
 fi
