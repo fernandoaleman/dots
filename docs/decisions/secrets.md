@@ -19,7 +19,7 @@ item name, so this public repo names no vault, company or work key.
 | Vault | personal items in `Private`; work items in the work vault | `id_ed25519` in `Private` |
 | Title | exactly the file name it becomes on disk | `id_ed25519` → `~/.ssh/id_ed25519` |
 | Category | SSH Key for keys; Document for whole files (AWS config, `.ovpn`); API Credential for tokens | |
-| Tags | `dots` plus one kind: `dots/ssh`, `dots/aws`, `dots/token`, `dots/vpn` | `dots/ssh` |
+| Tags | one nested tag per item: `dots/ssh`, `dots/aws`, `dots/token`, `dots/vpn` (the parent `dots` is implied: `op item list --tags dots` also matches `dots/ssh`, verified) | `dots/ssh` |
 | Notes | one line saying where dots puts it | "dots: installed to `~/.ssh/id_ed25519` (600) by install.sh" |
 
 Adding an item later is a 1Password-only change: tag it and the next
@@ -45,7 +45,7 @@ None of the keys has a passphrase.
 
 - 1Password item matches the old repo (fingerprint); the duplicate
   "My SSH Key" (same fingerprint) was archived.
-- Tags `dots`, `dots/ssh` and the note set in the 1Password app.
+- Tag `dots/ssh` and the note set in the 1Password app (verified with `op item get`).
 - Installed here by hand for now (`op read "…/private key?ssh-format=openssh"`
   to `~/.ssh/id_ed25519` 600, public key to `.pub` 644); `install.sh`
   takes over once the SSH setup (`IdentityFile`, agent, sshd) is decided.
