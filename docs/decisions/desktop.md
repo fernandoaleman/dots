@@ -1,6 +1,6 @@
 # Desktop
 
-Started 2026-10-03 (in progress). Old source: `dotfiles/dot_config/hypr/`
+Done 2026-10-04 (started 2026-10-03). Old source: `dotfiles/dot_config/hypr/`
 (`hypridle.conf`, `monitors.conf`), plus desktop-related chezmoi scripts.
 
 Omarchy 4 configures Hyprland in **Lua** (`~/.config/hypr/*.lua`, loaded by
@@ -349,6 +349,14 @@ later decision drops an Omarchy-installed package, use Omarchy's
 they're installed (otherwise ignore)"*) from a `PACKAGES_TO_REMOVE` list in
 `install.sh`. **Mac phase:** one-time cleanup of Homebrew packages the
 existing Mac still has but dots now gets from mise or dropped.
+
+## Homebrew and Rosetta: Mac phase
+
+The old `run_once_before_00-install-homebrew` (Mac only) installed Rosetta
+2 and Homebrew. Not applicable on Omarchy (packages come from Omarchy's
+scripts and mise). **Mac phase:** the first step of the Mac `install.sh`
+(Homebrew provides bash 5 and stow); keep Rosetta only if something still
+needs it.
 
 ## Mac notes
 
