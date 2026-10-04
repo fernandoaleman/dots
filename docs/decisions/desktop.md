@@ -237,7 +237,7 @@ from our mise tools. **Ported** (2026-10-04), per machine:
   during a fresh install.
 - Login (`td auth login`, browser OAuth) is a
   [setup step](../setup/omarchy.md); `install.sh` only warns when logged
-  out. The old `td-login` helper is reviewed with the bin scripts.
+  out. (The old `td-login` wrapper was dropped: [bin.md](bin.md).)
 
 **Mac:** same commands and folders.
 
