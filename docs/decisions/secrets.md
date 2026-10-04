@@ -50,3 +50,10 @@ None of the keys has a passphrase.
   to `~/.ssh/id_ed25519` 600, public key to `.pub` 644); `install.sh`
   takes over once the SSH setup (`IdentityFile`, agent, sshd) is decided.
   It already logs in to the Mac Studio without a password.
+
+### Work keys (integration, QA, staging, production): done
+
+- Same fingerprint in the old repo, the Mac Studio and 1Password.
+- Moved from `Private` to the work vault (`op item move`; fingerprints
+  verified unchanged), tag `dots/ssh` and the note set in the app
+  (verified).
