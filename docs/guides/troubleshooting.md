@@ -396,6 +396,23 @@ AWS_CONFIG_FILE=~/.aws/config.sso aws sso login                  # one login, al
 AWS_CONFIG_FILE=~/.aws/config.sso aws <command> --profile <name>
 ```
 
+## Ruby
+
+### `pry` not found / `:checkhealth` warns about the Ruby provider
+
+**Why:** `~/.default-gems` (installed `pry` and `neovim` into every Ruby)
+was dropped; mise deprecates it ([dotfiles.md](../decisions/dotfiles.md)).
+The Ruby provider warning is harmless (no LazyVim plugin is written in
+Ruby). To bring pry back, the current mise ways, in
+`mise/.config/mise/conf.d/config-dots.toml`:
+
+```toml
+[tools]
+"gem:pry" = "latest"   # pry as a standalone command
+```
+
+or per project: `gem "pry"` in the `Gemfile`, then `bundle exec pry`.
+
 ## SSH
 
 ### `ssh` asks for a key passphrase every time
