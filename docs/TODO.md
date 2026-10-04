@@ -58,6 +58,14 @@ Archive `fernandoaleman/nvim` once the Mac uses dots.
 
 ## When it happens
 
+### Work Claude Code plugins: automate or keep manual?
+
+The work plugin marketplace is installed by hand
+([setup step 4](setup/omarchy.md#4-work-claude-code-plugins)). The company
+is evaluating a different way to distribute them; once decided, revisit
+whether `install.sh` should install them (with the names kept out of this
+public repo, e.g. a machine-local list or 1Password).
+
 ### Ruby 2.7.8 work app on this machine
 
 Set up ruby-lsp through a project-local `.lazy.lua` and finish the parts

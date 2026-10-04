@@ -37,7 +37,17 @@ over HTTPS.
 Use HTTPS until SSH keys are installed, then run `make ssh` in
 `~/Work/dots` to switch the remote.
 
-## 4. Working on dots (optional)
+## 4. Work Claude Code plugins
+
+Not automated (for now): after `gh auth login` (the marketplace repo is
+private), in Claude Code run `/plugin`, add the work plugin marketplace
+(its GitHub `org/repo`) and install the work plugins from it. The names
+are kept out of this public repo; the old chezmoi script
+(`run_once_after_35-setup-claude-plugins`) has the list.
+
+Same on the Mac.
+
+## 5. Working on dots (optional)
 
 Only needed to commit changes to this repo. `make setup` installs prek
 (via mise) and shellcheck (via `omarchy-pkg-add`), then activates the git
