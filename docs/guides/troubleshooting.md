@@ -273,6 +273,14 @@ Install → Terminal), then add that command to `install.sh`. See
 shows its description; put it in `monitors.dots.lua` (shared) or
 `monitors.local.lua` (this machine only).
 
+### A workspace is on the wrong monitor
+
+**Why:** workspaces created before the rules (or while a monitor was
+unplugged) stay where they were created. Focus it and press
+Super+Shift+Alt+Arrow, or
+`hyprctl dispatch 'hl.dsp.workspace.move({ monitor = "DP-1" })'`; logging
+out also resets them.
+
 ### `hyprctl dispatch workspace 2` errors
 
 **Why:** with Omarchy's Lua config, dispatch takes Lua:

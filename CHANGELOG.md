@@ -12,8 +12,9 @@ Omarchy is complete, including secrets via 1Password.
 ### Added
 
 - `hypr` package: `monitors.dots.lua` (loaded by one line in Omarchy's
-  `monitors.lua`) with desk monitors matched by description and workspace
-  bindings; other screens keep Omarchy's defaults.
+  `monitors.lua`): the three desk monitors matched by description, left to
+  right at scale 1.6, with workspaces 1–3 / 4–6 / 7–9 bound to left /
+  middle / right; other screens keep Omarchy's defaults.
 
 ## [0.1.0] - 2026-10-03
 
