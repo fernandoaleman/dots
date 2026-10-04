@@ -337,6 +337,19 @@ real; ours load through one include line). `install.sh` backs up a real
 file that blocks stow instead of deleting anything. **Mac:** not
 applicable.
 
+## Package removal list: dropped (`omarchy-pkg-drop` if ever needed)
+
+The old `run_onchange_after_10-remove-packages` uninstalled packages listed
+under `to_remove` (Linux: `atuin`, `jira-cli-bin`; Mac: `ansible`, `atuin`,
+`diff-so-fancy`, `jira-cli`, `yamllint`), cleaning up tools dropped or moved
+to mise. **Dropped** (2026-10-04): neither Linux package is installed here
+(Omarchy doesn't install them; `jira` comes from our mise tools). If a
+later decision drops an Omarchy-installed package, use Omarchy's
+`omarchy-pkg-drop` (*"Remove all the named packages from the system if
+they're installed (otherwise ignore)"*) from a `PACKAGES_TO_REMOVE` list in
+`install.sh`. **Mac phase:** one-time cleanup of Homebrew packages the
+existing Mac still has but dots now gets from mise or dropped.
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here
