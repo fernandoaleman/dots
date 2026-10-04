@@ -392,6 +392,15 @@ and restart `systemd-resolved` and `docker`.
 **Re-add** an official-repo package to `PACMAN_PACKAGES` in `install.sh`
 (installed with `omarchy-pkg-add`).
 
+### `colortest` not found
+
+**Why:** the old color-check script was dropped
+([bin.md](../decisions/bin.md)). Same output, one line:
+
+```sh
+for i in {1..7}; do echo " $(tput setaf $i)Text$(tput sgr0) $(tput bold)$(tput setaf $i)Text$(tput sgr0) $(tput smul)$(tput setaf $i)Text$(tput sgr0)  setaf $i"; done
+```
+
 ## Shell
 
 ### `cd -2` / directory stack, `autocd`, `**` globs don't work

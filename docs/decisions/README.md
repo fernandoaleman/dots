@@ -27,3 +27,4 @@ setup has to recreate to "mirror Omarchy, minimally".
 | tmux | [tmux.md](tmux.md) |
 | Desktop | [desktop.md](desktop.md) |
 | Packages | [packages.md](packages.md) |
+| Bin scripts (in progress) | [bin.md](bin.md) |
