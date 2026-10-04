@@ -1,6 +1,6 @@
 # Small dotfiles
 
-Started 2026-10-04 (in progress). Old source: the top-level files of the
+Done 2026-10-04. Old source: the top-level files of the
 chezmoi repo (`dot_gemrc`, `dot_default-gems`, `dot_rspec`,
 `dot_hushlogin`, `dot_confluence-cli/`).
 
@@ -63,3 +63,15 @@ interactive `ssh omarchy` already prints nothing (empty `/etc/motd`, Arch's
 `PrintMotd no` in `/etc/ssh/sshd_config.d/99-archlinux.conf`), and Hyprland
 terminals never go through `login`. **Mac phase:** keep it (macOS prints
 "Last login: … on ttys000" in every new shell; the Mac Studio has it).
+
+## `.confluence-cli/config.json`: dropped
+
+Wrote the Atlassian domain, email, API path (`/wiki/rest/api`), auth type
+(`basic`) and token (the *Jira* one) for `confluence-cli`. **Dropped**
+(2026-10-04): `confluence-cli` reads `CONFLUENCE_DOMAIN`,
+`CONFLUENCE_EMAIL`, `CONFLUENCE_API_TOKEN` (and `CONFLUENCE_API_PATH`,
+`CONFLUENCE_AUTH_TYPE`) from the environment, which `~/.config/dots/env`
+provides (`dots/token`, [secrets.md](secrets.md)). Tested with only the env
+file: `confluence spaces` listed 78 spaces, so its defaults match the old
+API path and auth type. An override is one more ALL_CAPS field in the
+Atlassian item. **Mac:** same.
