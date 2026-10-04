@@ -119,4 +119,4 @@ them. `install.sh` runs the same commands, each guarded:
 
 - **Group A**: done. (`tmux-ssh` moves to the bin scripts
   section.)
-- **Group D** (not installed): `yarn` (done: mise), `rclone`, `awsvpnclient`, `espanso`.
+- **Group D** (not installed): `yarn` (done: mise), `rclone` (not set up; see [rclone guide](../guides/rclone.md)), `awsvpnclient`, `espanso`.
