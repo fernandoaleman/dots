@@ -37,3 +37,20 @@ installed. **Dropped** (2026-10-04):
 
 Re-enable snippets in [troubleshooting](../guides/troubleshooting.md).
 **Mac:** same.
+
+## `.rspec`: dropped
+
+Global RSpec defaults (`--color`, `--format documentation`, `--backtrace`,
+`--profile 10`, `--order random`, `--seed 12345`). **Dropped**
+(2026-10-04), checked against rspec-core's `configuration_options.rb`:
+
+- Only full-line comments are stripped (`/\A\s*#/`); each line is then
+  shell-split, so the old inline comments became extra arguments, which
+  RSpec treats as files to run.
+- A fixed `--seed` makes `--order random` the same order every run.
+- RSpec colors terminal output by default.
+- A global `~/.rspec` mixes into every project's own `.rspec`, so runs
+  differ from CI and teammates.
+
+Projects keep their own `.rspec`; pass flags directly for one-offs.
+**Mac:** same.
