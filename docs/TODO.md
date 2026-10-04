@@ -75,6 +75,16 @@ alternative) work with SSO, do the SSO permission sets cover what the role
 profiles do, and what changes for `generate-ssh-config`. Needs time and
 testing; decide with the ~2026-11-03 SSO review.
 
+### Research: SSH keys as files vs 1Password's SSH agent
+
+Today `install.sh` installs the SSH keys from 1Password as real files in
+`~/.ssh` (no prompts when using SSH; the user's original requirement).
+Alternative: keep them only in 1Password and use its SSH agent, which
+asks for approval per app/terminal until 1Password locks (the pop-ups seen
+so far came from the `op` CLI, not from SSH). Compare convenience,
+security (no key files on disk), and how it works with `tmux-ssh`,
+`generate-ssh-config` and the Mac; research only, no decision yet.
+
 ### Audit 1Password for Rackspace leftovers
 
 The Rackspace AWS account was retired (2025). Archive every 1Password item
