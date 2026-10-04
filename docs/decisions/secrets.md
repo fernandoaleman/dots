@@ -244,3 +244,24 @@ Document `.config/generate-ssh-config/environments` (work vault, tag
 `dots/aws`, note): the five environments with their AWS profile and SSH key,
 taken from the Mac Studio's script (same as the old repo). See
 [bin.md](bin.md).
+
+## `install.sh` secrets step (decided 2026-10-04)
+
+Runs only when `op` can read the vaults (otherwise a warning with the
+sign-in steps, [setup](../setup/omarchy.md)); everything is found by tag
+and no value is printed. Files go through a temp file next to the target
+(not `/tmp`); a file whose contents differ is backed up as
+`<file>.bak.<stamp>` first (1Password is the source of truth); unchanged
+files are left alone.
+
+| Tag / item | Installed to |
+|---|---|
+| `dots/ssh` SSH Keys | `~/.ssh/<title>` (600), `<title>.pub` (644) |
+| `dots/*` Documents whose title is a path | `~/<title>` (600): `.aws/config`, `.aws/config.sso`, `.config/generate-ssh-config/environments` (the VPN profile has no path yet, so it is skipped) |
+| `dots/aws` API Credentials | `~/.aws/credentials` profile `[<title>]`, replaced in place (other profiles such as `[mfa]` kept; values passed to `awk` through its environment, not the command line) |
+| `dots/token` fields named like variables | `~/.config/dots/env` (600), loaded by `~/.bashrc.dots` |
+| `id_ed25519` public key (type + key) | `omarchy-setup-security-sshd --key=…`, skipped when sshd is active, hardened and the key authorized |
+| — | `make ssh` once `ssh -T git@github.com` authenticates |
+
+Titles are checked (plain names / relative paths under `~`, no `..`) before
+anything is written.
