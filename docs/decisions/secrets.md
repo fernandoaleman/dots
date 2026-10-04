@@ -25,3 +25,28 @@ item name, so this public repo names no vault, company or work key.
 Adding an item later is a 1Password-only change: tag it and the next
 `install.sh` run picks it up. Existing items are brought in line one at a
 time as each secret is reviewed. **Mac:** identical (`op` and tags).
+
+**1Password CLI limit:** `op item edit` can't edit SSH Key items (*"SSH
+Key item editing in the CLI is not yet supported"*), so their tags and
+notes are set in the 1Password app.
+
+## Comparing copies
+
+The old repo, 1Password and the Mac Studio (reachable over SSH) can hold
+different copies. Comparisons run where the secret lives and return only
+non-secret facts (SHA-256 hashes, key fingerprints, section/key names with
+values elided); when copies differ, the user decides which to keep.
+
+## SSH keys
+
+None of the keys has a passphrase.
+
+### `id_ed25519` (personal, Private): done
+
+- 1Password item matches the old repo (fingerprint); the duplicate
+  "My SSH Key" (same fingerprint) was archived.
+- Tags `dots`, `dots/ssh` and the note set in the 1Password app.
+- Installed here by hand for now (`op read "…/private key?ssh-format=openssh"`
+  to `~/.ssh/id_ed25519` 600, public key to `.pub` 644); `install.sh`
+  takes over once the SSH setup (`IdentityFile`, agent, sshd) is decided.
+  It already logs in to the Mac Studio without a password.
