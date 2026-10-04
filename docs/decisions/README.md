@@ -28,3 +28,4 @@ setup has to recreate to "mirror Omarchy, minimally".
 | Desktop | [desktop.md](desktop.md) |
 | Packages | [packages.md](packages.md) |
 | Bin scripts | [bin.md](bin.md) |
+| Secrets (in progress) | [secrets.md](secrets.md) |
