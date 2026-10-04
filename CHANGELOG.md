@@ -23,6 +23,12 @@ Omarchy is complete, including secrets via 1Password.
   (CapsLock, Space, n / e) from the git identity.
 - `docs/TODO.md`: ideas and follow-ups for after the migration.
 
+### Changed
+
+- Neovim shows and searches hidden files by default (explorer, file and
+  grep pickers, grug-far); git-ignored files stay hidden and `.git/` is
+  never shown (new `snacks.dots.lua`).
+
 ### Removed
 
 - espanso (stock config only); Omarchy's Compose key covers name/email.

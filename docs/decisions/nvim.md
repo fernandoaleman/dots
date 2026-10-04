@@ -95,8 +95,9 @@ LazyVim's `<leader>sr` (prefills the current file's extension, respects
 `.gitignore`), plus `<A-h>` / `<A-i>` inside grug-far to toggle hidden /
 git-ignored files (grug-far's own `toggle_flags` recipe), registered in
 `init`. The old file used `config =` without calling `setup()`, which
-silently dropped LazyVim's grug-far opts. Dropped: searching hidden and
-ignored files by default, `<leader>sRa` (visual `<leader>sr` already
+silently dropped LazyVim's grug-far opts. Hidden files are searched by
+default (`prefills.flags = "--hidden --glob !.git/"`, changed 2026-10-04,
+see snacks below); git-ignored files are not. Dropped: `<leader>sRa` (visual `<leader>sr` already
 prefills the selection), `<leader>sRw` (`:GrugFarWithin` exists),
 `<leader>sRc`.
 
@@ -106,10 +107,22 @@ Comes with the markdown Extra (`<leader>cp`). The preview theme follows the
 system (Omarchy theme) light/dark preference instead of being forced
 light. (The old `config =` also replaced LazyVim's config for it.)
 
-### snacks: dropped
+### snacks: `snacks.dots.lua` (hidden files only)
 
-- Pickers/explorer: no "hidden + ignored by default"; toggle with `<A-h>` /
-  `<A-i>` (pickers) and `H` / `I` (explorer), the same keys as grug-far.
+- **Hidden files shown by default** in the explorer and the files/grep
+  pickers (`hidden = true`; changed 2026-10-04: projects have many dot
+  files, and the old "everything hidden" default made files like
+  `.chezmoiscripts/*` unfindable). **Git-ignored files stay hidden**
+  (LazyVim's default; `node_modules`, `vendor`, `log/`, build output).
+  Toggle either with `<A-h>` / `<A-i>` (pickers, grug-far) and `H` / `I`
+  (explorer).
+- **`.git/` is never shown or searched:** the Snacks files/grep sources
+  always exclude it (`fd -E .git`, `rg --glob=!.git`, in
+  `snacks/picker/source/{files,grep}.lua`); the explorer doesn't, so
+  `snacks.dots.lua` sets `exclude = { "/.git" }` (with the slash: Snacks
+  globs are unanchored, so `".git"` would also hide `foo.git`); grug-far's
+  flag carries `--glob !.git/`.
+- The old config also showed ignored files by default: not kept.
 - `<leader><space>` stays LazyVim's Find Files; last file is `<leader>bb`,
   `` <leader>` `` or `<C-^>`.
 - lazygit `backdrop = 60` dropped (cosmetic).
