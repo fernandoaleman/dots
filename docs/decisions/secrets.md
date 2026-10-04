@@ -57,3 +57,13 @@ None of the keys has a passphrase.
 - Moved from `Private` to the work vault (`op item move`; fingerprints
   verified unchanged), tag `dots/ssh` and the note set in the app
   (verified).
+
+### lab and pricing-agent-sandbox keys: added
+
+- Missing from 1Password; the old repo and the Mac Studio held the same
+  keys (fingerprints). Both are work keys (pricing-agent-sandbox: the AWS
+  sandbox key of a work project), so they went into the work vault.
+- Copied from the Mac Studio to `~/.ssh` (600) with `scp`, imported in the
+  1Password app as SSH Key items (tag `dots/ssh`, note), verified
+  (fingerprint, tag, note), then the local copies were deleted; dots
+  installs them again later.
