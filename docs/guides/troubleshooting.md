@@ -413,6 +413,19 @@ Ruby). To bring pry back, the current mise ways, in
 
 or per project: `gem "pry"` in the `Gemfile`, then `bundle exec pry`.
 
+### RSpec output isn't in documentation format / no slowest-examples list
+
+**Why:** the global `~/.rspec` was dropped
+([dotfiles.md](../decisions/dotfiles.md)). Pass flags per run
+(`rspec --format documentation --profile 10`) or put them in the project's
+`.rspec`. For personal defaults again, add `ruby/.rspec`, one option per
+line and **no inline comments** (RSpec treats them as file arguments):
+
+```
+--format documentation
+--profile 10
+```
+
 ## SSH
 
 ### `ssh` asks for a key passphrase every time
