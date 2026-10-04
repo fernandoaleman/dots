@@ -7,7 +7,7 @@
 DOTS_DIR="${DOTS_DIR:-$HOME/Work/dots}"
 
 # Stow packages (top-level directories mirroring $HOME)
-PACKAGES=(bash git nvim tmux mise omarchy hypr bin ssh)
+PACKAGES=(bash git nvim tmux mise omarchy hypr bin ssh ruby)
 
 # "Omarchy file|line that loads our .dots file" (appended when missing)
 INCLUDES=(
