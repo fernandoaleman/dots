@@ -126,3 +126,11 @@ into `[mfa]`; the role profiles in `~/.aws/config` use
   overwrite the long-lived key. The port must write `[mfa]` with
   `aws configure set … --profile mfa` (creates the section if missing,
   touches nothing else).
+
+### MFA code: "AWS Role Switch" login, tag `dots/aws-mfa`
+
+The Login item holding the MFA one-time password (also used for the
+console sign-in) stays where it is, tagged `dots/aws-mfa` with a note;
+`aws-role-login` finds it by that tag. Verified: key from `aws-role-switch`
++ `mfa_serial` from `.aws/config` + the item's OTP gives a 12-hour session
+with no typing ([bin.md](bin.md)).

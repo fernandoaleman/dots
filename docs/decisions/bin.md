@@ -52,26 +52,26 @@ to the secrets section, with `~/.aws/config` (encrypted in the old repo):
 `aws` (v2) comes from our mise tools; Omarchy has nothing for AWS.
 **Mac:** same.
 
-## aws-role-login: deferred to the secrets section (daily use)
+## aws-role-login: `bin` package, code from 1Password (daily use)
 
-**Used every day**, together with the Chrome extension *AWS Extend Switch
-Roles* (console role switching). Run as `aws-role-login <MFA code>`: calls
-`aws sts get-session-token` with a long-lived key profile, the MFA device
-(kept in 1Password) and the code, then `sed`s the temporary key, secret and
-token over **lines 2-4** of `~/.aws/credentials` (its own comment: the MFA
-profile *"must be at the TOP"*), which the role profiles then use.
-Deferred (2026-10-04) to the secrets section, first among the AWS items:
+**Used every day**, with the Chrome extension *AWS Extend Switch Roles*
+(console side, unaffected). Ported 2026-10-04 to
+`bin/.local/bin/aws-role-login`, the first script of the `bin` stow package
+(linked into `~/.local/bin`):
 
-- Not in this public repo as-is: it hard-codes the AWS account ID (MFA
-  ARN); editing fixed lines of the credentials file is fragile.
-- Better ways to evaluate: native AWS CLI (`mfa_serial` + `role_arn` /
-  `source_profile` in `~/.aws/config`: the CLI prompts for the code once
-  and caches in `~/.aws/cli/cache` until expiry), or fully automatic with
-  1Password (`op item get <item> --otp`, e.g. via `credential_process`).
-- Check how the chosen way fits the AWS Extend Switch Roles extension
-  (console side; its config lives in the extension / Chrome sync).
+| | Old | New |
+|---|---|---|
+| Usage | `aws-role-login 123456` | `aws-role-login` (code from 1Password: the one item tagged `dots/aws-mfa`, `op item get --otp`); `aws-role-login 123456` still works |
+| MFA device | ARN hard-coded (account ID) | `mfa_serial` read from `~/.aws/config` (profile `aws-role-switch`) |
+| Writing `[mfa]` | `sed` over lines 2-4 of `~/.aws/credentials` (fragile; would overwrite the long-lived key on a file without `[mfa]` first) | `aws configure set … --profile mfa` (creates or updates only that section) |
+| Session | 12 h | 12 h (`DURATION`; IAM users can go to 36 h) |
 
-**Mac:** same AWS CLI and `op`.
+Same security model (the code still comes from the MFA device in
+1Password; 1Password may ask to approve the terminal), one step less.
+Tested against temporary AWS files: creates `[mfa]` when missing, updates
+it in place, a role profile assumes its role, the long-lived key is
+untouched, malformed codes are rejected. Nothing work-specific in the
+script. **Mac:** same script (`date -d` falls back to the raw expiry time).
 
 ## generate-ssh-config: kept, deferred to the secrets section (daily use)
 
