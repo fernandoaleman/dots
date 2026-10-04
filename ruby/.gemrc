@@ -1,0 +1,3 @@
+# RubyGems: skip building ri/rdoc docs on gem install/update (the only
+# non-default setting kept from the old .gemrc; see docs/decisions)
+gem: --no-document

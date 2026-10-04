@@ -1,6 +1,6 @@
 # Secrets
 
-Started 2026-10-04 (in progress). Secrets come from **1Password** via the
+Done 2026-10-04. Secrets come from **1Password** via the
 `op` CLI; nothing secret is stored in this repo, encrypted or not. SSH keys
 are installed as **real files** in `~/.ssh` (not served by 1Password's SSH
 agent on each use).
