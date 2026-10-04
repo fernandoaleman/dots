@@ -19,6 +19,13 @@ Omarchy is complete, including secrets via 1Password.
   tmux terminal 4, Slack and Teams 7, Outlook 8, Spotify 9); Super+Alt+Return gains
   `--app-id=tmux` so its terminal can be matched.
 - `install.sh` installs Spotify with Omarchy's installer.
+- `install.sh` fills Omarchy's empty XCompose name/email snippets
+  (CapsLock, Space, n / e) from the git identity.
+- `docs/TODO.md`: ideas and follow-ups for after the migration.
+
+### Removed
+
+- espanso (stock config only); Omarchy's Compose key covers name/email.
 
 ## [0.1.0] - 2026-10-03
 

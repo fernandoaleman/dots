@@ -115,6 +115,29 @@ AWS's own client.
 
 **Mac:** AWS VPN client via Homebrew, profile created by hand (one-time).
 
+## Text snippets: Omarchy's XCompose; espanso dropped
+
+The old setup installed **espanso** (AUR `espanso-wayland`); its config held
+only espanso's stock examples plus `search_shortcut: SHIFT+ALT+SPACE`, so
+nothing personal is lost. **Dropped** (2026-10-04).
+
+Omarchy already has text snippets via the **Compose key** (CapsLock):
+`~/.XCompose` includes Omarchy's emoji table
+(`/usr/share/omarchy/default/xcompose`) and two identity snippets,
+CapsLock, Space, `n` (name) and CapsLock, Space, `e` (email). Omarchy's
+installer (`install/user/xcompose.sh`) writes them from
+`$OMARCHY_USER_NAME` / `$OMARCHY_USER_EMAIL`, which can be blank, leaving
+`""`. `install.sh` fills **only empty** entries from the git identity
+(`git config --global user.name` / `user.email`), then runs
+`omarchy-restart-xcompose`. `~/.XCompose` stays Omarchy's real file and
+nothing personal is in the repo. Add more snippets to `~/.XCompose`
+directly (it's machine-local).
+
+A picker-style snippets/bookmarks plugin shared with Raycast on the Mac is
+a post-dots idea ([TODO](../TODO.md)).
+
+**Mac:** no Compose key; Raycast snippets (free tier) cover this.
+
 ## Mac notes
 
 Monitor arrangement and idle/lock are macOS System Settings; nothing here

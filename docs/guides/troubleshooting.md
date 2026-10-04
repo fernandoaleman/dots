@@ -353,6 +353,22 @@ the [rclone guide](rclone.md) to bring them back.
 AWS). It's installed separately on Omarchy; see
 [desktop.md](../decisions/desktop.md).
 
+### No espanso / `:date`-style expansions or Shift+Alt+Space search
+
+**Why:** espanso was dropped (its config had only stock examples;
+[desktop.md](../decisions/desktop.md)). Omarchy's Compose key covers
+name/email: CapsLock, Space, `n` / `e` (filled from git by `install.sh`).
+Add your own lines to `~/.XCompose`, then `omarchy-restart-xcompose`:
+
+```
+<Multi_key> <space> <s> : "Some text"
+```
+
+**Bring espanso back:** add `omarchy-pkg-aur-add espanso-wayland` to
+`install.sh`, then finish the setup per espanso's Wayland instructions
+(https://espanso.org/docs/install/linux/). The old config was stock, so
+there's nothing to restore.
+
 ## Missing tools
 
 ### `htop` / `btm` / `ncdu` / `colordiff` / `thefuck` / `act` not found
