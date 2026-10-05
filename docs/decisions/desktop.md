@@ -102,18 +102,37 @@ the full steps to bring them back with updated unit files, are in the
 needed (iCloud SRP sign-in shipped in rclone v1.74.0; Arch has 1.75.1),
 Omarchy only has `fusermount3`, and credentials would come from 1Password.
 
-## AWS VPN client: not via dots
+## AWS VPN client: the user's Omarchy plugin, via `install.sh`
 
 The old setup installed AUR `awsvpnclient` (5.3.1, which AWS now lists as
 *"No longer supported"*; AWS's current Linux client is 6.2.0, Sept 2026)
-and enabled `awsvpnclient.service`, with the connection profile kept
-encrypted. **Dropped** (2026-10-04): on Omarchy the VPN client will come from
-the user's own Omarchy plugin (installed separately, outside dots). Notes
-from the research: plain OpenVPN / NetworkManager works with AWS Client VPN
-only for certificate-based endpoints; SAML (browser sign-in) endpoints need
-AWS's own client.
+and enabled `awsvpnclient.service`. **Dropped.** Notes from the research:
+plain OpenVPN / NetworkManager works with AWS Client VPN only for
+certificate-based endpoints; SAML (browser sign-in) endpoints need a client
+that handles AWS's SAML flow.
 
-**Mac:** AWS VPN client via Homebrew, profile created by hand (one-time).
+**Instead (changed 2026-10-04; first decided as "installed outside
+dots"):** the user's own Omarchy plugin
+[`omarchy-aws-vpn-client`](https://github.com/fernandoaleman/omarchy-aws-vpn-client)
+(bar widget + CLI, driving the `openlawsvpn-daemon` engine, which speaks
+AWS's SAML flow), installed by `install.sh` from its GitHub repo, since it
+isn't in the plugin catalog yet:
+
+1. `omarchy-pkg-aur-add openlawsvpn-daemon` first, so the plugin's `setup`
+   skips its own `yay` install (our rule: Omarchy's package scripts).
+2. `omarchy plugin add <repo URL> --enable --yes` (Omarchy clones it into
+   `~/.config/omarchy/plugins/`).
+3. The plugin's `setup --no-keybind` (systemd fallback for an old packaging
+   bug, fixed upstream in 1.2.4; daemon enabled; CLI linked into
+   `~/.local/bin`; widget). `--no-keybind`: it would write into Omarchy's
+   `bindings.lua`; Super+Shift+V is bound in `hyprland.dots.lua` instead.
+4. Profile: the 1Password Document `1000bulbs.ovpn` (tag `dots/vpn`,
+   platform-neutral title) is written to the plugin's
+   `~/.config/omarchy/aws-vpn-client/profiles/` (600) by the secrets step
+   and registered once (`add … --link`, named after the file).
+
+Each step is skipped when already done. **Mac:** AWS VPN client via
+Homebrew; the profile imported by hand (Mac phase).
 
 ## Text snippets: Omarchy's XCompose; espanso dropped
 

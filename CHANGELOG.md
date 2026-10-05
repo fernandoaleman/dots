@@ -11,6 +11,11 @@ Omarchy is complete, including secrets via 1Password.
 
 ### Added
 
+- AWS VPN: `install.sh` installs the `omarchy-aws-vpn-client` plugin from
+  its repo (daemon via `omarchy-pkg-aur-add`, the plugin's `setup
+  --no-keybind`), its profile from 1Password (`dots/vpn`), and
+  Super+Shift+V opens its panel.
+- `mariadb-clients` (`mysql`, `mysqldump`).
 - `ruby` package: `~/.gemrc` with `gem: --no-document`.
 - `install.sh` secrets step: SSH keys, `~/.aws` files and credentials, an
   API token env file (`~/.config/dots/env`, loaded by bash), incoming SSH
