@@ -91,6 +91,7 @@ them. `install.sh` runs the same commands, each guarded:
 | `markdownlint-cli2` | Dropped: the LazyVim markdown Extra installs it via Mason for nvim |
 | `thefuck` | Dropped (last release 3.32, Jan 2022); its `settings.py` too |
 | `act` | Dropped |
+| `hunk` | Dropped (2026-10-04): [hunk](https://github.com/modem-dev/hunk), a *"review-first terminal diff viewer for agentic coders"* (review an AI agent's changes file by file, hunk by hunk). Omarchy's **lazygit** covers diff review (per-hunk/line staging and discarding). On Arch only in the AUR (`hunk-bin`, prebuilt); was a recent Homebrew install on the Mac. To add: `omarchy-pkg-aur-add hunk-bin` in `install.sh` |
 
 ### Terminals
 
