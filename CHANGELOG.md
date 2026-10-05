@@ -11,6 +11,8 @@ Omarchy is complete, including secrets via 1Password.
 
 ### Fixed
 
+- The secrets step no longer triggers 1Password's interactive "add an
+  account" prompt on a machine without a 1Password account yet.
 - The `bin` scripts (`aws-role-login`, `generate-ssh-config`) were never
   committed: `.gitignore`'s `*.local` also matched the `bin/.local/` folder.
   Folders named `.local` are re-included; `make doctor` now reports any
