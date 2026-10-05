@@ -458,10 +458,12 @@ export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/gcr/ssh"
 
 ## Missing tools
 
-### `htop` / `btm` / `ncdu` / `colordiff` / `thefuck` / `act` not found
+### `htop` / `btm` / `ncdu` / `colordiff` / `thefuck` / `act` / `hunk` not found
 
 **Why:** dropped in favor of what Omarchy ships: `btop` (system monitor),
-`dua i` (disk usage), `diff --color`. `thefuck` and `act` were dropped.
+`dua i` (disk usage), `diff --color`. `thefuck` and `act` were dropped. `hunk` (AI-agent diff
+reviewer) was dropped for Omarchy's **lazygit**; add it with
+`omarchy-pkg-aur-add hunk-bin` (AUR).
 **Re-add** an official-repo package to `PACMAN_PACKAGES` in `install.sh`
 (installed with `omarchy-pkg-add`).
 
