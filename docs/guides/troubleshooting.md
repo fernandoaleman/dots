@@ -360,6 +360,14 @@ there's nothing to restore.
 
 ## Docker
 
+### `docker ps`: permission denied on `/var/run/docker.sock`
+
+**Why:** sudoless Docker (the `docker` group) only applies after a
+**reboot**; until then use `sudo docker …`. Check with
+`omarchy-sudo-docker --configured || echo "configured"`. To go back to
+Omarchy's default (sudo / polkit): `omarchy-remove-security-sudoless-docker`
+([desktop.md](../decisions/desktop.md)).
+
 ### Containers can't resolve DNS / VPN hosts on 172.17.x.x unreachable
 
 **Why:** `install.sh` moves Docker's bridge to `172.31.0.1/16` and its

@@ -171,6 +171,20 @@ here: the file exists and `/sys/module/hid_apple/parameters/fnmode` is `2`.
 **Mac:** System Settings, Keyboard, "Use F1, F2, etc. keys as standard
 function keys" (Mac-phase, with the old `90-setup-osx-defaults`).
 
+## Docker access: sudoless (opt-in, Omarchy's script)
+
+Omarchy deliberately leaves the user out of the `docker` group
+(`install/config/docker.sh`: membership *"is equivalent to passwordless
+root"*), so `docker` needs `sudo` and the Docker TUI goes through a polkit
+prompt. **Opted in** (2026-10-04, user's choice: daily development, own
+registry logins, AI agents running Docker) with Omarchy's own
+`omarchy-setup-security-sudoless-docker` (adds the user to `docker` after a
+warning; needs a reboot). `install.sh` runs it when
+`omarchy-sudo-docker --configured` says it isn't set up, with
+`OMARCHY_DEFER_REBOOT=1` so it records reboot-required instead of
+rebooting mid-install. Undo: `omarchy-remove-security-sudoless-docker`.
+**Mac:** Docker Desktop has no such restriction.
+
 ## Docker networks: moved off 172.17.0.0/16 (overrides Omarchy)
 
 A work VPN routes `172.17.x.x`, which is Docker's default bridge network,
