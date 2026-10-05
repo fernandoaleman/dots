@@ -103,6 +103,13 @@ Omarchy plugin catalog; in the plugin repo:
   dots runs `setup --no-keybind` and binds in `hyprland.dots.lua`.
 - The systemd drop-in is no longer needed: the AUR package fixed the
   daemon path in 1.2.4 (setup already only applies it when needed).
+- README: `omarchy plugin add` installs into
+  `~/.config/omarchy/plugins/<plugin ID>/` (`fernandoaleman.aws-vpn-client`),
+  not `…/plugins/omarchy-aws-vpn-client/`; fix the `setup` and CLI-link
+  paths shown there.
+- FYI, not the plugin's bug: the AUR `openlawsvpn` build prints a Cargo
+  "cannot create the lock file … --locked" error; its `prepare()` runs
+  `cargo fetch --locked || cargo fetch`, so the fallback succeeds.
 
 ### Mac phase: Mac Studio sync scripts
 
