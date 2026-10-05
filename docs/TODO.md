@@ -93,7 +93,10 @@ related to it (logins, keys, notes) across vaults.
 ### AWS VPN Omarchy plugin
 
 Now installed by `install.sh` from its GitHub repo
-([desktop.md](decisions/desktop.md)). Review it for submission to the
+([desktop.md](decisions/desktop.md)). Made **public** 2026-10-04 (a fresh
+clone needs no GitHub login); before that its history was scrubbed of a
+real VPN server/client address from an old README example and the repo
+recreated, so the old commits are gone. Review it for submission to the
 Omarchy plugin catalog; in the plugin repo:
 
 - `setup` installs `openlawsvpn-daemon` with `yay`; use Omarchy's
