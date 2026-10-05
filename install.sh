@@ -261,6 +261,17 @@ else
   warn "No ~/.config/nvim/lazyvim.json found; skipping LazyVim Extras"
 fi
 
+# Sudoless Docker (opt-in; Omarchy's default needs sudo): Omarchy's script adds
+# the user to the docker group (root-equivalent) after its own warning and
+# confirmation. The reboot it needs is deferred (it records reboot-required).
+step "Checking sudoless Docker"
+if omarchy-sudo-docker --configured; then
+  OMARCHY_DEFER_REBOOT=1 omarchy-setup-security-sudoless-docker
+  omarchy-sudo-docker --configured || warn "Sudoless Docker takes effect after a reboot"
+else
+  ok "Sudoless Docker enabled (user in the docker group)"
+fi
+
 # Docker's default bridge (172.17.0.0/16) clashes with a work VPN that
 # routes 172.17.x.x, and Docker's built-in pools for other networks (docker
 # compose) start there too. Move the bridge to $DOCKER_BRIDGE_IP/16 and the
