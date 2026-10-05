@@ -21,6 +21,15 @@ warn() { printf '\033[1;33m! %s\033[0m\n' "$1"; }
 # Omarchy's helper: ask for sudo once and keep it alive for the whole run
 source omarchy-sudo-keepalive
 
+# A fresh Omarchy install has no package lists yet (pacman: "database file
+# for 'core' does not exist"; Omarchy shows an "Update System" notice). Run
+# Omarchy's own update then, never a bare pacman -Sy (partial upgrade).
+if [[ ! -f /var/lib/pacman/sync/core.db || ! -f /var/lib/pacman/sync/extra.db ]]; then
+  step "Updating the system first (fresh install)"
+  warn "If the update offers to reboot, answer No; reboot once install.sh is done"
+  omarchy-update -y
+fi
+
 step "Installing prerequisites"
 omarchy-pkg-add git stow
 ok "git and stow installed"

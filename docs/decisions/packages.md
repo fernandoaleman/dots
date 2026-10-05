@@ -46,6 +46,18 @@ Listed in `omarchy-base.packages` or present on a fresh install:
 `tldr`, `zoxide`, `docker`, JetBrains Mono Nerd font
 (`ttf-jetbrains-mono-nerd-basic`), `obsidian`, `gnupg`.
 
+## Fresh install: Omarchy's update first
+
+On a brand-new Omarchy install pacman has no package lists yet
+(`/var/lib/pacman/sync/core.db` missing; Omarchy shows an "Update System"
+notice), so `omarchy-pkg-add` (a plain `pacman -S --needed`) finds
+nothing. Found in the clean-install VM test (2026-10-04). `install.sh`
+then runs `omarchy-update -y` (unattended: Omarchy's full update, with
+snapshot, migrations, AUR and mise) before installing anything, never a
+bare `pacman -Sy` (an Arch partial upgrade). Its final reboot question
+(kernel/Hyprland updated) should be answered No until `install.sh` is
+done.
+
 ## Installed by `install.sh` with Omarchy's installers
 
 Omarchy does not install these by default, but its menu has installers for
