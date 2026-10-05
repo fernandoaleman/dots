@@ -17,6 +17,10 @@ o.window({ initial_class = "^chrome-teams\\.cloud\\.microsoft__-Default$" }, { w
 o.window({ initial_class = "^chrome-outlook\\.office\\.com__-Default$" }, { workspace = "8" })
 o.window({ initial_class = "^Spotify$" }, { workspace = "9" })
 
+-- AWS VPN plugin panel (instead of the plugin setup writing to Omarchy's
+-- bindings.lua); Super+Shift+V was free
+o.bind("SUPER + SHIFT + V", "AWS VPN", "omarchy-shell fernandoaleman.aws-vpn-client toggle")
+
 -- Machine-local overrides, not stored in dots (skipped if missing)
 do
   local f = os.getenv("HOME") .. "/.config/hypr/hyprland.local.lua"

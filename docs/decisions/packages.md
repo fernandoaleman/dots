@@ -41,8 +41,8 @@ Switch Roles, Keynote, Numbers, Pages, SonicWall Mobile Connect).
 
 Listed in `omarchy-base.packages` or present on a fresh install:
 `bash`, `curl`, `eza`, `fastfetch`, `fd`, `fzf`, `gum`, `imagemagick`, `jq`,
-`libyaml`, `lua` (`lua51`), `mysql-client` (Omarchy ships `mariadb-libs`),
-`libpq`/`psql` (Omarchy ships `postgresql-libs`), `ripgrep`, `rsync`,
+`libyaml`, `lua` (`lua51`), `mysql-client` (Omarchy ships `mariadb-libs`: `mysql_config`/`libmariadb` for the `mysql2` gem; the `mysql`/`mysqldump` commands come from `mariadb-clients`, added to `PACMAN_PACKAGES` 2026-10-04),
+`libpq`/`psql` (Omarchy ships `postgresql-libs` 18: `libpq`, `pg_config`, `psql`, `pg_dump`, `pg_restore`; newer clients work with the PostgreSQL 16 servers), `ripgrep`, `rsync`,
 `tldr`, `zoxide`, `docker`, JetBrains Mono Nerd font
 (`ttf-jetbrains-mono-nerd-basic`), `obsidian`, `gnupg`.
 

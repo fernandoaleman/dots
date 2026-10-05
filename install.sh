@@ -26,7 +26,7 @@ omarchy-pkg-add git stow
 ok "git and stow installed"
 
 # Extra packages from the official repos that Omarchy doesn't install
-PACMAN_PACKAGES=(wget nmap)
+PACMAN_PACKAGES=(wget nmap mariadb-clients)
 step "Installing packages: ${PACMAN_PACKAGES[*]}"
 omarchy-pkg-add "${PACMAN_PACKAGES[@]}"
 ok "Packages installed"
@@ -63,6 +63,25 @@ if omarchy-pkg-missing spotify; then
 else
   ok "Spotify already installed"
 fi
+
+# AWS VPN: the user's Omarchy plugin, from its GitHub repo (not yet in the
+# plugin catalog). The daemon comes first, with Omarchy's AUR installer, so
+# the plugin's setup skips its own yay step. setup (safe to re-run): systemd
+# fallback, daemon enabled, CLI on PATH, bar widget; --no-keybind because the
+# keybinding lives in hyprland.dots.lua, not Omarchy's bindings.lua.
+VPN_PLUGIN_ID=fernandoaleman.aws-vpn-client
+VPN_PLUGIN_DIR="$HOME/.config/omarchy/plugins/omarchy-aws-vpn-client"
+if omarchy-pkg-missing openlawsvpn-daemon; then
+  omarchy-pkg-aur-add openlawsvpn-daemon
+else
+  ok "openlawsvpn-daemon already installed"
+fi
+if omarchy plugin list | grep -q "^$VPN_PLUGIN_ID "; then
+  ok "AWS VPN plugin already added"
+else
+  omarchy plugin add https://github.com/fernandoaleman/omarchy-aws-vpn-client --enable --yes
+fi
+"$VPN_PLUGIN_DIR/setup" --no-keybind
 
 # Web apps (Chrome app windows), created with Omarchy's installer:
 # "Name|URL|icon URL". With no icon URL, Omarchy fetches the site's own icon
@@ -373,7 +392,20 @@ else
     done | sort | while IFS=$'\t' read -r name value; do printf 'export %s=%q\n' "$name" "$value"; done
   } | put_secret "$HOME/.config/dots/env" 600
 
-  # Incoming SSH: Omarchy's script, authorizing only the personal key
+  # dots/vpn Documents -> the AWS VPN plugin's profiles (600), registered once,
+# in place, named after the file without .ovpn
+vpn_profiles="$HOME/.config/omarchy/aws-vpn-client/profiles"
+while IFS=$'\t' read -r id vault title; do
+  safe_name "$title" && [[ $title == *.ovpn ]] || { warn "Skipping VPN profile with an unusable title: $title"; continue; }
+  op document get "$id" --vault "$vault" | put_secret "$vpn_profiles/$title" 600
+  if omarchy-aws-vpn-client list | grep -qw -- "${title%.ovpn}"; then
+    ok "VPN profile ${title%.ovpn} already registered"
+  else
+    omarchy-aws-vpn-client add "$vpn_profiles/$title" --name "${title%.ovpn}" --link
+  fi
+done < <(op item list --tags dots/vpn --categories Document --format json | jq -r '.[] | [.id, .vault.id, .title] | @tsv')
+
+# Incoming SSH: Omarchy's script, authorizing only the personal key
   pubkey=$(op read "op://Private/id_ed25519/public key" | awk '{print $1, $2}')
   if systemctl is-active --quiet sshd && [[ -f /etc/ssh/sshd_config.d/10-omarchy-hardening.conf ]] &&
     awk '{print $1, $2}' "$HOME/.ssh/authorized_keys" 2>/dev/null | grep -qxF "$pubkey"; then

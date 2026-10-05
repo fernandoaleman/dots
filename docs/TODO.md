@@ -92,9 +92,17 @@ related to it (logins, keys, notes) across vaults.
 
 ### AWS VPN Omarchy plugin
 
-Install the user's own AWS VPN client plugin (outside dots; see
-[desktop.md](decisions/desktop.md)) and review it for submission to the
-Omarchy plugin catalog.
+Now installed by `install.sh` from its GitHub repo
+([desktop.md](decisions/desktop.md)). Review it for submission to the
+Omarchy plugin catalog; in the plugin repo:
+
+- `setup` installs `openlawsvpn-daemon` with `yay`; use Omarchy's
+  `omarchy-pkg-aur-add` instead (dots works around it by installing the
+  daemon first).
+- `setup` writes its keybinding into Omarchy's `~/.config/hypr/bindings.lua`;
+  dots runs `setup --no-keybind` and binds in `hyprland.dots.lua`.
+- The systemd drop-in is no longer needed: the AUR package fixed the
+  daemon path in 1.2.4 (setup already only applies it when needed).
 
 ### Mac phase: Mac Studio sync scripts
 
