@@ -11,6 +11,7 @@ Omarchy is complete, including secrets via 1Password.
 
 ### Added
 
+- `ncdu` shell function pointing to Omarchy's `dua i`.
 - Sudoless Docker via Omarchy's opt-in script (reboot deferred).
 - AWS VPN: `install.sh` installs the `omarchy-aws-vpn-client` plugin from
   its repo (daemon via `omarchy-pkg-aur-add`, the plugin's `setup

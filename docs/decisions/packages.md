@@ -86,7 +86,7 @@ them. `install.sh` runs the same commands, each guarded:
 | `wget`, `nmap` | **Added**: official repos, installed by `install.sh` via `omarchy-pkg-add` (`PACMAN_PACKAGES`) |
 | `todoist-cli` (`td`) | **Added** as a mise tool, `npm:@doist/todoist-cli` (not in Arch repos/AUR). The old Todoist "skills" setup was Mac-only; `td-login` → bin scripts section |
 | `bottom`, `htop` | Dropped: Omarchy's **btop** |
-| `ncdu` | Dropped: Omarchy's **dua** (`dua i`) |
+| `ncdu` | Dropped: Omarchy's **dua** (`dua i`). For muscle memory, an `ncdu` shell function (in `bash/.config/bash/aliases`) prints the matching `dua i <path>` command and returns 127 |
 | `colordiff` | Dropped: `diff --color`, colored `git diff` |
 | `markdownlint-cli2` | Dropped: the LazyVim markdown Extra installs it via Mason for nvim |
 | `thefuck` | Dropped (last release 3.32, Jan 2022); its `settings.py` too |
