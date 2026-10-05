@@ -121,7 +121,7 @@ isn't in the plugin catalog yet:
 1. `omarchy-pkg-aur-add openlawsvpn-daemon` first, so the plugin's `setup`
    skips its own `yay` install (our rule: Omarchy's package scripts).
 2. `omarchy plugin add <repo URL> --enable --yes` (Omarchy clones it into
-   `~/.config/omarchy/plugins/`).
+   `~/.config/omarchy/plugins/<plugin ID>/`).
 3. The plugin's `setup --no-keybind` (systemd fallback for an old packaging
    bug, fixed upstream in 1.2.4; daemon enabled; CLI linked into
    `~/.local/bin`; widget). `--no-keybind`: it would write into Omarchy's

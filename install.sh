@@ -70,7 +70,7 @@ fi
 # fallback, daemon enabled, CLI on PATH, bar widget; --no-keybind because the
 # keybinding lives in hyprland.dots.lua, not Omarchy's bindings.lua.
 VPN_PLUGIN_ID=fernandoaleman.aws-vpn-client
-VPN_PLUGIN_DIR="$HOME/.config/omarchy/plugins/omarchy-aws-vpn-client"
+VPN_PLUGIN_DIR="$HOME/.config/omarchy/plugins/$VPN_PLUGIN_ID" # omarchy plugin add names it by ID
 if omarchy-pkg-missing openlawsvpn-daemon; then
   omarchy-pkg-aur-add openlawsvpn-daemon
 else
