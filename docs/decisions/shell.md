@@ -288,3 +288,11 @@ To make the Mac feel like Omarchy with bash 5+:
 - XDG vars: nothing sets them on macOS; decide whether to export them.
 - `00-homebrew` (deferred): `brew shellenv` + `HOMEBREW_NO_ANALYTICS=1`.
 - The login shell must be changed to Homebrew's bash 5+.
+
+## MariaDB aliases (added 2026-10-04)
+
+`mysql` / `mysqldump` on Arch are MariaDB's deprecated names (each run
+prints *"Deprecated program name. It will be removed in a future release"*).
+`bash/.config/bash/aliases` maps them to `mariadb` / `mariadb-dump`, only when
+`mariadb` exists (the Mac's Homebrew `mysql-client` has real `mysql`
+binaries). Scripts don't use aliases: write `mariadb` there.

@@ -6,3 +6,11 @@ alias grep='grep --color=auto'
 
 # Print PATH one entry per line
 alias path='echo $PATH | tr -s ":" "\n"'
+
+# MariaDB's client is the mysql client on Arch; mysql/mysqldump are deprecated
+# names that print a warning (and will be removed). Skipped where there is no
+# mariadb (e.g. the Mac's Homebrew mysql-client).
+if command -v mariadb &>/dev/null; then
+  alias mysql='mariadb'
+  alias mysqldump='mariadb-dump'
+fi
