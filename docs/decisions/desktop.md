@@ -102,6 +102,19 @@ the full steps to bring them back with updated unit files, are in the
 needed (iCloud SRP sign-in shipped in rclone v1.74.0; Arch has 1.75.1),
 Omarchy only has `fusermount3`, and credentials would come from 1Password.
 
+## Tailscale: Omarchy's installer, via `install.sh`
+
+Needed on every machine (remote access to this desktop from the Mac, see
+the [TODO](../TODO.md)). Omarchy's `omarchy-install-service-tailscale`
+(menu: Install > Service > Tailscale): `omarchy-pkg-add tailscale`,
+`systemctl enable --now tailscaled`, `tailscale up --accept-routes`
+(prints a browser sign-in link), `tailscale set --operator=$USER`,
+Taildrop receiving into `~/Downloads`, the bar widget, and a Tailscale admin
+console web app. `install.sh` runs it when the package is missing, and warns
+if Tailscale is installed but not signed in (decided 2026-10-04). The
+device name defaults to the hostname (`omarchy`). **Mac:** the Tailscale
+app (Mac phase).
+
 ## AWS VPN client: the user's Omarchy plugin, via `install.sh`
 
 The old setup installed AUR `awsvpnclient` (5.3.1, which AWS now lists as
