@@ -64,6 +64,17 @@ else
   ok "Spotify already installed"
 fi
 
+# Tailscale with Omarchy's installer (package, tailscaled, `tailscale up`
+# with a browser sign-in, user as operator, Taildrop to ~/Downloads, bar
+# widget, admin console web app)
+if omarchy-pkg-missing tailscale; then
+  omarchy-install-service-tailscale
+elif [[ $(tailscale status --json 2>/dev/null | jq -r '.BackendState // empty') == Running ]]; then
+  ok "Tailscale already installed and signed in"
+else
+  warn "Tailscale is installed but not signed in; run: sudo tailscale up --accept-routes"
+fi
+
 # AWS VPN: the user's Omarchy plugin, from its GitHub repo (not yet in the
 # plugin catalog). The daemon comes first, with Omarchy's AUR installer, so
 # the plugin's setup skips its own yay step. setup (safe to re-run): systemd
