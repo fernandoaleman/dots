@@ -14,3 +14,9 @@ if command -v mariadb &>/dev/null; then
   alias mysql='mariadb'
   alias mysqldump='mariadb-dump'
 fi
+
+# Muscle memory: ncdu was dropped for Omarchy's dua (docs/decisions/packages.md)
+ncdu() {
+  echo "ncdu isn't installed; Omarchy ships dua. Interactive disk usage: dua i ${*:-.}" >&2
+  return 127
+}

@@ -296,3 +296,10 @@ prints *"Deprecated program name. It will be removed in a future release"*).
 `bash/.config/bash/aliases` maps them to `mariadb` / `mariadb-dump`, only when
 `mariadb` exists (the Mac's Homebrew `mysql-client` has real `mysql`
 binaries). Scripts don't use aliases: write `mariadb` there.
+
+## `ncdu` hint (added 2026-10-04)
+
+`ncdu` was dropped for Omarchy's `dua` ([packages.md](packages.md)). An
+`ncdu` function in `bash/.config/bash/aliases` prints *"ncdu isn't
+installed; Omarchy ships dua. Interactive disk usage: dua i <path>"* (with
+the given path) and returns 127, so scripts still see it as missing.
