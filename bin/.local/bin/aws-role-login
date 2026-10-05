@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+#
+# aws-role-login [--no-ssh-config] [MFA code]: start the daily AWS MFA session.
+#
+# Gets temporary credentials (aws sts get-session-token) with the long-lived
+# key profile and the MFA device configured on it (mfa_serial in
+# ~/.aws/config), and writes them to the [mfa] profile, which the role
+# profiles use as source_profile. Without an argument, the MFA code comes
+# from the one 1Password item tagged dots/aws-mfa (op item get --otp); pass a
+# code to type it instead. Afterwards it runs generate-ssh-config (fresh SSH
+# hosts and tmux-ssh groups) unless --no-ssh-config is given.
+set -euo pipefail
+
+SOURCE_PROFILE=aws-role-switch # long-lived access key (~/.aws/credentials)
+MFA_PROFILE=mfa                # written here; role profiles read it
+OTP_TAG=dots/aws-mfa           # 1Password item holding the MFA code
+DURATION=43200                 # 12 hours (IAM users: up to 129600, 36 hours)
+
+die() { printf 'aws-role-login: %s\n' "$1" >&2; exit 1; }
+
+ssh_config=1
+code=
+for arg in "$@"; do
+  case $arg in
+  --no-ssh-config) ssh_config=0 ;;
+  -h | --help) sed -n '3,11p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  *) code=$arg ;;
+  esac
+done
+if [[ -z $code ]]; then
+  command -v op >/dev/null || die "op (1Password CLI) not found; pass the MFA code instead"
+  item=$(op item list --tags "$OTP_TAG" --format json | jq -r 'if length == 1 then .[0].id else empty end')
+  [[ -n $item ]] || die "need exactly one 1Password item tagged $OTP_TAG (or pass the MFA code)"
+  code=$(op item get "$item" --otp)
+fi
+[[ $code =~ ^[0-9]{6}$ ]] || die "MFA code must be 6 digits"
+
+serial=$(aws configure get mfa_serial --profile "$SOURCE_PROFILE") ||
+  die "no mfa_serial on profile $SOURCE_PROFILE in ~/.aws/config"
+
+read -r key secret token expires < <(
+  aws sts get-session-token --profile "$SOURCE_PROFILE" \
+    --serial-number "$serial" --token-code "$code" --duration-seconds "$DURATION" \
+    --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken,Expiration]' --output text
+)
+[[ -n ${token:-} ]] || die "no session credentials returned"
+
+# Creates [mfa] if missing and updates only that section
+aws configure set aws_access_key_id "$key" --profile "$MFA_PROFILE"
+aws configure set aws_secret_access_key "$secret" --profile "$MFA_PROFILE"
+aws configure set aws_session_token "$token" --profile "$MFA_PROFILE"
+
+echo "AWS MFA session ready (profile $MFA_PROFILE) until $(date -d "$expires" '+%a %H:%M' 2>/dev/null || echo "$expires")"
+
+if ((ssh_config)); then
+  generate-ssh-config || die "session is ready, but generate-ssh-config failed"
+fi

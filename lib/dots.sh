@@ -64,6 +64,13 @@ dots_doctor() {
     fi
   done < <(git -C "$DOTS_DIR" ls-files -- "${PACKAGES[@]}")
 
+  # Files inside a package that aren't committed (untracked or ignored)
+  # exist only on this machine: a fresh clone would lack them (machine-local
+  # overrides live in $HOME, not in the package folders)
+  while IFS= read -r path; do
+    issues+=("$DOTS_DIR/$path is not committed (missing from fresh clones)")
+  done < <(git -C "$DOTS_DIR" ls-files --others -- "${PACKAGES[@]}")
+
   # Docker moved off 172.17.0.0/16 (install.sh); Omarchy owns daemon.json,
   # so an update could put it back
   if [[ -f /etc/docker/daemon.json ]] &&

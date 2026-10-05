@@ -4,5 +4,7 @@
 # Machine-local overrides (<name>.local[.ext]) never belong in dots
 *.local
 *.local.*
+# ...but not folders named exactly .local (e.g. bin/.local/bin/)
+!.local/
 # mise conf.d uses hyphens (dots select environments there)
 *-local.toml

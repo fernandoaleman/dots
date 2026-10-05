@@ -11,6 +11,10 @@ Omarchy is complete, including secrets via 1Password.
 
 ### Fixed
 
+- The `bin` scripts (`aws-role-login`, `generate-ssh-config`) were never
+  committed: `.gitignore`'s `*.local` also matched the `bin/.local/` folder.
+  Folders named `.local` are re-included; `make doctor` now reports any
+  package file that isn't committed.
 - `install.sh` on a brand-new Omarchy: runs Omarchy's update first when
   pacman has no package lists yet (found by the clean-install test).
 
