@@ -370,7 +370,12 @@ put_secret() {
 safe_name() { [[ $1 =~ ^[A-Za-z0-9._-]+$ ]]; }                 # a file name
 safe_path() { [[ $1 =~ ^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)+$ && $1 != *..* ]]; } # under ~
 
-if ! command -v op &>/dev/null || ! op vault list &>/dev/null; then
+# `op account list` never prompts; without an account, `op vault list` would
+# ask to add one interactively, so it only runs once an account exists
+# (stdin closed, so it can't ask anything either way)
+if ! command -v op &>/dev/null ||
+  [[ -z $(op account list --format json 2>/dev/null | jq -r '.[]?.url' 2>/dev/null) ]] ||
+  ! op vault list </dev/null &>/dev/null; then
   warn "1Password CLI can't read your vaults: sign in to the 1Password app, turn on"
   warn "Settings > Developer > Integrate with 1Password CLI, then re-run install.sh"
 else
