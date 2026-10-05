@@ -4,55 +4,71 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-While in `0.x`, Omarchy sections are still being added; `1.0.0` will mean
-Omarchy is complete, including secrets via 1Password.
+`1.0.0` marks Omarchy complete, including secrets via 1Password, verified
+by a clean install; macOS support comes in later `1.x` releases.
 
 ## [Unreleased]
 
-### Fixed
+## [1.0.0] - 2026-10-04
 
-- `install.sh` stows with `--no-folding` and creates `~/.ssh` first: on a
-  fresh machine Stow had linked the whole `~/.ssh` into the repo, so the
-  installed SSH keys landed in the git working tree (nothing committed;
-  caught by the clean-install test and `make doctor`).
-- The secrets step no longer triggers 1Password's interactive "add an
-  account" prompt on a machine without a 1Password account yet.
-- The `bin` scripts (`aws-role-login`, `generate-ssh-config`) were never
-  committed: `.gitignore`'s `*.local` also matched the `bin/.local/` folder.
-  Folders named `.local` are re-included; `make doctor` now reports any
-  package file that isn't committed.
-- `install.sh` on a brand-new Omarchy: runs Omarchy's update first when
-  pacman has no package lists yet (found by the clean-install test).
+Omarchy complete: a fresh Omarchy install plus `install.sh` (and signing in
+to 1Password) gives the whole machine, secrets included. Verified by a
+clean install in a VM.
 
 ### Added
 
-- Tailscale via Omarchy's installer.
-- `ncdu` shell function pointing to Omarchy's `dua i`.
-- Sudoless Docker via Omarchy's opt-in script (reboot deferred).
-- AWS VPN: `install.sh` installs the `omarchy-aws-vpn-client` plugin from
-  its repo (daemon via `omarchy-pkg-aur-add`, the plugin's `setup
-  --no-keybind`), its profile from 1Password (`dots/vpn`), and
-  Super+Shift+V opens its panel.
-- `mariadb-clients` (`mysql`, `mysqldump`), with `mysql`/`mysqldump` aliased
-  to MariaDB's current names (no deprecation warning).
-- `ruby` package: `~/.gemrc` with `gem: --no-document`.
-- `install.sh` secrets step: SSH keys, `~/.aws` files and credentials, an
-  API token env file (`~/.config/dots/env`, loaded by bash), incoming SSH
-  (Omarchy's sshd script) and the repo remote switch, all from 1Password
-  by tag; skipped with instructions when 1Password isn't signed in.
-- Todoist logs in through `TODOIST_API_TOKEN` from 1Password: no
-  `td auth login` step.
-- `install.sh` installs `tmux-ssh` to `~/.local/bin` at a pinned commit
-  (SHA-256 checked).
+#### Secrets from 1Password
+
+- `install.sh` secrets step, everything found by 1Password tag (no vault,
+  company or key names in this repo): SSH keys (`dots/ssh`), `~/.aws`
+  files and credentials (`dots/aws`), an API token env file
+  (`~/.config/dots/env`, loaded by bash; `dots/token`) and the VPN
+  profile (`dots/vpn`); incoming SSH via Omarchy's sshd script; the repo
+  remote switched to SSH. Skipped with instructions when 1Password isn't
+  signed in.
+- Todoist logs in through `TODOIST_API_TOKEN`: no `td auth login` step.
+
+#### AWS and SSH
+
 - `bin` package (`~/.local/bin`): `aws-role-login` starts the daily AWS
-  MFA session with the code from 1Password (no typing); writes `[mfa]`
-  with `aws configure set`, then runs `generate-ssh-config`.
-- `bin`: `generate-ssh-config` writes `~/.ssh/aws` (per-host
-  `IdentityFile`) and tmux-ssh groups from running EC2 instances; the
-  environment table comes from 1Password.
+  MFA session with the code from 1Password (no typing), writes `[mfa]`
+  with `aws configure set`, then runs `generate-ssh-config`, which writes
+  `~/.ssh/aws` (per-host `IdentityFile`) and tmux-ssh groups from running
+  EC2 instances (environment table from 1Password).
 - `ssh` package: `~/.ssh/config` (includes the generated `~/.ssh/aws` and
   `~/.ssh/config.local`; hosts `mac-studio`, `omarchy`; `TERM` fix and
   `accept-new`; Omarchy's keepalives kept; no agent).
+- `tmux-ssh` in `~/.local/bin` at a pinned commit (SHA-256 checked).
+
+#### Apps and system
+
+- AWS VPN: the `omarchy-aws-vpn-client` plugin from its repo (daemon via
+  `omarchy-pkg-aur-add`, the plugin's `setup --no-keybind`), its profile
+  from 1Password, and Super+Shift+V for its panel.
+- Tailscale via Omarchy's installer.
+- Sudoless Docker via Omarchy's opt-in script (reboot deferred).
+- `mariadb-clients` (`mysql`, `mysqldump`).
+- `ruby` package: `~/.gemrc` with `gem: --no-document`.
+
+#### Shell
+
+- `mysql`/`mysqldump` aliased to MariaDB's current names (no deprecation
+  warning); an `ncdu` function pointing to Omarchy's `dua i`.
+
+### Fixed
+
+Found by the clean-install test:
+
+- On a brand-new Omarchy, `install.sh` runs Omarchy's update first when
+  pacman has no package lists yet.
+- `install.sh` stows with `--no-folding` and creates `~/.ssh` first: Stow
+  had linked the whole `~/.ssh` into the repo, so the installed keys landed
+  in the git working tree (nothing committed).
+- The `bin` scripts were never committed (`.gitignore`'s `*.local` matched
+  the `bin/.local/` folder); folders named `.local` are re-included and
+  `make doctor` reports any package file that isn't committed.
+- The secrets step no longer triggers 1Password's interactive "add an
+  account" prompt on a machine without a 1Password account.
 
 ## [0.2.0] - 2026-10-04
 
@@ -151,6 +167,7 @@ bin scripts and secrets come in later releases.
 - prek hooks (whitespace, toml/yaml, typos, committed, shellcheck),
   `make setup`, `make lint`, `make doctor`.
 
-[Unreleased]: https://github.com/fernandoaleman/dots/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/fernandoaleman/dots/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/fernandoaleman/dots/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/fernandoaleman/dots/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/fernandoaleman/dots/releases/tag/v0.1.0
