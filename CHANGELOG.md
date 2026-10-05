@@ -9,6 +9,11 @@ Omarchy is complete, including secrets via 1Password.
 
 ## [Unreleased]
 
+### Fixed
+
+- `install.sh` on a brand-new Omarchy: runs Omarchy's update first when
+  pacman has no package lists yet (found by the clean-install test).
+
 ### Added
 
 - Tailscale via Omarchy's installer.
