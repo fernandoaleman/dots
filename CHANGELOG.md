@@ -11,6 +11,10 @@ Omarchy is complete, including secrets via 1Password.
 
 ### Fixed
 
+- `install.sh` stows with `--no-folding` and creates `~/.ssh` first: on a
+  fresh machine Stow had linked the whole `~/.ssh` into the repo, so the
+  installed SSH keys landed in the git working tree (nothing committed;
+  caught by the clean-install test and `make doctor`).
 - The secrets step no longer triggers 1Password's interactive "add an
   account" prompt on a machine without a 1Password account yet.
 - The `bin` scripts (`aws-role-login`, `generate-ssh-config`) were never

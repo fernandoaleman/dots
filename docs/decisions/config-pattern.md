@@ -121,6 +121,17 @@ checks any time; `install.sh` runs them at the end.
 `INCLUDES` (each Omarchy file and the line that loads our `.dots` file),
 shared by `install.sh`, the hook and `make doctor`.
 
+## Stow without folding
+
+`install.sh` runs `stow --no-folding` (changed 2026-10-04, found by the
+clean-install test): Stow creates real folders and links only our files.
+With folding, a folder that doesn't exist yet on a fresh machine (there:
+`~/.ssh`) becomes a single link into the repo, and everything later written
+into it (private keys, `known_hosts`) lands inside the git working tree.
+`install.sh` also creates `~/.ssh` (700) before stowing, and `make doctor`
+reports any package file that isn't committed. Cost: a new file in a
+package needs a re-stow (`install.sh`), for every package alike.
+
 ## Tally
 
 Every Omarchy-owned config file we customize. **If "no include" ends up

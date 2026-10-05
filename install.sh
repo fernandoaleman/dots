@@ -168,8 +168,12 @@ for pkg in "${PACKAGES[@]}"; do
 done
 ((backed_up)) || ok "Nothing to back up"
 
+# --no-folding: real folders, links only for our files. With folding, a
+# folder missing on a fresh machine (e.g. ~/.ssh) becomes one link into the
+# repo, and whatever else is later written there (keys!) lands in the repo.
 step "Stowing packages: ${PACKAGES[*]}"
-stow --dir "$DOTS_DIR" --target "$HOME" --restow "${PACKAGES[@]}"
+mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
+stow --dir "$DOTS_DIR" --target "$HOME" --restow --no-folding "${PACKAGES[@]}"
 ok "Stowed"
 
 # Omarchy's own config files stay real files that Omarchy (and its update
