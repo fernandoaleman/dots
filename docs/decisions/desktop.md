@@ -172,6 +172,9 @@ headless output at the MacBook's size or the Stream View plugin are the
 alternatives if the scaling bothers. Hardware encoding works: AMD Radeon
 780M via VA-API (H.264, HEVC, AV1).
 
+**Working** (2026-10-10): the 16" M3 MacBook Pro, paired in Moonlight,
+drives this desktop (typing and viewing through the stream).
+
 Still to decide (see the [TODO](../TODO.md)): unlocking remotely, the
 Sunshine Admin password from 1Password, Moonlight's keyboard behavior from
 the Mac, and the Tailscale device names.
