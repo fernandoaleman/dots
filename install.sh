@@ -118,6 +118,20 @@ for proto in tcp udp; do
 done
 sudo ufw reload >/dev/null
 ok "Sunshine ports open to private LANs$(ip link show tailscale0 &>/dev/null && echo " and Tailscale")"
+# Stream the middle desk monitor (DP-2, workspaces 4-6; see monitors.dots.lua);
+# when it isn't connected, Sunshine falls back to a connected one (tested).
+# Sunshine's web UI rewrites sunshine.conf, so only this line is managed.
+sunshine_conf="$HOME/.config/sunshine/sunshine.conf"
+SUNSHINE_OUTPUT="output_name = DP-2"
+mkdir -p "$(dirname "$sunshine_conf")" && touch "$sunshine_conf"
+if grep -qxF "$SUNSHINE_OUTPUT" "$sunshine_conf"; then
+  ok "Sunshine streams DP-2 (middle monitor)"
+else
+  sed -i '/^output_name[[:space:]]*=/d' "$sunshine_conf"
+  echo "$SUNSHINE_OUTPUT" >>"$sunshine_conf"
+  systemctl --user try-restart "$SUNSHINE_UNIT"
+  ok "Sunshine set to stream DP-2 (middle monitor)"
+fi
 
 # AWS VPN: the user's Omarchy plugin, from its GitHub repo (not yet in the
 # plugin catalog). The daemon comes first, with Omarchy's AUR installer, so

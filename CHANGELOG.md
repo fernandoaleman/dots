@@ -14,7 +14,7 @@ by a clean install; macOS support comes in later `1.x` releases.
 - Remote desktop host: Sunshine (Moonlight streaming over the LAN and
   Tailscale), installed as Omarchy's installer does it, with its open bugs
   fixed (real unit name, no double start, no browser-wide certificate
-  bypass).
+  bypass). It streams the middle desk monitor (`output_name = DP-2`).
 
 ## [1.0.0] - 2026-10-04
 
