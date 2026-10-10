@@ -9,16 +9,22 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-10
+
+Remote desktop: use the Omarchy desktop from a Mac with Moonlight, at home
+or away over Tailscale.
+
 ### Added
 
 - Remote desktop host: Sunshine (Moonlight streaming over the LAN and
   Tailscale), installed as Omarchy's installer does it, with its open bugs
   fixed (real unit name, no double start, no browser-wide certificate
-  bypass). It streams the middle desk monitor (`output_name = DP-2`).
-
+  bypass). It streams the middle desk monitor (`output_name = DP-2`) and
+  falls back to a connected one.
 - `docs/setup/macos.md`: the Mac checklist (Tailscale DNS off, AWS VPN,
-  Moonlight, terminal, small settings); troubleshooting for Sunshine,
-  Moonlight and Tailscale with the AWS VPN.
+  Moonlight and its keyboard capture, terminal, small settings).
+- Troubleshooting for Sunshine, Moonlight, and Tailscale with the AWS VPN
+  on macOS.
 
 ### Changed
 
@@ -183,7 +189,8 @@ bin scripts and secrets come in later releases.
 - prek hooks (whitespace, toml/yaml, typos, committed, shellcheck),
   `make setup`, `make lint`, `make doctor`.
 
-[Unreleased]: https://github.com/fernandoaleman/dots/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/fernandoaleman/dots/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/fernandoaleman/dots/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/fernandoaleman/dots/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/fernandoaleman/dots/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/fernandoaleman/dots/releases/tag/v0.1.0
