@@ -41,10 +41,9 @@ holds the AI tools' state (Claude Code, opencode memories, sessions), so
 nothing has to be synced across machines or OSes.
 
 **In progress (2026-10-10):** Omarchy's Sunshine + Moonlight chosen and
-added to `install.sh` ([desktop.md](decisions/desktop.md)). Still to decide:
-which of the three monitors to stream (or a headless output at the
-MacBook's size; catalog plugins: Stream View, Virtual Display), unlocking
-the desktop remotely, the Sunshine Admin password from 1Password, Moonlight
+added to `install.sh`, streaming the middle monitor
+([desktop.md](decisions/desktop.md)). Still to decide: unlocking the
+desktop remotely, the Sunshine Admin password from 1Password, Moonlight
 keyboard behavior from the Mac (Cmd/Super), and the Tailscale cleanup
 (duplicate offline Mac devices).
 When Tailscale is set up: name the devices `omarchy` and `mac-studio` and

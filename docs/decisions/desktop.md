@@ -162,9 +162,19 @@ extra risk is modest here, since sudoless Docker already makes local code
 root-equivalent. Pairing a client is a manual step
 ([setup](../setup/omarchy.md)).
 
-Still to decide (see the [TODO](../TODO.md)): which monitor to stream (or a
-virtual screen at the MacBook's size), unlocking remotely, the Sunshine
-Admin password from 1Password, and the Tailscale device names.
+**What the Mac sees: the middle monitor** (decided 2026-10-10): Sunshine's
+`output_name = DP-2` (connector name, per Sunshine's docs; workspaces 4-6,
+tmux/Claude Code). Tested: when `DP-2` isn't connected, Sunshine falls back
+to a connected monitor. Sunshine's web UI rewrites `sunshine.conf`, so
+`install.sh` only ensures that line (not stowed). The client is a 16" M3
+MacBook Pro (3456x2234, 16:10), so the 16:9 stream shows thin bars; a
+headless output at the MacBook's size or the Stream View plugin are the
+alternatives if the scaling bothers. Hardware encoding works: AMD Radeon
+780M via VA-API (H.264, HEVC, AV1).
+
+Still to decide (see the [TODO](../TODO.md)): unlocking remotely, the
+Sunshine Admin password from 1Password, Moonlight's keyboard behavior from
+the Mac, and the Tailscale device names.
 
 **Mac:** Moonlight (Homebrew cask) as the client (Mac phase).
 
