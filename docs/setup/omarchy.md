@@ -59,7 +59,22 @@ are kept out of this public repo; the old chezmoi script
 
 Same on the Mac.
 
-## 5. Working on dots (optional)
+## 5. Remote desktop (Sunshine) for your Mac
+
+`install.sh` installs Sunshine (Omarchy's installer) and opens its "Sunshine
+Admin" web app once. Then, once:
+
+1. In **Sunshine Admin** (`https://localhost:47990`, also in the app
+   launcher), create the admin username and password (store them in
+   1Password).
+2. On the Mac, open **Moonlight** and add this machine (it appears on the
+   LAN; over Tailscale add it by its Tailscale name or `100.x` address).
+   Moonlight shows a **PIN**.
+3. In Sunshine Admin, **PIN** tab: enter it and a name for the Mac.
+
+Repeat steps 2-3 for each new client device.
+
+## 6. Working on dots (optional)
 
 Only needed to commit changes to this repo. `make setup` installs prek
 (via mise) and shellcheck (via `omarchy-pkg-add`), then activates the git
