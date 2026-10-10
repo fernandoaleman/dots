@@ -13,3 +13,38 @@ detects macOS vs Omarchy; shared steps (stow, secrets from 1Password, tmux
 plugins, mise, git identity, doctor) run on both, and only system-specific
 steps branch (packages and apps: Omarchy's scripts vs Homebrew; Omarchy-only
 steps such as Sunshine, Docker networks, sudoless Docker).
+
+## Machine profiles: personal or work
+
+Decided 2026-10-10. Besides the OS, machines differ by owner: the Omarchy
+desktop and the Mac Studio are **personal**; the MacBook Pro is a **work**
+laptop (company-owned, with IT's RMM agent, NinjaOne: per its docs Full Disk
+Access, Accessibility and Screen Recording, plus admin scripting, so assume
+IT can read files, see the screen and run anything). One `install.sh`; the
+first run asks "personal or work?" (gum, with a plain `read` fallback) and
+remembers it in machine-local `~/.config/dots/profile` (never committed);
+`DOTS_PROFILE=work install.sh` overrides. The profile selects apps/packages
+and secrets. Secrets follow the **1Password account**: work items move to
+the user's work 1Password account; the work profile reads only that
+account (the personal account never needs signing in there), the personal
+profile reads both. Details are decided step by step while building.
+
+## Bootstrap on a fresh Mac
+
+Decided 2026-10-10. The same one-liner as on Omarchy; nothing installed by
+hand first. A fresh macOS has `curl` and bash 3.2 (`/bin/bash`), and only a
+`git` placeholder (real git needs Apple's Command Line Tools). So the top of
+`install.sh` runs under bash 3.2 (no bash 4+ features) and, on macOS:
+
+1. installs Homebrew with its official installer
+   (`NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`;
+   one password prompt; it also installs the Command Line Tools, giving
+   git), then `eval "$(/opt/homebrew/bin/brew shellenv)"`;
+2. `brew install bash git gum stow jq`;
+3. clones or updates `~/Work/dots`, then re-runs the repo's `install.sh`
+   with Homebrew's bash 5 (`bash <(curl …)` leaves no file to re-run);
+4. asks the profile question, then continues (Brewfile, configs, secrets).
+
+macOS has no `omarchy-sudo-keepalive`: the Mac branch asks for the password
+once and refreshes it in the background. Omarchy skips the bootstrap
+(already bash 5 with gum).
