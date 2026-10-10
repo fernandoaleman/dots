@@ -188,6 +188,28 @@ Sunshine Admin password from 1Password, and the Tailscale device names.
 
 **Mac:** Moonlight (Homebrew cask) as the client (Mac phase).
 
+## Tailscale + the AWS VPN on the same machine
+
+Investigated 2026-10-10 (both connected, captured live):
+
+- **Routes don't clash:** the AWS VPN is a split tunnel (only the work
+  ranges `172.16`-`172.23.x` via its tunnel; internet stays local) and
+  doesn't touch Tailscale's `100.64.0.0/10`.
+- **DNS clashes on macOS, not on Linux.** The VPN pushes its own resolvers
+  (a private AWS resolver for internal names, then `8.8.8.8`) and claims all
+  lookups. On Omarchy, `systemd-resolved` keeps per-link DNS separate
+  (Tailscale only answers `*.ts.net`), so both work. On macOS, with
+  Tailscale's **"Use Tailscale DNS"** on, Tailscale replaced the system's
+  resolvers with only `100.100.100.100`: AWS's resolvers vanished and every
+  lookup failed (Claude's API, AWS SSO, websites); the Mac Studio also lost
+  LAN connectivity until both were quit.
+- **Fix (Macs that run the AWS VPN):** turn **"Use Tailscale DNS" off**
+  (`tailscale set --accept-dns=false`), no exit node. Verified on the Mac
+  Studio: Tailscale and the VPN connected together, VPN DNS in charge,
+  public and AWS lookups, HTTPS and Tailscale (`ping omarchy`, 1 ms) all
+  working. Cost: Tailscale short names don't resolve on that Mac, so
+  `~/.ssh/config` uses Tailscale addresses.
+
 ## AWS VPN client: the user's Omarchy plugin, via `install.sh`
 
 The old setup installed AUR `awsvpnclient` (5.3.1, which AWS now lists as
