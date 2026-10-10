@@ -52,6 +52,15 @@ switch their `HostName`s in `ssh/.ssh/config` to those Tailscale names;
 decide whether sshd stays reachable on the LAN or only over Tailscale
 ([secrets.md](decisions/secrets.md)).
 
+### Sunshine: back to Omarchy's installer when fixed
+
+`install.sh` replicates `omarchy-install-service-sunshine` with fixes
+because it's broken in Omarchy 4.0.4 ([desktop.md](decisions/desktop.md)).
+When Omarchy merges a fix (issues #12053/#14048, PRs #12505/#13230/#13925/
+#14412, certificate PRs #12834/#14918), switch back to calling Omarchy's
+installer. Also watch for the newer `sunshine` package (#10836, #11956:
+security fixes).
+
 ### tmux-ssh project
 
 - README: the install command uses `…/tmux-ssh/main/tmux-ssh`, which is a
