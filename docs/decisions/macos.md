@@ -90,3 +90,14 @@ Decided 2026-10-10: install apps with a Homebrew cask (or the vendor's
 direct download) whenever one exists; the Mac App Store only when there's
 no other way (no personal Apple ID on the work laptop, and avoided
 elsewhere too). Apps are reviewed one at a time.
+
+### App reviews
+
+Inventory taken from the Mac Studio (2026-10-10, over SSH): 62 formulae
+installed on request (`brew leaves --installed-on-request`), 36 casks, 10
+App Store apps, plus a few apps from outside Homebrew (Microsoft Office,
+Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
+
+| App | Install | Profiles | Notes |
+|---|---|---|---|
+| 1Password + CLI | casks `1password`, `1password-cli` | both | work profile: sign in to the work account only. "1Password for Safari" (App Store) dropped: 1Password 8's Safari extension is believed to ship in the app (verify on the fresh Mac); Chrome's extension comes from the Chrome Web Store |

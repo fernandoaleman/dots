@@ -9,7 +9,15 @@ is the checklist. Decisions behind each step are linked.
 Install 1Password, sign in, and turn on **Settings > Developer > Integrate
 with 1Password CLI** (dots reads secrets with `op`).
 
-## 2. Tailscale: Use Tailscale DNS **off**
+## 2. Chrome profile
+
+- **Work MacBook:** sign Chrome in with a Google account for your **work
+  email** (create one with "use my current email" if work isn't on Google
+  Workspace). Never your personal Google account there: it would sync your
+  personal history, bookmarks and passwords onto a machine IT manages.
+- **Personal Macs:** your personal Google account, as on Omarchy.
+
+## 3. Tailscale: Use Tailscale DNS **off**
 
 Install the Tailscale app, sign in, set it to **launch at login**. Then, in
 its menu (or Settings):
@@ -24,14 +32,14 @@ its menu (or Settings):
 Consequence: Tailscale short names (`omarchy`) don't resolve on the Mac;
 dots' `~/.ssh/config` uses Tailscale addresses instead.
 
-## 3. AWS VPN
+## 4. AWS VPN
 
 Install AWS's client (`brew install --cask aws-vpn-client`) and import the
 work profile by hand: the 1Password Document `1000bulbs.ovpn` (work vault,
 tag `dots/vpn`). Connect it **after** Tailscale is up. (On Omarchy the
 user's own plugin does this instead.)
 
-## 4. Moonlight (remote desktop into Omarchy)
+## 5. Moonlight (remote desktop into Omarchy)
 
 1. Install Moonlight (`brew install --cask moonlight`).
 2. Add the Omarchy desktop by its **Tailscale address `100.121.13.36`**
@@ -47,13 +55,13 @@ user's own plugin does this instead.)
 
 See [desktop.md](../decisions/desktop.md#remote-desktop-sunshine--moonlight-omarchys-via-installsh).
 
-## 5. Terminal: Option as Alt
+## 6. Terminal: Option as Alt
 
 Configure the Mac terminal (likely Ghostty) to send **Option as Alt/Meta**,
 so Omarchy's tmux Alt keys work the same (Alt+Enter splits, Alt+1..9
 windows, Alt+arrows) ([tmux.md](../decisions/tmux.md)).
 
-## 6. Small settings
+## 7. Small settings
 
 - **Function keys:** System Settings > Keyboard > "Use F1, F2, etc. keys as
   standard function keys" (Omarchy's `fnmode=2` equivalent;
