@@ -11,8 +11,10 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
-- Remote desktop host: Sunshine via Omarchy's installer (Moonlight
-  streaming over the LAN and Tailscale).
+- Remote desktop host: Sunshine (Moonlight streaming over the LAN and
+  Tailscale), installed as Omarchy's installer does it, with its open bugs
+  fixed (real unit name, no double start, no browser-wide certificate
+  bypass).
 
 ## [1.0.0] - 2026-10-04
 

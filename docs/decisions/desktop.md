@@ -131,9 +131,25 @@ Omarchy's base packages, with a full-screen window rule.
 Sharing (slower; Screen Sharing sends Cmd as Alt) and RDP plugins:
 GPU-encoded, low-latency streaming (game-streaming tech; this machine's
 AMD Radeon encodes H.264/HEVC/AV1 through Mesa's VA-API), each client
-paired with a PIN, Omarchy's own. `install.sh` runs Omarchy's installer
-when `sunshine` is missing, right after Tailscale (so the `tailscale0` rule
-is added). Pairing a client is a manual step
+paired with a PIN, Omarchy's own.
+
+**Omarchy's installer is broken in 4.0.4** (open upstream issues #7050,
+#12053, #13877; double start #12349/#14048; fix PRs #12505, #13230, #13925,
+#14412 not merged): it enables `sunshine.service`, which is only an `Alias=`
+of `app-dev.lizardbyte.app.Sunshine.service`, so it fails under `set -e`
+before the firewall step; it also adds a Hyprland autostart although the
+unit is `WantedBy=graphical-session.target` (a second copy crashes on every
+login); and it opens Sunshine Admin as a web app with
+`--ignore-certificate-errors`, which disables certificate checks for the
+whole browser session (PRs #12834, #14918). So `install.sh` does the same
+steps itself, fixed (decided 2026-10-10): `omarchy-pkg-add sunshine`, enable
+the real unit, Omarchy's exact firewall rules (same specs and
+`omarchy-sunshine` comment, so `omarchy-remove-service-sunshine` still
+removes them), no autostart line, no admin web app (open
+`https://localhost:47990` in the browser once and accept its self-signed
+certificate for that site). Runs right after Tailscale (so the `tailscale0`
+rule is added). Switch back to Omarchy's installer once fixed
+([TODO](../TODO.md)). Pairing a client is a manual step
 ([setup](../setup/omarchy.md)).
 
 Still to decide (see the [TODO](../TODO.md)): which monitor to stream (or a

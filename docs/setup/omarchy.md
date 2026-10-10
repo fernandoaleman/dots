@@ -61,12 +61,11 @@ Same on the Mac.
 
 ## 5. Remote desktop (Sunshine) for your Mac
 
-`install.sh` installs Sunshine (Omarchy's installer) and opens its "Sunshine
-Admin" web app once. Then, once:
+`install.sh` installs and starts Sunshine. Then, once:
 
-1. In **Sunshine Admin** (`https://localhost:47990`, also in the app
-   launcher), create the admin username and password (store them in
-   1Password).
+1. Open **Sunshine Admin** at `https://localhost:47990` in the browser. It
+   uses a self-signed certificate: accept the warning for that site only.
+   Create the admin username and password (store them in 1Password).
 2. On the Mac, open **Moonlight** and add this machine (it appears on the
    LAN; over Tailscale add it by its Tailscale name or `100.x` address).
    Moonlight shows a **PIN**.

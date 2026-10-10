@@ -84,16 +84,40 @@ else
   warn "Tailscale is installed but not signed in; run: sudo tailscale up --accept-routes"
 fi
 
-# Remote desktop host: Sunshine with Omarchy's installer (package from
-# Omarchy's repo, user service + Hyprland autostart, Moonlight streaming ports
-# opened only to private LANs and tailscale0, "Sunshine Admin" web app). After
-# Tailscale, so the tailscale0 firewall rule gets added. Clients (Moonlight)
-# are paired by hand once each (docs/setup/omarchy.md).
-if omarchy-pkg-missing sunshine; then
-  omarchy-install-service-sunshine
+# Remote desktop host: Sunshine, as Omarchy's omarchy-install-service-sunshine
+# does it, with its open bugs fixed (Omarchy 4.0.4; see docs/TODO.md to switch
+# back once fixed upstream): enable the real unit (sunshine.service is only an
+# Alias, which systemd won't enable), no Hyprland autostart line (the unit is
+# WantedBy=graphical-session.target; a second copy crashes), and no Sunshine
+# Admin web app with --ignore-certificate-errors (it disables certificate
+# checks for the whole browser). Firewall rules are Omarchy's own (same specs
+# and comment, so omarchy-remove-service-sunshine still removes them): ports
+# open only to private LANs and tailscale0. After Tailscale, so tailscale0
+# exists. Clients (Moonlight) are paired by hand (docs/setup/omarchy.md).
+SUNSHINE_UNIT=app-dev.lizardbyte.app.Sunshine.service
+SUNSHINE_TCP=(47984 47989 48010)
+SUNSHINE_UDP=(5353 47998 47999 48000 48002 48010)
+omarchy-pkg-add sunshine
+if systemctl --user is-enabled --quiet "$SUNSHINE_UNIT"; then
+  ok "Sunshine service already enabled"
 else
-  ok "Sunshine already installed"
+  systemctl --user enable --now "$SUNSHINE_UNIT"
+  ok "Sunshine service enabled and started"
 fi
+for proto in tcp udp; do
+  ports=("${SUNSHINE_TCP[@]}")
+  [[ $proto == udp ]] && ports=("${SUNSHINE_UDP[@]}")
+  for port in "${ports[@]}"; do
+    for cidr in 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16; do
+      sudo ufw allow in proto "$proto" from "$cidr" to any port "$port" comment omarchy-sunshine >/dev/null
+    done
+    if ip link show tailscale0 &>/dev/null; then
+      sudo ufw allow in on tailscale0 to any port "$port" proto "$proto" comment omarchy-sunshine >/dev/null
+    fi
+  done
+done
+sudo ufw reload >/dev/null
+ok "Sunshine ports open to private LANs$(ip link show tailscale0 &>/dev/null && echo " and Tailscale")"
 
 # AWS VPN: the user's Omarchy plugin, from its GitHub repo (not yet in the
 # plugin catalog). The daemon comes first, with Omarchy's AUR installer, so
