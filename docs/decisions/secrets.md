@@ -212,9 +212,12 @@ wrapper), which still apply. Ours (`ssh/.ssh/config`, public, generic):
   the server's `AcceptEnv`) and `StrictHostKeyChecking accept-new` (new
   hosts added, changed keys refused). **Dropped** `ServerAliveInterval 120`
   and `TCPKeepAlive no` (would override Omarchy's faster keepalives).
-- Hosts: `mac-studio` (`10.0.0.100`) and `omarchy` (this machine,
-  `10.0.0.200` via a DHCP reservation on the router); both `HostName`s
-  become their Tailscale names once Tailscale is set up. `arch` (old home
+- Hosts: `mac-studio` and `omarchy` (this machine) by their **Tailscale
+  addresses** (`100.125.49.73`, `100.121.13.36`; changed 2026-10-10): one
+  entry each, working at home (Tailscale goes direct over the LAN) and away;
+  not MagicDNS names, because Macs running the AWS VPN keep Tailscale DNS
+  off ([desktop.md](desktop.md)). LAN addresses (`10.0.0.100`, `10.0.0.200`
+  via a DHCP reservation) remain the manual fallback. `arch` (old home
   network) dropped.
 - Verified: `ssh mac-studio` works by name; `ssh -G` shows Omarchy's
   keepalive values still in effect.
@@ -234,10 +237,8 @@ key (fingerprint). Verified: `ssh omarchy` (10.0.0.200) logs in by key.
 `install.sh` (secrets step) runs
 `omarchy-setup-security-sshd --key="$(op read "op://Private/id_ed25519/public key")"`
 (only that one key), skipped when sshd is active, the hardening file
-exists and the key is already authorized. **Later, with Tailscale:**
-decide whether sshd answers on LAN + Tailscale or Tailscale only (outgoing
-SSH is unaffected either way; LAN devices without Tailscale would be
-refused in the second case). **Mac:** Remote Login + `authorized_keys`.
+exists and the key is already authorized. **Decided 2026-10-10:** sshd stays reachable on the LAN and over Tailscale
+(key-only, rate-limited; the internet side stays closed). **Mac:** Remote Login + `authorized_keys`.
 
 ### `generate-ssh-config` environment table: done
 
