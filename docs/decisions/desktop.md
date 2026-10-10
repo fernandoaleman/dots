@@ -174,10 +174,17 @@ alternatives if the scaling bothers. Hardware encoding works: AMD Radeon
 
 **Working** (2026-10-10): the 16" M3 MacBook Pro, paired in Moonlight,
 drives this desktop (typing and viewing through the stream).
+Connected over Tailscale (`100.121.13.36`), so it works away from home.
+Keyboard: macOS hands system-wide hotkeys (Raycast's Cmd+Space) to their
+owner unless Moonlight's **Capture system keyboard shortcuts** (gear icon in
+Moonlight's main window; *"in fullscreen"* / *"always"*, per Moonlight's
+`SettingsView.qml`) is on; with it on and the stream full screen, Cmd
+arrives as Super, Cmd+Space included (tested). A per-client manual setting
+([setup](../setup/omarchy.md)); the Mac phase could set it in Moonlight's
+preferences automatically.
 
 Still to decide (see the [TODO](../TODO.md)): unlocking remotely, the
-Sunshine Admin password from 1Password, Moonlight's keyboard behavior from
-the Mac, and the Tailscale device names.
+Sunshine Admin password from 1Password, and the Tailscale device names.
 
 **Mac:** Moonlight (Homebrew cask) as the client (Mac phase).
 

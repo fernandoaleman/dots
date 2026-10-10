@@ -43,8 +43,7 @@ nothing has to be synced across machines or OSes.
 **In progress (2026-10-10):** Omarchy's Sunshine + Moonlight chosen and
 added to `install.sh`, streaming the middle monitor
 ([desktop.md](decisions/desktop.md)). Still to decide: unlocking the
-desktop remotely, the Sunshine Admin password from 1Password, Moonlight
-keyboard behavior from the Mac (Cmd/Super), and the Tailscale cleanup
+desktop remotely, the Sunshine Admin password from 1Password, and the Tailscale cleanup
 (duplicate offline Mac devices).
 When Tailscale is set up: name the devices `omarchy` and `mac-studio` and
 switch their `HostName`s in `ssh/.ssh/config` to those Tailscale names;

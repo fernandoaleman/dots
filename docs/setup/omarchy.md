@@ -71,7 +71,14 @@ Same on the Mac.
    Moonlight shows a **PIN**.
 3. In Sunshine Admin, **PIN** tab: enter it and a name for the Mac.
 
-Repeat steps 2-3 for each new client device.
+4. In Moonlight's settings (the **gear icon** top right of its main window,
+   not the macOS menu), tick **Capture system keyboard shortcuts** and choose
+   **in fullscreen**. Stream full screen (**Ctrl+Option+Shift+X**): Cmd then
+   reaches Omarchy as Super, including Cmd+Space (Omarchy's launcher, which
+   is Raycast's hotkey on the Mac). **Ctrl+Option+Shift+Q** ends the stream,
+   **Ctrl+Option+Shift+Z** releases the keyboard.
+
+Repeat steps 2-4 for each new client device.
 
 ## 6. Working on dots (optional)
 
