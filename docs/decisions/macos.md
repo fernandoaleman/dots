@@ -48,3 +48,15 @@ hand first. A fresh macOS has `curl` and bash 3.2 (`/bin/bash`), and only a
 macOS has no `omarchy-sudo-keepalive`: the Mac branch asks for the password
 once and refreshes it in the background. Omarchy skips the bootstrap
 (already bash 5 with gum).
+
+## Homebrew packages: a `Brewfile`
+
+Decided 2026-10-10. A `Brewfile` at the repo root (not a stow package, so
+never linked into `$HOME`; Omarchy never reads it), used only by the macOS
+branch: `brew bundle --file="$DOTS_DIR/Brewfile" --no-upgrade`. Per
+Homebrew's docs: `brew bundle` *"will attempt to upgrade all software"* by
+default, hence `--no-upgrade` (re-runs only add what's missing; updates
+stay a deliberate `brew upgrade`); it removes nothing unless `brew bundle
+cleanup` runs (never from `install.sh`); Brewfiles are Ruby, so profile
+differences are conditions on `ENV["DOTS_PROFILE"]`; Mac App Store (`mas`)
+apps need a signed-in Apple ID, so they're personal-profile only.
