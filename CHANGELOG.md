@@ -16,6 +16,11 @@ by a clean install; macOS support comes in later `1.x` releases.
   fixed (real unit name, no double start, no browser-wide certificate
   bypass). It streams the middle desk monitor (`output_name = DP-2`).
 
+### Changed
+
+- `~/.ssh/config`: `omarchy` and `mac-studio` use their Tailscale addresses
+  (reachable at home and away).
+
 ## [1.0.0] - 2026-10-04
 
 Omarchy complete: a fresh Omarchy install plus `install.sh` (and signing in

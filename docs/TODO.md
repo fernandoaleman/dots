@@ -33,23 +33,6 @@ Things to settle then: the JSON format (Raycast's export vs. the plugin's),
 where the JSON lives (dots if nothing private, else 1Password), and the
 shared keybindings.
 
-### Remote desktop from the Mac into Omarchy (over Tailscale)
-
-See and use the full Omarchy desktop (GUI, not just SSH) from the Mac
-laptop when traveling or at the office, over Tailscale. Why: one machine
-holds the AI tools' state (Claude Code, opencode memories, sessions), so
-nothing has to be synced across machines or OSes.
-
-**In progress (2026-10-10):** Omarchy's Sunshine + Moonlight chosen and
-added to `install.sh`, streaming the middle monitor
-([desktop.md](decisions/desktop.md)). Still to decide: unlocking the
-desktop remotely, the Sunshine Admin password from 1Password, and the Tailscale cleanup
-(duplicate offline Mac devices).
-When Tailscale is set up: name the devices `omarchy` and `mac-studio` and
-switch their `HostName`s in `ssh/.ssh/config` to those Tailscale names;
-decide whether sshd stays reachable on the LAN or only over Tailscale
-([secrets.md](decisions/secrets.md)).
-
 ### Sunshine: back to Omarchy's installer when fixed
 
 `install.sh` replicates `omarchy-install-service-sunshine` with fixes
@@ -124,6 +107,16 @@ Omarchy plugin catalog; in the plugin repo:
 - FYI, not the plugin's bug: the AUR `openlawsvpn` build prints a Cargo
   "cannot create the lock file … --locked" error; its `prepare()` runs
   `cargo fetch --locked || cargo fetch`, so the fallback succeeds.
+
+### Mac phase: Mac setup notes from the remote-desktop work
+
+- Moonlight (Homebrew cask), with **Capture system keyboard shortcuts: in
+  fullscreen** (set it in Moonlight's preferences automatically if possible).
+- Tailscale app at login with **Use Tailscale DNS off** on Macs that run the
+  AWS VPN ([desktop.md](decisions/desktop.md)).
+- Mac Studio: `sudo scutil --set HostName Fernandos-Mac-Studio` (with no
+  HostName set, macOS names itself `ip-10-0-0-30` from AWS's DNS while the
+  VPN is connected).
 
 ### Mac phase: Mac Studio sync scripts
 

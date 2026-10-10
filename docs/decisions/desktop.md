@@ -183,8 +183,12 @@ arrives as Super, Cmd+Space included (tested). A per-client manual setting
 ([setup](../setup/omarchy.md)); the Mac phase could set it in Moonlight's
 preferences automatically.
 
-Still to decide (see the [TODO](../TODO.md)): unlocking remotely, the
-Sunshine Admin password from 1Password, and the Tailscale device names.
+Also verified: unlocking the locked desktop through Moonlight works, and
+text is sharp at this setup. The Sunshine admin login is in 1Password
+(entered by hand; pairing is manual anyway). Tailscale devices tidied
+(names `omarchy`, `mac-studio`, `macbook-pro`; duplicates removed), and
+`~/.ssh/config` points `omarchy`/`mac-studio` at their Tailscale addresses
+(sshd here stays reachable on the LAN and over Tailscale).
 
 **Mac:** Moonlight (Homebrew cask) as the client (Mac phase).
 
