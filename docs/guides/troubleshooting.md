@@ -467,7 +467,67 @@ turn **Use Tailscale DNS** off (`tailscale set --accept-dns=false`) and keep
 Exit Node on None. If the Mac is already stuck: disconnect the VPN and quit
 Tailscale (sites come back), then start Tailscale first, then the VPN.
 Omarchy isn't affected (`systemd-resolved` keeps each connection's DNS
-separate).
+separate). New Macs: [macos.md](../setup/macos.md) step 2.
+
+### A Mac's terminal prompt shows `ip-10-0-0-30` instead of its name
+
+**Why:** with no HostName set, macOS names itself after a reverse DNS
+lookup of its IP; with the AWS VPN connected, AWS's resolver answers in its
+`ip-a-b-c-d` style. Cosmetic. **Fix:**
+`sudo scutil --set HostName <Name>` (e.g. `Fernandos-Mac-Studio`).
+
+## Remote desktop (Sunshine / Moonlight)
+
+### `omarchy-install-service-sunshine` fails: "Unit sunshine.service does not exist"
+
+**Why:** a known Omarchy 4.0.4 bug: the unit is
+`app-dev.lizardbyte.app.Sunshine.service` (`sunshine.service` is only an
+alias). `install.sh` doesn't use that installer; it does the same steps
+itself ([desktop.md](../decisions/desktop.md)). Re-run `install.sh` instead.
+
+### Sunshine crashes on every login / runs twice
+
+**Why:** Omarchy's installer also adds `o.launch_on_start("sunshine")` to
+`~/.config/hypr/autostart.lua`, on top of the systemd unit that already
+starts with the session. **Fix:** delete that line; keep
+`systemctl --user status app-dev.lizardbyte.app.Sunshine.service`.
+
+### Sunshine Admin shows a certificate warning
+
+Expected: `https://localhost:47990` uses a self-signed certificate. Accept
+it for that site in the browser. Don't open it with
+`--ignore-certificate-errors` (Omarchy's web app does), which turns off
+certificate checks for the whole browser session.
+
+### Moonlight can't find the Omarchy desktop away from home
+
+Add it in Moonlight by its **Tailscale address `100.121.13.36`** (not the
+name: Macs keep Tailscale DNS off). Check Tailscale is connected on both
+ends, and that the firewall allows Tailscale:
+`sudo ufw status | grep omarchy-sunshine` should list `on tailscale0` rules
+(re-run `install.sh` if not).
+
+### Moonlight shows the wrong monitor
+
+Sunshine streams `output_name = DP-2` (the middle monitor) and falls back to
+a connected one when it's unplugged. To change it, edit `SUNSHINE_OUTPUT`
+in `install.sh` (the connector names are in `hyprctl monitors`) and re-run
+it.
+
+### Cmd / Super shortcuts don't reach Omarchy through Moonlight
+
+**Why:** macOS hands system-wide hotkeys (Raycast's Cmd+Space, Cmd+Tab) to
+their owner. **Fix:** Moonlight's gear icon (main window) > **Capture system
+keyboard shortcuts: in fullscreen**, and stream full screen
+(Ctrl+Option+Shift+X). Ctrl+Option+Shift+Z releases the keyboard.
+
+### Sunshine's web UI says a new (security) version is available
+
+The installed package comes from Omarchy's repo, which lags upstream (known
+advisory, accepted for now; [desktop.md](../decisions/desktop.md)). Update
+when Omarchy ships it (`omarchy update`). If it keeps lagging, the patched
+upstream build is AUR `sunshine-bin`:
+`omarchy-pkg-drop sunshine && omarchy-pkg-aur-add sunshine-bin`.
 
 ## Missing tools
 

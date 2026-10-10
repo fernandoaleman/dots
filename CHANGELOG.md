@@ -16,6 +16,10 @@ by a clean install; macOS support comes in later `1.x` releases.
   fixed (real unit name, no double start, no browser-wide certificate
   bypass). It streams the middle desk monitor (`output_name = DP-2`).
 
+- `docs/setup/macos.md`: the Mac checklist (Tailscale DNS off, AWS VPN,
+  Moonlight, terminal, small settings); troubleshooting for Sunshine,
+  Moonlight and Tailscale with the AWS VPN.
+
 ### Changed
 
 - `~/.ssh/config`: `omarchy` and `mac-studio` use their Tailscale addresses

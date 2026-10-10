@@ -108,15 +108,12 @@ Omarchy plugin catalog; in the plugin repo:
   "cannot create the lock file … --locked" error; its `prepare()` runs
   `cargo fetch --locked || cargo fetch`, so the fallback succeeds.
 
-### Mac phase: Mac setup notes from the remote-desktop work
+### Mac phase: script the Mac checklist
 
-- Moonlight (Homebrew cask), with **Capture system keyboard shortcuts: in
-  fullscreen** (set it in Moonlight's preferences automatically if possible).
-- Tailscale app at login with **Use Tailscale DNS off** on Macs that run the
-  AWS VPN ([desktop.md](decisions/desktop.md)).
-- Mac Studio: `sudo scutil --set HostName Fernandos-Mac-Studio` (with no
-  HostName set, macOS names itself `ip-10-0-0-30` from AWS's DNS while the
-  VPN is connected).
+[docs/setup/macos.md](setup/macos.md) collects the Mac steps decided so far
+(Tailscale DNS off, AWS VPN client, Moonlight + its keyboard setting,
+Option as Alt, F-keys, `.hushlogin`, the Mac Studio's HostName). Automate
+what can be in the Mac `install.sh`.
 
 ### Mac phase: Mac Studio sync scripts
 

@@ -41,7 +41,8 @@ Dotfiles for Omarchy (and later macOS), managed with GNU Stow.
 - Don't use ~/.gitconfig unless absolutely necessary.
 - Record every decision, and what Omarchy does, in docs/decisions/.
 - Record only manual fresh-install steps that cannot be scripted
-  in docs/setup/omarchy.md (later docs/setup/macos.md).
+  in docs/setup/omarchy.md and docs/setup/macos.md (Mac steps, collected
+  as they're decided until the Mac phase scripts them).
 - Put how-to procedures (not decisions, not fresh-install steps) in
   docs/guides/.
 - When the user raises an idea or follow-up for later (after the
@@ -51,6 +52,10 @@ Dotfiles for Omarchy (and later macOS), managed with GNU Stow.
   docs/guides/troubleshooting.md first: it lists deliberately dropped
   behaviors with the snippet to re-enable each. Whenever a decision drops a
   behavior the user might miss, add an entry there.
+- Whenever a problem is found and fixed, or a gotcha is discovered (even
+  during research or testing), add a troubleshooting entry with the
+  symptom and fix; if it affects setting up a machine, also add the step
+  to docs/setup/omarchy.md or docs/setup/macos.md.
 - Add each change to CHANGELOG.md under [Unreleased].
 - Releases (semver, 0.x until Omarchy is complete incl. secrets): move
   [Unreleased] to `## [x.y.z] - date` with compare links, commit
