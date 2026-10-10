@@ -84,6 +84,17 @@ else
   warn "Tailscale is installed but not signed in; run: sudo tailscale up --accept-routes"
 fi
 
+# Remote desktop host: Sunshine with Omarchy's installer (package from
+# Omarchy's repo, user service + Hyprland autostart, Moonlight streaming ports
+# opened only to private LANs and tailscale0, "Sunshine Admin" web app). After
+# Tailscale, so the tailscale0 firewall rule gets added. Clients (Moonlight)
+# are paired by hand once each (docs/setup/omarchy.md).
+if omarchy-pkg-missing sunshine; then
+  omarchy-install-service-sunshine
+else
+  ok "Sunshine already installed"
+fi
+
 # AWS VPN: the user's Omarchy plugin, from its GitHub repo (not yet in the
 # plugin catalog). The daemon comes first, with Omarchy's AUR installer, so
 # the plugin's setup skips its own yay step. setup (safe to re-run): systemd
@@ -433,19 +444,19 @@ else
   } | put_secret "$HOME/.config/dots/env" 600
 
   # dots/vpn Documents -> the AWS VPN plugin's profiles (600), registered once,
-# in place, named after the file without .ovpn
-vpn_profiles="$HOME/.config/omarchy/aws-vpn-client/profiles"
-while IFS=$'\t' read -r id vault title; do
-  safe_name "$title" && [[ $title == *.ovpn ]] || { warn "Skipping VPN profile with an unusable title: $title"; continue; }
-  op document get "$id" --vault "$vault" | put_secret "$vpn_profiles/$title" 600
-  if omarchy-aws-vpn-client list | grep -qw -- "${title%.ovpn}"; then
-    ok "VPN profile ${title%.ovpn} already registered"
-  else
-    omarchy-aws-vpn-client add "$vpn_profiles/$title" --name "${title%.ovpn}" --link
-  fi
-done < <(op item list --tags dots/vpn --categories Document --format json | jq -r '.[] | [.id, .vault.id, .title] | @tsv')
+  # in place, named after the file without .ovpn
+  vpn_profiles="$HOME/.config/omarchy/aws-vpn-client/profiles"
+  while IFS=$'\t' read -r id vault title; do
+    safe_name "$title" && [[ $title == *.ovpn ]] || { warn "Skipping VPN profile with an unusable title: $title"; continue; }
+    op document get "$id" --vault "$vault" | put_secret "$vpn_profiles/$title" 600
+    if omarchy-aws-vpn-client list | grep -qw -- "${title%.ovpn}"; then
+      ok "VPN profile ${title%.ovpn} already registered"
+    else
+      omarchy-aws-vpn-client add "$vpn_profiles/$title" --name "${title%.ovpn}" --link
+    fi
+  done < <(op item list --tags dots/vpn --categories Document --format json | jq -r '.[] | [.id, .vault.id, .title] | @tsv')
 
-# Incoming SSH: Omarchy's script, authorizing only the personal key
+  # Incoming SSH: Omarchy's script, authorizing only the personal key
   pubkey=$(op read "op://Private/id_ed25519/public key" | awk '{print $1, $2}')
   if systemctl is-active --quiet sshd && [[ -f /etc/ssh/sshd_config.d/10-omarchy-hardening.conf ]] &&
     awk '{print $1, $2}' "$HOME/.ssh/authorized_keys" 2>/dev/null | grep -qxF "$pubkey"; then

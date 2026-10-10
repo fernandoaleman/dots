@@ -115,6 +115,33 @@ if Tailscale is installed but not signed in (decided 2026-10-04). The
 device name defaults to the hostname (`omarchy`). **Mac:** the Tailscale
 app (Mac phase).
 
+## Remote desktop: Sunshine + Moonlight (Omarchy's), via `install.sh`
+
+Goal: use this desktop from the Mac (traveling, the office) over Tailscale,
+so one machine holds the AI tools' state. Omarchy ships the answer:
+`omarchy-install-service-sunshine` (*"Install Sunshine and open Moonlight
+streaming ports for LAN and Tailscale"*): `sunshine` from Omarchy's own
+repo, a user service + Hyprland autostart, the streaming ports (TCP 47984,
+47989, 48010; UDP 5353, 47998-48002, 48010) opened **only** to private LANs
+(`10/8`, `172.16/12`, `192.168/16`) and `tailscale0`, and a "Sunshine Admin"
+web app (`https://localhost:47990`). Moonlight (the client) is already in
+Omarchy's base packages, with a full-screen window rule.
+
+**Chosen** (2026-10-10) over WayVNC + macOS Screen
+Sharing (slower; Screen Sharing sends Cmd as Alt) and RDP plugins:
+GPU-encoded, low-latency streaming (game-streaming tech; this machine's
+AMD Radeon encodes H.264/HEVC/AV1 through Mesa's VA-API), each client
+paired with a PIN, Omarchy's own. `install.sh` runs Omarchy's installer
+when `sunshine` is missing, right after Tailscale (so the `tailscale0` rule
+is added). Pairing a client is a manual step
+([setup](../setup/omarchy.md)).
+
+Still to decide (see the [TODO](../TODO.md)): which monitor to stream (or a
+virtual screen at the MacBook's size), unlocking remotely, the Sunshine
+Admin password from 1Password, and the Tailscale device names.
+
+**Mac:** Moonlight (Homebrew cask) as the client (Mac phase).
+
 ## AWS VPN client: the user's Omarchy plugin, via `install.sh`
 
 The old setup installed AUR `awsvpnclient` (5.3.1, which AWS now lists as

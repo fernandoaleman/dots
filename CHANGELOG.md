@@ -9,6 +9,11 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ## [Unreleased]
 
+### Added
+
+- Remote desktop host: Sunshine via Omarchy's installer (Moonlight
+  streaming over the LAN and Tailscale).
+
 ## [1.0.0] - 2026-10-04
 
 Omarchy complete: a fresh Omarchy install plus `install.sh` (and signing in

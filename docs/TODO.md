@@ -40,11 +40,13 @@ laptop when traveling or at the office, over Tailscale. Why: one machine
 holds the AI tools' state (Claude Code, opencode memories, sessions), so
 nothing has to be synced across machines or OSes.
 
-Known to be possible (Hyprland supports VNC servers such as `wayvnc`; macOS
-has a built-in VNC client; the Omarchy plugin catalog has `io.github.rsd.omavnc`).
-To research then: Omarchy's own way first, which server and client, which
-of the three monitors to share (or a headless output), sharing while the
-desktop is locked, security (Tailscale-only listening, auth), and latency.
+**In progress (2026-10-10):** Omarchy's Sunshine + Moonlight chosen and
+added to `install.sh` ([desktop.md](decisions/desktop.md)). Still to decide:
+which of the three monitors to stream (or a headless output at the
+MacBook's size; catalog plugins: Stream View, Virtual Display), unlocking
+the desktop remotely, the Sunshine Admin password from 1Password, Moonlight
+keyboard behavior from the Mac (Cmd/Super), and the Tailscale cleanup
+(duplicate offline Mac devices).
 When Tailscale is set up: name the devices `omarchy` and `mac-studio` and
 switch their `HostName`s in `ssh/.ssh/config` to those Tailscale names;
 decide whether sshd stays reachable on the LAN or only over Tailscale
