@@ -60,3 +60,33 @@ stay a deliberate `brew upgrade`); it removes nothing unless `brew bundle
 cleanup` runs (never from `install.sh`); Brewfiles are Ruby, so profile
 differences are conditions on `ENV["DOTS_PROFILE"]`; Mac App Store (`mas`)
 apps need a signed-in Apple ID, so they're personal-profile only.
+
+### Brewfile section 1: command-line tools
+
+Decided 2026-10-10, same for both profiles:
+
+- **Bootstrap** (installed first): `bash`, `git`, `gum`, `stow`, `jq`.
+- **Mirroring Omarchy's tools** (its package list; its bash defaults use
+  several): `bash-completion@2`, `bat`, `btop`, `dua-cli`, `eza`,
+  `fastfetch`, `fd`, `fzf`, `herdr`, `imagemagick`, `lazydocker`,
+  `lazygit`, `libyaml`, `mise`, `neovim`, `ripgrep`, `starship`, `tlrc`
+  (Homebrew's `tldr` is the outdated client; `tlrc` is the official one,
+  same `tldr` command), `tmux`, `tree-sitter-cli`, `try` (tobi/try, as
+  Omarchy's `tobi-try`), `usage`, `zoxide`.
+- **Ours, as on Omarchy:** `wget`, `nmap`, `shellcheck`, `mysql-client` and
+  `libpq` with `link: true` (both keg-only; `brew bundle` unlinks keg-only
+  formulas otherwise), for `mysql`/`mysqldump`/`mysql_config` and
+  `psql`/`pg_dump`.
+- Left out: Omarchy's Linux-desktop packages; `lua@5.1` (gone from
+  Homebrew) and `luarocks` (Neovim bundles LuaJIT; LazyVim doesn't need
+  rocks); Docker (apps section).
+- **mise:** our stowed `config-dots.toml`, plus Omarchy's global tools
+  (`claude`, `codex`, `gh`, `node`, `prek`) via `mise use -g`, plus Omarchy's
+  `~/Work/.mise.toml` (adds a project's `bin/` to PATH).
+
+### Apps: Homebrew first, App Store last
+
+Decided 2026-10-10: install apps with a Homebrew cask (or the vendor's
+direct download) whenever one exists; the Mac App Store only when there's
+no other way (no personal Apple ID on the work laptop, and avoided
+elsewhere too). Apps are reviewed one at a time.
