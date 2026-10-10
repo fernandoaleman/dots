@@ -456,6 +456,19 @@ export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/gcr/ssh"
 `ssh -G <host> | grep -E "serveralive|connecttimeout"`; remove
 `ServerAliveInterval` from `~/.ssh/config` / `config.local`.
 
+## Tailscale
+
+### On a Mac, nothing resolves with both Tailscale and the AWS VPN connected
+
+**Why:** with "Use Tailscale DNS" on, macOS lets Tailscale replace all DNS
+(only `100.100.100.100`), pushing out the AWS VPN's resolvers
+([desktop.md](../decisions/desktop.md)). **Fix:** in the Tailscale menu,
+turn **Use Tailscale DNS** off (`tailscale set --accept-dns=false`) and keep
+Exit Node on None. If the Mac is already stuck: disconnect the VPN and quit
+Tailscale (sites come back), then start Tailscale first, then the VPN.
+Omarchy isn't affected (`systemd-resolved` keeps each connection's DNS
+separate).
+
 ## Missing tools
 
 ### `htop` / `btm` / `ncdu` / `colordiff` / `thefuck` / `act` / `hunk` not found
