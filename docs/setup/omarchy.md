@@ -66,9 +66,10 @@ Same on the Mac.
 1. Open **Sunshine Admin** at `https://localhost:47990` in the browser. It
    uses a self-signed certificate: accept the warning for that site only.
    Create the admin username and password (store them in 1Password).
-2. On the Mac, open **Moonlight** and add this machine (it appears on the
-   LAN; over Tailscale add it by its Tailscale name or `100.x` address).
-   Moonlight shows a **PIN**.
+2. On the Mac, open **Moonlight** and add this machine by its **Tailscale
+   address** (`tailscale ip -4`; `100.121.13.36` today), which works at home
+   and away. Macs keep Tailscale DNS off, so the name won't resolve there
+   ([macos.md](macos.md)). Moonlight shows a **PIN**.
 3. In Sunshine Admin, **PIN** tab: enter it and a name for the Mac.
 
 4. In Moonlight's settings (the **gear icon** top right of its main window,

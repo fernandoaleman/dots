@@ -13,7 +13,8 @@ keep/drop decision, and what Omarchy does for each one, is recorded in
 
 ### Fresh Omarchy install
 
-Follow the full checklist in [docs/setup/omarchy.md](docs/setup/omarchy.md).
+Follow the full checklist in [docs/setup/omarchy.md](docs/setup/omarchy.md)
+(Macs: [docs/setup/macos.md](docs/setup/macos.md)).
 It includes the manual steps (Omarchy menu installs, GitHub login and so on).
 The bootstrap itself is:
 
@@ -101,7 +102,7 @@ ssh/                stow package → $HOME (~/.ssh/config)
 ruby/               stow package → $HOME (~/.gemrc)
 lib/dots.sh         shared: PACKAGES, INCLUDES, drift checks (dots_doctor)
 docs/decisions/     what we kept or dropped, and what Omarchy already does
-docs/setup/         step-by-step fresh-install checklists (omarchy.md)
+docs/setup/         step-by-step fresh-install checklists (omarchy.md, macos.md)
 docs/guides/        how-tos: troubleshooting.md ("it used to do X"), ruby.md, rclone.md
 docs/TODO.md        ideas and follow-ups for after the migration
 Makefile            dev tasks (make help)
