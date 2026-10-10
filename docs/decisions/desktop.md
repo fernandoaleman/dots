@@ -149,7 +149,17 @@ removes them), no autostart line, no admin web app (open
 `https://localhost:47990` in the browser once and accept its self-signed
 certificate for that site). Runs right after Tailscale (so the `tailscale0`
 rule is added). Switch back to Omarchy's installer once fixed
-([TODO](../TODO.md)). Pairing a client is a manual step
+([TODO](../TODO.md)).
+
+**Known vulnerability, accepted for now** (2026-10-10): Omarchy's package
+(2026.516.143833) is affected by GHSA-fp6g-27w5-489j (high; fixed in
+upstream v2026.914.233613): with the binary's `cap_sys_admin,cap_sys_nice`
+file capabilities, a local process that controls Sunshine's environment can
+load code with those capabilities (*"Network access alone is not
+sufficient"*). User's choice: stay on Omarchy's package until its repo
+updates, rather than AUR `sunshine-bin` (the patched upstream build); the
+extra risk is modest here, since sudoless Docker already makes local code
+root-equivalent. Pairing a client is a manual step
 ([setup](../setup/omarchy.md)).
 
 Still to decide (see the [TODO](../TODO.md)): which monitor to stream (or a

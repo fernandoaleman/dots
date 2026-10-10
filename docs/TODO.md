@@ -58,8 +58,10 @@ decide whether sshd stays reachable on the LAN or only over Tailscale
 because it's broken in Omarchy 4.0.4 ([desktop.md](decisions/desktop.md)).
 When Omarchy merges a fix (issues #12053/#14048, PRs #12505/#13230/#13925/
 #14412, certificate PRs #12834/#14918), switch back to calling Omarchy's
-installer. Also watch for the newer `sunshine` package (#10836, #11956:
-security fixes).
+installer. **Also update Sunshine as soon as Omarchy's repo ships
+v2026.914.233613 or newer** (#10836, #11956): the installed 2026.516 has
+GHSA-fp6g-27w5-489j (high, local privilege escalation through its file
+capabilities). If Omarchy stays behind, reconsider AUR `sunshine-bin`.
 
 ### tmux-ssh project
 
