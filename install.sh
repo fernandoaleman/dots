@@ -81,15 +81,18 @@ export DOTS_PROFILE
 ok "Profile: $DOTS_PROFILE ($DOTS_OS)"
 
 # macOS: packages and apps from the Brewfile (personal-only entries follow
-# DOTS_PROFILE). The rest of the Mac setup (shell, configs, Neovim, secrets)
+# the profile file saved above). The rest of the Mac setup (shell, configs, Neovim, secrets)
 # is still being built; until then the Mac run stops here.
 if [[ $DOTS_OS == macos ]]; then
   step "Installing packages and apps (Brewfile)"
   brew bundle --file="$DOTS_DIR/Brewfile" --no-upgrade
   ok "Brewfile installed"
 
+  # Read macOS's own setting: `defaultbrowser` doesn't mark Chrome as current
+  # (its bundle ID case differs, com.google.Chrome vs com.google.chrome)
   step "Default browser"
-  if defaultbrowser 2>/dev/null | grep -q '^\* chrome'; then
+  if plutil -convert json -o - ~/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist 2>/dev/null |
+    jq -e '.LSHandlers[]? | select(.LSHandlerURLScheme == "https") | .LSHandlerRoleAll | ascii_downcase == "com.google.chrome"' >/dev/null; then
     ok "Chrome already the default browser"
   else
     defaultbrowser chrome || true

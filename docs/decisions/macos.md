@@ -58,7 +58,13 @@ Homebrew's docs: `brew bundle` *"will attempt to upgrade all software"* by
 default, hence `--no-upgrade` (re-runs only add what's missing; updates
 stay a deliberate `brew upgrade`); it removes nothing unless `brew bundle
 cleanup` runs (never from `install.sh`); Brewfiles are Ruby, so profile
-differences are conditions on `ENV["DOTS_PROFILE"]`; Mac App Store (`mas`)
+differences are conditions on the profile. The Brewfile reads it from
+`~/.config/dots/profile`, not `ENV["DOTS_PROFILE"]`: `brew` re-executes
+itself with a cleaned environment (`env -i`, keeping only `HOMEBREW_*` and
+a short list such as `HOME` and `PATH`; end of `/opt/homebrew/bin/brew`),
+so the variable never reaches the Brewfile. Found on the first Mac run,
+which installed the personal-only apps on the work laptop; without a
+profile file the Brewfile now refuses to run instead of guessing. Mac App Store (`mas`)
 apps need a signed-in Apple ID, so they're personal-profile only.
 
 Third-party taps (Voxtype's): Homebrew 7 refuses to load their formulae and
