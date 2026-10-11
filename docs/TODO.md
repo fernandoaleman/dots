@@ -153,6 +153,16 @@ what can be in the Mac `install.sh`.
 (remote desktop replaces syncing). Decide whether the Macs still need them
 once remote desktop into Omarchy works ([bin.md](decisions/bin.md)).
 
+### Mac: Tailscale's "Launch at login" checkbox
+
+On the work MacBook the checkbox fails ("Start on Login could not be set")
+because macOS has no background-items record of Tailscale's login helper;
+a manual Open at Login entry is the workaround
+([troubleshooting](guides/troubleshooting.md#mac-tailscale-start-on-login-could-not-be-set-popup)).
+Look into it later (not urgent): whether a newer Tailscale fixes it, check
+`sudo sfltool dumpbtm` for Tailscale's entries, and whether the Mac Studio
+shows the same; then drop the workaround if the checkbox works.
+
 ### Retire the old repos (Mac phase)
 
 Archive `fernandoaleman/nvim` once the Mac uses dots.

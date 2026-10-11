@@ -662,6 +662,25 @@ a new VM created from an edited template gets qemu. **Fix:** set
 `colima delete` and start again (the VM type can't change after creation).
 `install.sh` sets both in its first-setup config.
 
+### Mac: Tailscale "Start on Login could not be set" popup
+
+**Symptom:** ticking **Launch Tailscale at login** in the Tailscale app
+shows *"Start on Login could not be set. Enable Tailscale in the System
+Settings app ('General' -> 'Login Items')"*, and Tailscale isn't listed
+there. **Why:** macOS's background-items service has no record of the
+app's login helper (`log show --predicate 'process ==
+"backgroundtaskmanagementd"'`: *"effectiveItemDisposition: record not
+found: appURL=/Applications/Tailscale.app,
+url=/Contents/Library/LoginItems/TailscaleLoginItemHelper-macsys.app"*),
+so it can't enable it. Seen 2026-10-11 on the work MacBook (Tailscale
+1.104.1 from the `tailscale-app` cask, macOS 27.0.1; not MDM-enrolled).
+Re-registering the app (`lsregister -f /Applications/Tailscale.app`, then
+reopening it) and restarting didn't help. **Workaround (works):** System
+Settings > General > Login Items & Extensions > **Open at Login** > **+** >
+Tailscale; it starts at login (verified after a restart). The checkbox
+stays broken. Not tried: `sfltool resetbtm` (resets every app's
+background-item approvals). Follow-up in [TODO](../TODO.md).
+
 ### Mac: `:checkhealth lazy` shows a luarocks ERROR
 
 **Why:** the Mac has no `luarocks`/Lua 5.1 (Omarchy installs both), so
