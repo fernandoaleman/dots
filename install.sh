@@ -133,6 +133,14 @@ else
   ok "Sunshine set to stream DP-2 (middle monitor)"
 fi
 
+# Bazecor: configurator for the Dygma keyboard (AUR; repackages Dygma's
+# AppImage and includes its udev rule for USB access without root)
+if omarchy-pkg-missing bazecor; then
+  omarchy-pkg-aur-add bazecor
+else
+  ok "Bazecor already installed"
+fi
+
 # Dictation: Voxtype with Omarchy's installer (menu: Install > AI > Dictation;
 # it asks to confirm, downloads a ~150 MB model, sets up the service; F9 hold
 # or Super+Ctrl+X via Omarchy's Hyprland bindings). Local, nothing in a cloud.

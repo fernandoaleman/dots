@@ -129,6 +129,13 @@ them. `install.sh` runs the same commands, each guarded:
 
 `WEBAPPS` entries are `"Name|URL|icon URL"`: without an icon URL, `omarchy-webapp-install` fetches the site's own icon (the old PNG icon files weren't kept). `install.sh` recreates a launcher whose URL changed. Making Slack open on a fixed workspace automatically is a **Desktop section** item.
 
+## Bazecor (Dygma keyboard)
+
+Decided 2026-10-10: on Omarchy and the Mac Studio (not the work laptop).
+`install.sh` runs `omarchy-pkg-aur-add bazecor` (AUR `bazecor` 1.10.0:
+Dygma's official AppImage, plus Dygma's udev rule `10-dygma.rules` for USB
+access without root). Keyboard layouts are stored on the keyboard itself.
+
 ## Voxtype (dictation): Omarchy's installer
 
 Was installed by hand from Omarchy's menu (Install > AI > Dictation), so
