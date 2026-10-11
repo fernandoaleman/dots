@@ -101,3 +101,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | App | Install | Profiles | Notes |
 |---|---|---|---|
 | 1Password + CLI | casks `1password`, `1password-cli` | both | work profile: sign in to the work account only. "1Password for Safari" (App Store) dropped: 1Password 8's Safari extension is believed to ship in the app (verify on the fresh Mac); Chrome's extension comes from the Chrome Web Store |
+| Google Chrome | cask `google-chrome` | both | the only browser (Brave, Helium dropped). Default browser: `install.sh` runs `defaultbrowser chrome` (formula `defaultbrowser`); macOS asks once to confirm |
