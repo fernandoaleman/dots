@@ -157,6 +157,30 @@ link_dots() {
   done
 }
 
+# tmux plugins, cloned at pinned commits (no TPM). Bump a pin deliberately.
+install_tmux_plugins() {
+  TMUX_PLUGINS_DIR="$HOME/.local/share/tmux/plugins"
+  TMUX_PLUGINS=(
+    "tmux-resurrect https://github.com/tmux-plugins/tmux-resurrect cff343cf9e81983d3da0c8562b01616f12e8d548"
+    "tmux-continuum https://github.com/tmux-plugins/tmux-continuum 0698e8f4b17d6454c71bf5212895ec055c578da0"
+  )
+  step "Installing tmux plugins"
+  for entry in "${TMUX_PLUGINS[@]}"; do
+    read -r name url commit <<<"$entry"
+    dir="$TMUX_PLUGINS_DIR/$name"
+    if [[ ! -d $dir/.git ]]; then
+      git clone --quiet "$url" "$dir"
+    fi
+    if [[ $(git -C "$dir" rev-parse HEAD) == "$commit" ]]; then
+      ok "$name already at ${commit:0:7}"
+    else
+      git -C "$dir" fetch --quiet origin
+      git -C "$dir" checkout --quiet "$commit"
+      ok "$name at ${commit:0:7}"
+    fi
+  done
+}
+
 # macOS. What isn't built for the Mac yet (configs, Neovim, secrets) comes
 # in later stages; until then the Mac run stops at the end of this block.
 if [[ $DOTS_OS == macos ]]; then
@@ -166,32 +190,43 @@ if [[ $DOTS_OS == macos ]]; then
   # out like /usr/share/omarchy (macOS doesn't allow writing to /usr/share).
   # macos-env points OMARCHY_PATH here (docs/decisions/macos.md).
   omarchy_dir="$HOME/.local/share/omarchy"
-  step "Omarchy's defaults ($OMARCHY_REF)"
-  if [[ $(cat "$omarchy_dir/.dots-ref" 2>/dev/null) == "$OMARCHY_REF" ]]; then
+  omarchy_keep=(default/bash default/bashrc config bin/omarchy-menu-tmux-keybindings)
+  omarchy_want="$OMARCHY_REF ${omarchy_keep[*]}"
+  step "Omarchy's defaults and templates ($OMARCHY_REF)"
+  if [[ $(cat "$omarchy_dir/.dots-ref" 2>/dev/null) == "$omarchy_want" ]]; then
     ok "Already at $OMARCHY_REF"
   else
     tmp=$(mktemp -d)
     curl -fsSL "https://github.com/omacom/omarchy/archive/refs/tags/$OMARCHY_REF.tar.gz" |
       tar -xz -C "$tmp" --strip-components=1
     rm -rf "$omarchy_dir"
-    mkdir -p "$omarchy_dir/default"
-    cp -R "$tmp/default/bash" "$tmp/default/bashrc" "$omarchy_dir/default/"
+    for part in "${omarchy_keep[@]}"; do
+      mkdir -p "$omarchy_dir/$(dirname "$part")"
+      cp -R "$tmp/$part" "$omarchy_dir/$part"
+    done
     rm -rf "$tmp"
-    echo "$OMARCHY_REF" >"$omarchy_dir/.dots-ref"
+    echo "$omarchy_want" >"$omarchy_dir/.dots-ref"
     ok "Downloaded into ${omarchy_dir/#$HOME/\~}"
   fi
 
-  # ~/.bashrc is Omarchy's template, seeded once (Omarchy's skel does this
-  # on Omarchy); link_dots then adds the line that loads ours
-  step "Seeding ~/.bashrc"
-  if [[ -f $HOME/.bashrc ]]; then
-    ok "Keeping the existing ~/.bashrc"
-  else
-    cp "$omarchy_dir/default/bashrc" "$HOME/.bashrc"
-    ok "Copied Omarchy's ~/.bashrc template"
-  fi
+  # Omarchy's ~/.bashrc and config templates, seeded once if missing
+  # (Omarchy's installer does this on Omarchy); link_dots then adds the
+  # lines that load ours
+  step "Seeding Omarchy's config files"
+  seeded=0
+  for rel in .bashrc "${OMARCHY_TEMPLATES[@]/#/.config/}"; do
+    [[ -e $HOME/$rel ]] && continue
+    src="$omarchy_dir/${rel/#.config/config}"
+    [[ $rel == .bashrc ]] && src="$omarchy_dir/default/bashrc"
+    mkdir -p "$(dirname "$HOME/$rel")"
+    cp "$src" "$HOME/$rel"
+    ok "Copied ~/$rel"
+    seeded=1
+  done
+  ((seeded)) || ok "All present; leaving them"
 
   link_dots
+  install_tmux_plugins
 
   step "Installing packages and apps (Brewfile)"
   brew bundle --file="$DOTS_DIR/Brewfile" --no-upgrade
@@ -220,9 +255,9 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Login shell changed (new terminal windows use it)"
   fi
 
-  step "Done (macOS: bash stage)"
+  step "Done (macOS: bash and config stage)"
   echo "Open a new terminal window to load the new shell."
-  echo "Configs, Neovim and secrets for macOS come in the next stages."
+  echo "Neovim, mise tools and secrets for macOS come in the next stages."
   exit 0
 fi
 
@@ -425,27 +460,7 @@ done
 get_dots
 link_dots
 
-# tmux plugins, cloned at pinned commits (no TPM). Bump a pin deliberately.
-TMUX_PLUGINS_DIR="$HOME/.local/share/tmux/plugins"
-TMUX_PLUGINS=(
-  "tmux-resurrect https://github.com/tmux-plugins/tmux-resurrect cff343cf9e81983d3da0c8562b01616f12e8d548"
-  "tmux-continuum https://github.com/tmux-plugins/tmux-continuum 0698e8f4b17d6454c71bf5212895ec055c578da0"
-)
-step "Installing tmux plugins"
-for entry in "${TMUX_PLUGINS[@]}"; do
-  read -r name url commit <<<"$entry"
-  dir="$TMUX_PLUGINS_DIR/$name"
-  if [[ ! -d $dir/.git ]]; then
-    git clone --quiet "$url" "$dir"
-  fi
-  if [[ $(git -C "$dir" rev-parse HEAD) == "$commit" ]]; then
-    ok "$name already at ${commit:0:7}"
-  else
-    git -C "$dir" fetch --quiet origin
-    git -C "$dir" checkout --quiet "$commit"
-    ok "$name at ${commit:0:7}"
-  fi
-done
+install_tmux_plugins
 
 # tmux-ssh (synchronized SSH panes per host or group), downloaded at a
 # pinned commit into ~/.local/bin (on PATH via Omarchy's bash envs). The

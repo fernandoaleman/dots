@@ -23,11 +23,21 @@ INCLUDES=(
 # the version the Omarchy desktop runs (`omarchy version`).
 OMARCHY_REF=v4.0.4
 
+# macOS: Omarchy's config templates install.sh seeds into ~/.config (once,
+# if missing), as Omarchy's installer does; paths under its config/
+OMARCHY_TEMPLATES=(git/config tmux/tmux.conf starship.toml lazygit/config.yml
+  btop/btop.conf herdr/config.toml ghostty/config opencode/opencode.json)
+
 # macOS stows and hooks only what's been built for the Mac so far (dots 1.x).
-# There, ~/.bashrc is Omarchy's template seeded by install.sh.
+# There, Omarchy's files are the templates seeded by install.sh.
 if [[ $(uname -s) == Darwin ]]; then
-  PACKAGES=(bash macos)
-  INCLUDES=("$HOME/.bashrc|[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots")
+  PACKAGES=(bash git tmux macos)
+  INCLUDES=(
+    "$HOME/.bashrc|[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots"
+    "$HOME/.config/git/config|[include] path = ~/.config/git/config.dots"
+    "$HOME/.config/tmux/tmux.conf|source-file -q ~/.config/tmux/tmux.dots.conf"
+    "$HOME/.config/ghostty/config|config-file = ?\"~/.config/ghostty/config.dots\""
+  )
 fi
 
 # Docker networks moved off 172.17.0.0/16, which a work VPN routes: the
