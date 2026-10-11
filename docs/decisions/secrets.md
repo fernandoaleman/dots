@@ -236,8 +236,15 @@ wrapper), which still apply. Ours (`ssh/.ssh/config`, public, generic):
 - Verified: `ssh mac-studio` works by name; `ssh -G` shows Omarchy's
   keepalive values still in effect.
 
-**Mac:** same file; no Omarchy keepalive file there, so the Mac setup adds
-the same 15 / 3 / 10 values.
+**Mac** (2026-10-11): the same stowed file (`ssh` package). The keepalives
+come from **Omarchy's own** `install/config/ssh-keepalive.sh`, run with sudo
+from the pinned download: it writes the same
+`/etc/ssh/ssh_config.d/20-omarchy-keepalive.conf`, which macOS's
+`/etc/ssh/ssh_config` includes (`Include /etc/ssh/ssh_config.d/*`); verified
+with `ssh -G` (15 / 3 / 10). Colima's `sshConfig` is off, or it would add
+its `Include ~/.colima/ssh_config` line to `~/.ssh/config`, i.e. into this
+repo ([macos.md](macos.md#docker-colima)). The work Mac has no personal key,
+so `mac-studio` and `omarchy` refuse it there (by design).
 
 ### Incoming SSH (sshd): Omarchy's script in `install.sh` (decided 2026-10-04)
 

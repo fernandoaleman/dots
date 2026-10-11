@@ -56,6 +56,8 @@ by a clean install; macOS support comes in later `1.x` releases.
   personal: the browser), and SSH GitHub URLs are rewritten to HTTPS.
 - SSH keys split: a new personal `id_ed25519` for your own machines; the
   old one kept only as a work key; no SSH key on GitHub.
+- SSH on macOS: dots' `~/.ssh/config` and Omarchy's keepalive settings
+  (its own script); Colima no longer edits `~/.ssh/config`.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 

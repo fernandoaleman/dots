@@ -88,6 +88,7 @@ make ssh
 | `hypr` | `~/.config/hypr/monitors.dots.lua`, `hyprland.dots.lua` (+ one line each in Omarchy's `monitors.lua`, `hyprland.lua`) | desk monitors matched by description, workspaces 1–3/4–6/7–9 per monitor, apps pinned to workspaces (Chrome 1, tmux 4, Slack/Teams 7, Outlook 8, Spotify 9) |
 | `git` | `~/.config/git/config.dots`, `~/.config/git/ignore` (+ one line in Omarchy's `~/.config/git/config`) | `fetch.prune`, `zdiff3` conflicts, gh as the GitHub HTTPS credential helper, a lean global gitignore |
 | `bin` | `~/.local/bin/aws-role-login`, `generate-ssh-config`, `gh-role-login` | the daily AWS MFA session, SSH hosts from AWS, and signing `gh` in to GitHub over HTTPS as the machine's profile allows |
+| `ssh` | `~/.ssh/config` | includes the generated `~/.ssh/aws` and a machine-local `config.local`, your machines by Tailscale address, `TERM` for servers, new host keys accepted (changed ones refused) |
 
 ## Repository layout
 

@@ -653,6 +653,13 @@ retries on its own (or `:MasonInstall <name>`).
 projects under `~` (e.g. `~/Work`), or add a mount: `colima stop`,
 `colima start --edit` (`mounts:`).
 
+### Mac: `Include ~/.colima/ssh_config` appears in `~/.ssh/config` (or in dots)
+
+**Why:** Colima's `sshConfig: true` (its default) adds that line on every
+start, and `~/.ssh/config` is dots' file. **Fix:** `install.sh` sets
+`sshConfig: false` in `~/.colima/default/colima.yaml`; remove the line
+from `ssh/.ssh/config` if it got in. `colima ssh` keeps working.
+
 ### Mac: Colima created a `qemu` VM / "qemu-img not found"
 
 **Why:** Colima's template (`colima template`) hardcodes `vmType: qemu` and

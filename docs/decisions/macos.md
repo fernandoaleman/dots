@@ -393,6 +393,13 @@ Virtualization framework); the Homebrew `docker`, `docker-compose` and
 - **Later runs** leave the file alone (Colima rewrites it, sorted, on each
   start; change settings with `colima stop` then `colima start --edit`)
   and only warn if dots' `bip` is missing.
+- **`sshConfig: false`** (first setup, and switched on existing configs):
+  with it on, Colima adds `Include ~/.colima/ssh_config` to `~/.ssh/config`
+  on every start, creating the file if missing (`generateSSHConfig`,
+  `app/app.go`), and `~/.ssh/config` is dots' stowed file, so the line would
+  land in the repo. `colima ssh` still works (Colima keeps writing
+  `~/.colima/ssh_config`); only `ssh colima` goes. Tested: after a Colima
+  restart dots' file is unchanged.
 - **Starts at login:** `brew services start colima` (Homebrew's caveat;
   its service runs `colima start -f`).
 - **CLI plugins:** `docker compose` and `docker buildx` are Homebrew CLI

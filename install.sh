@@ -422,7 +422,8 @@ if [[ $DOTS_OS == macos ]]; then
   # out like /usr/share/omarchy (macOS doesn't allow writing to /usr/share).
   # macos-env points OMARCHY_PATH here (docs/decisions/macos.md).
   omarchy_dir="$HOME/.local/share/omarchy"
-  omarchy_keep=(default/bash default/bashrc config bin/omarchy-menu-tmux-keybindings bin/omarchy-mise-install)
+  omarchy_keep=(default/bash default/bashrc config bin/omarchy-menu-tmux-keybindings bin/omarchy-mise-install
+    install/config/ssh-keepalive.sh)
   omarchy_want="$OMARCHY_REF ${omarchy_keep[*]}"
   step "Omarchy's defaults and templates ($OMARCHY_REF)"
   if [[ $(cat "$omarchy_dir/.dots-ref" 2>/dev/null) == "$omarchy_want" ]]; then
@@ -523,7 +524,9 @@ if [[ $DOTS_OS == macos ]]; then
   # virtiofs (its defaults on macOS 13+) and the docker: section (the VM's
   # daemon.json) with Omarchy's log rotation and dots' networks off
   # 172.17.0.0/16. Not Omarchy's dns: nothing listens on the bridge in the
-  # VM. Later runs leave the file to `colima start --edit`.
+  # VM. sshConfig false: Colima would otherwise add its Include line to
+  # ~/.ssh/config, which is dots' file. Later runs leave the file to
+  # `colima start --edit`.
   step "Colima (Docker Engine in a VM)"
   colima_conf="$HOME/.colima/default/colima.yaml"
   colima_tmpl="$HOME/.colima/_templates/default.yaml"
@@ -532,6 +535,12 @@ if [[ $DOTS_OS == macos ]]; then
       ok "Colima config has dots' Docker networks"
     else
       warn "${colima_conf/#$HOME/\~} lacks dots' Docker networks; see docs/decisions/macos.md"
+    fi
+    # sshConfig on would make Colima add its Include line to ~/.ssh/config,
+    # dots' stowed file, i.e. into the repo (takes effect at its next start)
+    if grep -qx 'sshConfig: true' "$colima_conf"; then
+      sed -i '' 's/^sshConfig: true$/sshConfig: false/' "$colima_conf"
+      ok "Colima no longer edits ~/.ssh/config (sshConfig: false)"
     fi
   else
     had_tmpl=0
@@ -543,6 +552,7 @@ if [[ $DOTS_OS == macos ]]; then
       /^memory: / { print "memory: " mem; next }
       /^vmType: / { print "vmType: vz"; next }
       /^mountType: / { print "mountType: virtiofs"; next }
+      /^sshConfig: / { print "sshConfig: false"; next }
       /^docker: \{\}$/ {
         print "docker:"
         print "  log-driver: json-file"
@@ -584,6 +594,17 @@ if [[ $DOTS_OS == macos ]]; then
 
   install_secrets
   github_https
+
+  # SSH keepalives as on Omarchy: its own install script (from the pinned
+  # download) writes /etc/ssh/ssh_config.d/20-omarchy-keepalive.conf, which
+  # macOS's /etc/ssh/ssh_config includes too
+  step "SSH keepalives (Omarchy's)"
+  if [[ -f /etc/ssh/ssh_config.d/20-omarchy-keepalive.conf ]]; then
+    ok "Already set"
+  else
+    sudo bash "$omarchy_dir/install/config/ssh-keepalive.sh"
+    ok "Wrote /etc/ssh/ssh_config.d/20-omarchy-keepalive.conf"
+  fi
 
   # Tailscale DNS off: on macOS, "Use Tailscale DNS" replaces the system's
   # resolvers and pushes out the AWS VPN's, and then nothing resolves
