@@ -184,6 +184,7 @@ WEBAPPS=(
   "Slack|https://work.slack.com|https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/slack.png"
   "Teams|https://teams.cloud.microsoft"
   "Outlook|https://outlook.office.com"
+  "Todoist|https://app.todoist.com"
 )
 for webapp in "${WEBAPPS[@]}"; do
   IFS='|' read -r name url icon <<<"$webapp"

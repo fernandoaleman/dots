@@ -11,6 +11,7 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
+- Todoist web app on Omarchy.
 - Syncthing on Omarchy (Obsidian vaults; ports open to the LAN and Tailscale
   only).
 
