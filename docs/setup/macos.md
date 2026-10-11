@@ -17,7 +17,7 @@ with 1Password CLI** (dots reads secrets with `op`).
   personal history, bookmarks and passwords onto a machine IT manages.
 - **Personal Macs:** your personal Google account, as on Omarchy.
 
-## 3. Teams and Outlook web apps
+## 3. Web apps (Teams, Outlook; Discord on personal Macs)
 
 In Chrome (the profile for this machine), for each of
 `https://teams.cloud.microsoft` and `https://outlook.office.com`: open it,
@@ -25,6 +25,9 @@ sign in, then **⋮ > Cast, save and share > Install page as app** (or the
 install icon in the address bar). Chrome adds them to
 `~/Applications/Chrome Apps/`, so Spotlight finds "Teams" and "Outlook".
 Allow notifications when asked.
+
+**Personal Macs only** (never the work laptop): also `https://discord.com/app`
+as a web app, like Omarchy's built-in Discord web app.
 
 ## 4. Tailscale: Use Tailscale DNS **off**
 

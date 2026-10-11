@@ -117,3 +117,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | ChatGPT (with Codex) | cask `chatgpt` (native) | both | work-paid; mirrors Omarchy's native `openai-codex-desktop` |
 | Claude desktop | cask `claude` (native) | both | work-paid (Omarchy has no Claude desktop app) |
 | Gemini desktop | dropped | n/a | personal account; browser (or a Chrome web app) when needed |
+| Discord | Chrome web app (manual) | personal only | personal account: Mac Studio only, as a web app like Omarchy's built-in one; not on the work laptop |
