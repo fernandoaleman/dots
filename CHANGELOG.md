@@ -37,6 +37,9 @@ by a clean install; macOS support comes in later `1.x` releases.
 - mise on macOS: Omarchy's setup (no auto-prune, `~/Work/.mise.toml`,
   global Node, first-run launchers for claude, codex, gh and opencode) and
   dots' tools from `config-dots.toml`.
+- Docker on macOS: Colima (4 CPUs, 8 GiB, starts at login) with Omarchy's
+  log rotation and dots' networks off 172.17, and `docker compose`/`buildx`
+  found by Docker.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 
