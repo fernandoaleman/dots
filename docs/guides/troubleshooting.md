@@ -539,6 +539,22 @@ Apps installed by dots come from Homebrew casks: `brew uninstall --cask
 doesn't bring it back. AppCleaner (installed) is the fallback for apps
 installed outside dots.
 
+### `brew bundle` fails: "Refusing to load cask … from untrusted tap"
+
+**Why:** Homebrew 7 only loads formulae and casks from third-party taps
+once they're trusted (`Library/Homebrew/trust.rb`; trust lives in
+`~/.homebrew/trust.json`). A plain `cask "voxtype"` in the `Brewfile` isn't
+trusted, so `install.sh` stopped there on the first Mac run. **Fix:** list
+third-party items fully qualified with `trusted: true` (`cask
+"peteonrails/voxtype/voxtype", trusted: true`), which trusts just that cask,
+not the whole tap. By hand: `brew trust --cask <user>/<tap>/<name>`.
+
+### `ipconfig getifaddr en0` prints nothing
+
+**Why:** `en0` is Wi-Fi; on a dock or Ethernet adapter the Mac uses another
+interface. **Fix:** ask for the interface carrying the default route:
+`ipconfig getifaddr "$(route -n get default | awk '/interface:/{print $2}')"`.
+
 ## Syncthing
 
 ### `.sync-conflict` files or a broken git repo inside a synced folder

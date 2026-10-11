@@ -74,7 +74,7 @@ cask "claude"
 cask "obsidian"
 cask "plaud"
 cask "todoist-app"
-cask "voxtype"
+cask "peteonrails/voxtype/voxtype", trusted: true # third-party tap: Homebrew 7 needs trust
 cask "appcleaner"
 cask "qlmarkdown"
 cask "keepingyouawake"
