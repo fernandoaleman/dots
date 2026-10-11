@@ -54,6 +54,8 @@ by a clean install; macOS support comes in later `1.x` releases.
 - GitHub over HTTPS on every machine: `gh-role-login` signs `gh` in as the
   profile allows (work: a company-only fine-grained token from 1Password;
   personal: the browser), and SSH GitHub URLs are rewritten to HTTPS.
+- SSH keys split: a new personal `id_ed25519` for your own machines; the
+  old one kept only as a work key; no SSH key on GitHub.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 

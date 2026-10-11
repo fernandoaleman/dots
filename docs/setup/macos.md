@@ -30,12 +30,15 @@ git hooks).
 
 **Optional, to let an agent on Omarchy drive the setup over SSH:** System
 Settings > General > Sharing > **Remote Login** on (Allow access: only your
-user), then let Omarchy's key in (it's the key GitHub publishes for the
-account):
+user), then let Omarchy's personal key in. GitHub no longer publishes it
+(no SSH keys there), so copy the public key from Omarchy (`op read
+"op://Private/id_ed25519/public key"` or `~/.ssh/id_ed25519.pub`) and add it
+on the Mac (public, not a secret):
 
 ```sh
 mkdir -p ~/.ssh && chmod 700 ~/.ssh
-curl -fsSL https://github.com/fernandoaleman.keys >> ~/.ssh/authorized_keys
+[ -s ~/.ssh/authorized_keys ] && [ -n "$(tail -c1 ~/.ssh/authorized_keys)" ] && echo >> ~/.ssh/authorized_keys
+echo 'ssh-ed25519 AAAA… (the public key)' >> ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 ipconfig getifaddr "$(route -n get default | awk '/interface:/{print $2}')"
 ```
