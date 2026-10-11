@@ -820,6 +820,17 @@ Expected: the work Mac's token is limited to the company organization
 machine. If the token expired: renew it on GitHub, paste it into the
 1Password item tagged `dots/gh`, run `gh-role-login`.
 
+### SSH key refused after adding it to `authorized_keys` (and the old one too)
+
+**Why:** `echo key >> ~/.ssh/authorized_keys` on a file whose last line
+has no newline glues the new key onto the previous one, breaking **both**
+(seen on the Mac Studio, 2026-10-11). **Fix:** log in another way
+(password, or at the machine), back the file up, and split the line:
+`perl -pi -e 's/(\S)(ssh-ed25519 AAAA)/$1\n$2/g' ~/.ssh/authorized_keys`.
+**Avoid:** add a newline first when the file doesn't end with one:
+`[ -n "$(tail -c1 f)" ] && echo >> f`. Omarchy's
+`omarchy-setup-security-sshd` appends the same way.
+
 ### `op`: "authorization prompt dismissed, please try again"
 
 **Why:** the 1Password app asks to approve CLI access (on the screen of

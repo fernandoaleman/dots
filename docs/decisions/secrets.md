@@ -41,15 +41,29 @@ values elided); when copies differ, the user decides which to keep.
 
 None of the keys has a passphrase.
 
-### `id_ed25519` (personal, Private): done
+### `id_ed25519` (personal, Private): replaced 2026-10-11
 
-- 1Password item matches the old repo (fingerprint); the duplicate
-  "My SSH Key" (same fingerprint) was archived.
-- Tag `dots/ssh` and the note set in the 1Password app (verified with `op item get`).
-- Installed here by hand for now (`op read "…/private key?ssh-format=openssh"`
-  to `~/.ssh/id_ed25519` 600, public key to `.pub` 644); `install.sh`
-  takes over once the SSH setup (`IdentityFile`, agent, sshd) is decided.
-  It already logs in to the Mac Studio without a password.
+A **new** personal key (generated in the 1Password app, Private, tag
+`dots/ssh`), so the personal side depends on a key that never leaves the
+personal account and personal machines. It opens Omarchy, the Mac Studio
+and (for agent access) the work MacBook's Remote Login, and nothing else:
+**no SSH key is on GitHub any more** (GitHub over HTTPS, [git.md](git.md)).
+Never installed on the work MacBook.
+
+### `okb_ed25519` (the old personal key, work account): kept as a work key
+
+The previous `id_ed25519`, renamed and moved to the work account
+(2026-10-11; same fingerprint). It had been everywhere (old repo, Mac
+Studio, GitHub, every machine's `authorized_keys`), and its only remaining
+use is the `deploy` users' `authorized_keys` on the AWS servers. Removed
+from GitHub and from the `authorized_keys` of Omarchy, the Mac Studio and
+the work MacBook (verified: refused by all four, the new key accepted by
+the three machines). Kept installed like the other work keys (user's
+choice; `deploy` is normally reached by `sudo` after logging in with an AWS
+key, so removing its line from `deploy`'s `authorized_keys` and archiving
+the item would retire it, if wanted later). `generate-ssh-config` doesn't
+use it. The Mac Studio's own `~/.ssh/id_ed25519` file is still this key
+until it gets dots.
 
 ### Work keys (integration, QA, staging, production): done
 
