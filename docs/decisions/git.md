@@ -95,6 +95,11 @@ dropped; they belong in each project's `.gitignore`.
 `config.dots` and `ignore` are shared as-is. The Mac seeds
 `~/.config/git/config` from Omarchy's template (downloaded at a pinned tag,
 see [config-pattern.md](config-pattern.md)), then `install.sh` adds the
-include line and prompts for identity (the Mac has no installer prompt).
-`gh` comes from Homebrew; the credential reset keeps `osxkeychain` from
-competing for GitHub.
+include line and prompts for identity (the Mac has no installer prompt;
+same function as on Omarchy, `check_git_identity`). Identity on the work
+MacBook (2026-10-11): the same as Omarchy, `fernandoaleman@mac.com`
+everywhere (no separate work email, no `includeIf`). `gh` comes from
+Omarchy's mise launcher ([macos.md](macos.md#mise-omarchys-setup-plus-dots-tools));
+the credential reset keeps Homebrew git's `osxkeychain` from competing for
+GitHub (checked: `credential.helper` stays `osxkeychain` for other hosts,
+github.com uses `gh auth git-credential`).
