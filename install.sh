@@ -206,7 +206,7 @@ add_nvim_extras() {
   fi
 }
 
-# macOS. What isn't built for the Mac yet (mise tools, secrets) comes
+# macOS. What isn't built for the Mac yet (secrets) comes
 # in later stages; until then the Mac run stops at the end of this block.
 if [[ $DOTS_OS == macos ]]; then
   get_dots
@@ -215,7 +215,7 @@ if [[ $DOTS_OS == macos ]]; then
   # out like /usr/share/omarchy (macOS doesn't allow writing to /usr/share).
   # macos-env points OMARCHY_PATH here (docs/decisions/macos.md).
   omarchy_dir="$HOME/.local/share/omarchy"
-  omarchy_keep=(default/bash default/bashrc config bin/omarchy-menu-tmux-keybindings)
+  omarchy_keep=(default/bash default/bashrc config bin/omarchy-menu-tmux-keybindings bin/omarchy-mise-install)
   omarchy_want="$OMARCHY_REF ${omarchy_keep[*]}"
   step "Omarchy's defaults and templates ($OMARCHY_REF)"
   if [[ $(cat "$omarchy_dir/.dots-ref" 2>/dev/null) == "$omarchy_want" ]]; then
@@ -282,6 +282,32 @@ if [[ $DOTS_OS == macos ]]; then
   brew bundle --file="$DOTS_DIR/Brewfile" --no-upgrade
   ok "Brewfile installed"
 
+  # mise as Omarchy sets it up (install/user/mise.sh, mise-work.sh): no pruning
+  # of a running tool's old version on `mise up`, ~/Work with its .mise.toml
+  # (a project's bin/ on PATH), global Node, and Omarchy's first-run launchers
+  # in ~/.local/bin for the coding tools the Mac uses (docs/decisions/macos.md).
+  # Then dots' tools (config-dots.toml), as on Omarchy.
+  step "mise: Omarchy's setup and dots' tools"
+  mise settings set upgrade.auto_prune false
+  mkdir -p "$HOME/Work/tries"
+  if [[ ! -f $HOME/Work/.mise.toml ]]; then
+    printf '[env]\n_.path = "{{ cwd }}/bin"\n' >"$HOME/Work/.mise.toml"
+    ok "Wrote ~/Work/.mise.toml"
+  fi
+  mise trust --quiet "$HOME/Work/.mise.toml"
+  if mise config get --global tools.node >/dev/null 2>&1; then
+    ok "Node already a global mise tool"
+  else
+    mise use -g node@latest
+    ok "Node installed (global)"
+  fi
+  for tool in claude codex gh opencode; do
+    "$omarchy_dir/bin/omarchy-mise-install" "$tool"
+  done
+  ok "Launchers in ~/.local/bin: claude codex gh opencode (install on first run)"
+  mise install --yes
+  ok "mise tools installed"
+
   # Read macOS's own setting: `defaultbrowser` doesn't mark Chrome as current
   # (its bundle ID case differs, com.google.Chrome vs com.google.chrome)
   step "Default browser"
@@ -305,9 +331,9 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Login shell changed (new terminal windows use it)"
   fi
 
-  step "Done (macOS: bash, config and Neovim stage)"
+  step "Done (macOS: bash, config, Neovim and mise stage)"
   echo "Open a new terminal window to load the new shell."
-  echo "mise tools and secrets for macOS come in the next stages."
+  echo "Secrets for macOS come in a later stage."
   exit 0
 fi
 

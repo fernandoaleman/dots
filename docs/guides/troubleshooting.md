@@ -629,6 +629,16 @@ outside SSH, so Neovim uses `pbcopy`/`pbpaste`. If it comes back, check the
 include line at the end of `~/.config/nvim/lua/config/options.lua` and
 `:lua print(vim.g.clipboard)` (should print `nil`); re-run `install.sh`.
 
+### Mason: "Could not find executable "npm"" / "go" (e.g. jsonls fails)
+
+**Why:** Mason builds some tools with npm (json-lsp, yaml-language-server,
+pyright, Docker and Ansible language servers, markdownlint-cli2...) or go
+(gopls, goimports, gofumpt); without Node or Go they fail
+(`~/.local/state/nvim/mason.log`). Seen on the Mac before its mise stage.
+**Fix:** Node and Go come from mise (`mise use -g node@latest`; `go` in
+`config-dots.toml`): re-run `install.sh`, then reopen `nvim` and Mason
+retries on its own (or `:MasonInstall <name>`).
+
 ### Mac: `:checkhealth lazy` shows a luarocks ERROR
 
 **Why:** the Mac has no `luarocks`/Lua 5.1 (Omarchy installs both), so
