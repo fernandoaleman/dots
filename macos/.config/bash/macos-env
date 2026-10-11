@@ -20,6 +20,12 @@ case ":$PATH:" in
 *":$HOME/.local/bin:"*) ;;
 *) PATH="$PATH:$HOME/.local/bin" ;;
 esac
+# The few Omarchy commands copied to the Mac (e.g. tmux's prefix ? help);
+# on Omarchy they're in /usr/bin
+case ":$PATH:" in
+*":$OMARCHY_PATH/bin:"*) ;;
+*) PATH="$PATH:$OMARCHY_PATH/bin" ;;
+esac
 export PATH
 
 # Omarchy's envs keeps these when already set. Omarchy: EDITOR is

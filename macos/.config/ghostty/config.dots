@@ -1,0 +1,13 @@
+# Loaded by the last line of Omarchy's ~/.config/ghostty/config (seeded on
+# the Mac by dots' install.sh), after Omarchy's settings, so anything here
+# overrides them. Mac only: Omarchy's terminal is foot.
+
+# Option sends Alt, so Omarchy's tmux Alt keys work (Alt+Enter splits,
+# Alt+1..9 windows, Alt+arrows) instead of typing special characters
+macos-option-as-alt = true
+
+# Omarchy's 9 is sized for its Linux desktop; 13 matches the Mac's scaling
+font-size = 13
+
+# Machine-local overrides, not stored in dots (skipped if missing)
+config-file = ?"~/.config/ghostty/config.local"
