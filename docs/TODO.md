@@ -29,9 +29,20 @@ building anything. Candidates seen 2026-10-04:
 - Launchers that bundle both: `io.github.hominluo.launcher`,
   `io.github.terrifiedbug.omacast`.
 
+Raycast is being dropped on the Macs (2026-10-10; Spotlight instead), so
+its quicklinks need a new home too (Chrome bookmarks or the picker).
 Things to settle then: the JSON format (Raycast's export vs. the plugin's),
 where the JSON lives (dots if nothing private, else 1Password), and the
 shared keybindings.
+
+### OneDark "dark" theme for Omarchy
+
+The Mac's Ghostty uses OneDark "dark" (generated from
+[onedark.nvim](https://github.com/navarasu/onedark.nvim)'s palette;
+[macos.md](decisions/macos.md)). Make it an Omarchy custom theme too
+(`~/.config/omarchy/themes/`: terminal colors, Neovim via onedark.nvim
+`style = "dark"`, Hyprland/shell colors, background), so both machines
+match; then the Mac could seed its Ghostty colors from that theme.
 
 ### Sunshine: back to Omarchy's installer when fixed
 

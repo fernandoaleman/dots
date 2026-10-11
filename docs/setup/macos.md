@@ -49,7 +49,7 @@ user's own plugin does this instead.)
 4. Moonlight's **gear icon** (top right of its main window; not the macOS
    menu): tick **Capture system keyboard shortcuts**, choose **in
    fullscreen**. Stream full screen (**Ctrl+Option+Shift+X**) so Cmd reaches
-   Omarchy as Super, Cmd+Space included (Raycast's hotkey on the Mac).
+   Omarchy as Super, Cmd+Space included (Spotlight's hotkey on the Mac).
    **Ctrl+Option+Shift+Q** ends the stream, **Ctrl+Option+Shift+Z** releases
    the keyboard.
 
