@@ -681,6 +681,24 @@ Tailscale; it starts at login (verified after a restart). The checkbox
 stays broken. Not tried: `sfltool resetbtm` (resets every app's
 background-item approvals). Follow-up in [TODO](../TODO.md).
 
+### Mac: Keyboard sliders don't move after `defaults write -g KeyRepeat`
+
+**Why:** System Settings shows the repeat speed that's active now, loaded
+from preferences at login, and on macOS 27 it uses floats (`-float 2`, not
+`-int 2`). **Fix:** `install.sh` writes floats and runs
+`/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u`,
+which applies them at once; otherwise log out and back in. To change a
+stored integer into a float, `defaults delete -g KeyRepeat` first: a write
+of an equal number is ignored.
+
+### Mac: a reverted macOS setting (Dock, Finder, typing)
+
+`install.sh` re-applies its `MACOS_DEFAULTS` on every run, so a setting you
+change by hand in System Settings is put back the next time. To keep your
+own value, remove that line from `MACOS_DEFAULTS`
+([macos.md](../decisions/macos.md#macos-settings-defaults)). The F-keys are
+deliberately not set: hold Fn for F1-F12.
+
 ### Mac: `:checkhealth lazy` shows a luarocks ERROR
 
 **Why:** the Mac has no `luarocks`/Lua 5.1 (Omarchy installs both), so

@@ -44,6 +44,10 @@ by a clean install; macOS support comes in later `1.x` releases.
   and email pre-filled, and used as is without a terminal.
 - Tailscale on macOS: `install.sh` turns Use Tailscale DNS off (it breaks
   the AWS VPN's DNS there), and a `tailscale` command (alias).
+- macOS settings: Dock auto-hide, Finder (extensions, path bar, home
+  folder), expanded Save dialogs, fast key repeat, text substitutions off,
+  TextEdit plain text and no `.DS_Store` on network shares, each verified
+  on macOS 27.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 

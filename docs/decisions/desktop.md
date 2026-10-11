@@ -282,8 +282,9 @@ top row on Apple-style keyboards sends F1-F12; Fn gives the media keys).
 always F-keys"*), writing the same line when the file is missing. Verified
 here: the file exists and `/sys/module/hid_apple/parameters/fnmode` is `2`.
 
-**Mac:** System Settings, Keyboard, "Use F1, F2, etc. keys as standard
-function keys" (Mac-phase, with the old `90-setup-osx-defaults`).
+**Mac:** not mirrored (decided 2026-10-11): the media keys stay the
+default on the Macs (hold Fn for F1-F12), so "Use F1, F2, etc. keys as
+standard function keys" stays off ([macos.md](macos.md#macos-settings-defaults)).
 
 ## Docker access: sudoless (opt-in, Omarchy's script)
 
