@@ -20,6 +20,21 @@ Chrome the default browser (click **Use Chrome**). Some casks ask for the
 password again or show macOS permission prompts; that's expected
 ([macos.md](../decisions/macos.md#bootstrap-on-a-fresh-mac)).
 
+**Optional, to let an agent on Omarchy drive the setup over SSH:** System
+Settings > General > Sharing > **Remote Login** on (Allow access: only your
+user), then let Omarchy's key in (it's the key GitHub publishes for the
+account):
+
+```sh
+mkdir -p ~/.ssh && chmod 700 ~/.ssh
+curl -fsSL https://github.com/fernandoaleman.keys >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+ipconfig getifaddr "$(route -n get default | awk '/interface:/{print $2}')"
+```
+
+On the work laptop, consider turning Remote Login off again when done (IT
+can see it's on).
+
 ## 1. 1Password
 
 Install 1Password, sign in, and turn on **Settings > Developer > Integrate

@@ -61,6 +61,11 @@ cleanup` runs (never from `install.sh`); Brewfiles are Ruby, so profile
 differences are conditions on `ENV["DOTS_PROFILE"]`; Mac App Store (`mas`)
 apps need a signed-in Apple ID, so they're personal-profile only.
 
+Third-party taps (Voxtype's): Homebrew 7 refuses to load their formulae and
+casks until trusted (`Library/Homebrew/trust.rb`), so each such entry is
+fully qualified with `trusted: true`, trusting that one item rather than
+the whole tap (found on the first Mac run, 2026-10-10).
+
 ### Brewfile section 1: command-line tools
 
 Decided 2026-10-10, same for both profiles:
