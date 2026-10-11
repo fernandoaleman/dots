@@ -410,3 +410,23 @@ Tested on the work MacBook: Docker reports 4 CPUs, 8 GiB, `json-file`;
 the VM's `daemon.json` has the settings; the bridge is `172.31.0.0/16`, a
 compose network got `192.168.128.0/24`; a container read and wrote a file
 under `~/Work`; `docker compose` 5.6.0 and `buildx` 0.38.0 work.
+
+## Tailscale: DNS off, and the `tailscale` command
+
+Decided 2026-10-11. **Omarchy** keeps Tailscale DNS on (systemd-resolved
+keeps per-link DNS apart) and has `tailscale` on PATH. On macOS, Tailscale
+DNS must be off wherever the AWS VPN runs ([desktop.md](desktop.md#tailscale--the-aws-vpn-on-the-same-machine)).
+
+- **`install.sh`** runs `tailscale set --accept-dns=false` through the
+  app's own binary (`/Applications/Tailscale.app/Contents/MacOS/Tailscale`,
+  with `TAILSCALE_BE_CLI=1`: the binary decides between app and CLI from
+  environment variables, per Tailscale's CLI docs), only while Tailscale is
+  signed in (`status --json`: `BackendState` `Running`) and `CorpDNS` is
+  still on (`debug prefs`); otherwise it reports and moves on. The setting
+  is kept in Tailscale's preferences.
+- **`tailscale` command:** an alias in `~/.config/bash/macos` (the
+  `macos` package), as Tailscale's docs suggest. Not the app's **Install
+  CLI** (a launcher in `/usr/local/bin`), which needs an admin password in
+  the app's GUI. Scripts use the full path.
+- **Exit node:** not set by `install.sh`; "None" is the default, and
+  forcing it would undo a deliberate choice.

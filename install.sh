@@ -374,6 +374,23 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Added $plugins_dir to ~/.docker/config.json"
   fi
 
+  # Tailscale DNS off: on macOS, "Use Tailscale DNS" replaces the system's
+  # resolvers and pushes out the AWS VPN's, and then nothing resolves
+  # (docs/decisions/desktop.md). The app's own CLI, kept in CLI mode by
+  # TAILSCALE_BE_CLI (Tailscale's CLI docs); it needs Tailscale signed in.
+  step "Tailscale: Use Tailscale DNS off"
+  ts_cli=/Applications/Tailscale.app/Contents/MacOS/Tailscale
+  if [[ ! -x $ts_cli ]]; then
+    warn "Tailscale app not installed; skipping"
+  elif [[ $(TAILSCALE_BE_CLI=1 "$ts_cli" status --json 2>/dev/null | jq -r .BackendState) != Running ]]; then
+    warn "Tailscale isn't signed in and connected; sign in, then re-run install.sh"
+  elif [[ $(TAILSCALE_BE_CLI=1 "$ts_cli" debug prefs | jq .CorpDNS) == false ]]; then
+    ok "Tailscale DNS already off"
+  else
+    TAILSCALE_BE_CLI=1 "$ts_cli" set --accept-dns=false
+    ok "Tailscale DNS turned off"
+  fi
+
   # Read macOS's own setting: `defaultbrowser` doesn't mark Chrome as current
   # (its bundle ID case differs, com.google.Chrome vs com.google.chrome)
   step "Default browser"
@@ -397,7 +414,7 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Login shell changed (new terminal windows use it)"
   fi
 
-  step "Done (macOS: bash, config, Neovim, mise and Docker stage)"
+  step "Done (macOS: bash, config, Neovim, mise, Docker and Tailscale stage)"
   echo "Open a new terminal window to load the new shell."
   echo "Secrets for macOS come in a later stage."
   exit 0
