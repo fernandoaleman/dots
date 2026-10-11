@@ -539,6 +539,17 @@ Apps installed by dots come from Homebrew casks: `brew uninstall --cask
 doesn't bring it back. AppCleaner (installed) is the fallback for apps
 installed outside dots.
 
+## Syncthing
+
+### `.sync-conflict` files or a broken git repo inside a synced folder
+
+**Why:** a git repo (or `~/Work`) was put in a Syncthing folder. Syncthing
+and git both rewrite `.git`; two machines editing before a sync finishes
+leaves conflict copies inside `.git`. **Fix:** keep repos out of Syncthing
+(sync them with git push/pull); remove the folder from sharing, delete the
+`.sync-conflict*` files, re-clone if git is confused
+([packages.md](../decisions/packages.md)).
+
 ## Missing tools
 
 ### `htop` / `btm` / `ncdu` / `colordiff` / `thefuck` / `act` / `hunk` not found

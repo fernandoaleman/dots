@@ -124,3 +124,5 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | Logi Options+ | cask `logi-options+` | personal only | for the Logitech device at the Mac Studio desk |
 | Loom | dropped | n/a | no longer used |
 | MacDown, MarkText | dropped | n/a | both casks are disabled in Homebrew; Neovim's Markdown preview, Obsidian and QLMarkdown cover it |
+| Obsidian | cask `obsidian` | both | already on Omarchy (base package). Vaults move from iCloud to Syncthing (below) |
+| Syncthing | formula `syncthing` (started at login) | both | syncs the **Obsidian vaults only**: the work vault on all three machines, the personal vault only on Omarchy and the Mac Studio. See [packages.md](packages.md) |
