@@ -11,6 +11,7 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
+- Bazecor (Dygma keyboard configurator) from the AUR.
 - Voxtype dictation via Omarchy's installer.
 - Todoist web app on Omarchy.
 - Syncthing on Omarchy (Obsidian vaults; ports open to the LAN and Tailscale
