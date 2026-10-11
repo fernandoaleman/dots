@@ -35,6 +35,22 @@ Things to settle then: the JSON format (Raycast's export vs. the plugin's),
 where the JSON lives (dots if nothing private, else 1Password), and the
 shared keybindings.
 
+### Meeting recording on Omarchy (Plaud)
+
+Plaud Desktop (records calls, then transcript and AI notes on the paid
+plan) is Mac/Windows only. On Omarchy, in this order:
+
+1. **First: the Plaud device itself** (records the room; works for calls
+   played through speakers, not headphones). The user tries this first.
+2. Record system audio + mic with PipeWire (OBS or a small `pw-record`
+   script in dots), then import the file into Plaud (verify Plaud imports
+   audio files).
+3. Evaluate the catalog plugin **OmaScribe** (local transcription + AI
+   meeting notes), or a DIY Whisper (as Voxtype uses) + Claude Code pipeline
+   into Obsidian.
+
+Re-evaluate Plaud at renewal.
+
 ### OneDark "dark" theme for Omarchy
 
 The Mac's Ghostty uses OneDark "dark" (generated from
