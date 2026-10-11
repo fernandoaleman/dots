@@ -134,3 +134,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | Voxtype (dictation) | tap `peteonrails/voxtype`, cask `voxtype` | both | same dictation as Omarchy, fully local (*"No cloud, no subscription, no telemetry"*), so fine on the work laptop; macOS port with Metal on Apple Silicon. Config: Omarchy's `default/voxtype/config.toml` (v4.0.4) seeded to `~/.config/voxtype/config.toml`, plus the Mac's built-in hotkey on (F9, since there's no Hyprland binding): hold F9 to dictate on both. First run: `voxtype configure` (model, permissions). Verify hotkey and permission names on the fresh Mac |
 | Wispr Flow | dropped | n/a | no Linux version (macOS, Windows, iOS, Android only); paid, and the free tier runs out quickly. Voxtype instead |
 | KeyStats | dropped | n/a | keystroke/mouse statistics (third-party tap); needs Input Monitoring, i.e. sees every key |
+| TablePlus | dropped | n/a | not used (cask `tableplus` exists) |
