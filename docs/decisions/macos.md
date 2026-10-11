@@ -136,3 +136,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | KeyStats | dropped | n/a | keystroke/mouse statistics (third-party tap); needs Input Monitoring, i.e. sees every key |
 | TablePlus | dropped | n/a | not used (cask `tableplus` exists) |
 | Bazecor | cask `bazecor` | personal only | Dygma keyboard configurator (layouts live on the keyboard). Omarchy too: AUR `bazecor` via `omarchy-pkg-aur-add` ([packages.md](packages.md)) |
+| TickTick | dropped | n/a | Todoist replaced it |
