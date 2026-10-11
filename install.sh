@@ -210,27 +210,30 @@ add_nvim_extras() {
 # dots), asked once if missing (docs/decisions/git.md). Shared by both OSes.
 check_git_identity() {
   step "Checking git identity"
+  # ask KEY DEFAULT: prompt with DEFAULT filled in (Enter accepts it); with no
+  # terminal (e.g. `ssh host install.sh`) gum would fail and stop the run,
+  # so use DEFAULT as is
   ask() {
-    # No terminal (e.g. `ssh host install.sh`): gum would fail and stop the
-    # run, so leave the key unset (warned below) and carry on
-    [[ -t 0 ]] || return 0
-    if command -v gum &>/dev/null; then
-      gum input --prompt "$1: " --placeholder "$1"
+    if [[ ! -t 0 ]]; then
+      printf '%s' "$2"
+    elif command -v gum &>/dev/null; then
+      gum input --prompt "$1: " --value "$2"
     else
-      read -rp "$1: " reply && printf '%s' "$reply"
+      read -rp "$1 [$2]: " reply && printf '%s' "${reply:-$2}"
     fi
   }
   if [[ -e $HOME/.gitconfig ]]; then
     warn "Found ~/.gitconfig; git config --global writes there instead of ~/.config/git/config"
   fi
-  for key in user.name user.email; do
+  for entry in "user.name|$DOTS_GIT_NAME" "user.email|$DOTS_GIT_EMAIL"; do
+    key=${entry%%|*}
     if [[ -n $(git config --global --get "$key") ]]; then
       ok "git $key: $(git config --global --get "$key")"
     else
-      value=$(ask "git $key")
+      value=$(ask "git $key" "${entry#*|}")
       if [[ -n $value ]]; then
         git config --global "$key" "$value"
-        ok "git $key set"
+        ok "git $key set: $value"
       else
         warn "git $key left unset"
       fi

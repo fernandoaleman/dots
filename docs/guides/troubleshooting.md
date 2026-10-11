@@ -783,9 +783,9 @@ for how to bring it back (`omarchy-pkg-add git-delta`; Omarchy's
 
 **Why:** `gum input` needs a terminal; run without one (`ssh host
 '~/Work/dots/install.sh'`), it failed and `set -e` ended the run. **Fixed:**
-without a terminal the step now leaves the identity unset and warns. Set
-it by re-running `install.sh` in a terminal, or `git config --global
-user.name …` / `user.email …`.
+without a terminal the step now sets the defaults (`DOTS_GIT_NAME`,
+`DOTS_GIT_EMAIL` in `lib/dots.sh`). To use another identity on a machine:
+`git config --global user.name …` / `user.email …`.
 
 ### Notification "dots needs attention" (after `omarchy update`)
 

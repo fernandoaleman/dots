@@ -53,7 +53,11 @@ Plus the shell aliases (see [shell.md](shell.md)): `g`, `gcm`, `gcam`,
 Stays in Omarchy's `~/.config/git/config` (the Omarchy way, machine-local,
 not in the public repo). `install.sh` prompts once (gum, or `read`) if
 `user.name`/`user.email` are unset, writing with `git config --global`, and
-warns if a `~/.gitconfig` exists.
+warns if a `~/.gitconfig` exists. Defaults (2026-10-11): `DOTS_GIT_NAME` /
+`DOTS_GIT_EMAIL` in `lib/dots.sh` (already public in this repo's commits)
+are pre-filled in the prompt (`gum input --value`; Enter accepts) and set as
+is when there's no terminal. Trade-off: anyone running this `install.sh`
+unchanged would get this identity.
 
 ### Kept (in `config.dots`)
 

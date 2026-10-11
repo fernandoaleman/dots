@@ -18,6 +18,12 @@ INCLUDES=(
   "$HOME/.config/hypr/monitors.lua|do local f = os.getenv(\"HOME\") .. \"/.config/hypr/monitors.dots.lua\"; local h = io.open(f); if h then h:close() dofile(f) end end"
 )
 
+# Git identity install.sh uses when user.name/user.email are unset: offered
+# as the prompt's value in a terminal, set as is without one (already public
+# in this repo's commits). Machine-local after that (~/.config/git/config).
+DOTS_GIT_NAME="Fernando Aleman"
+DOTS_GIT_EMAIL="fernandoaleman@mac.com"
+
 # macOS: the Omarchy release whose defaults and templates the Mac mirrors,
 # downloaded by install.sh (no copies in dots). Bump deliberately, usually to
 # the version the Omarchy desktop runs (`omarchy version`).
