@@ -124,7 +124,7 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | Outlook | Chrome web app (manual) | both | like Omarchy (`outlook.office.com`) |
 | Word, Excel, PowerPoint | not installed | n/a | Office on the web when needed; casks `microsoft-word` / `-excel` / `-powerpoint` exist if ever necessary |
 | Zoom | cask `zoom` (native app) | both | used for work meetings; Zoom's web client is the weakest (pushes to the app); Omarchy keeps its built-in Zoom web app |
-| Docker | formulas `colima`, `docker`, `docker-compose`, `docker-buildx` | both | CLI only (the GUI is never used; the company's Docker license stays available): Colima runs Docker Engine in a VM; `docker compose`/`buildx` as CLI plugins (`cliPluginsExtraDirs` in `~/.docker/config.json`); lazydocker via Colima's Docker context or `DOCKER_HOST` (verify). Settings: `brew services start colima` (at login); VM 4 CPUs / 8 GB RAM; networks off `172.17` like Omarchy (bridge `172.31.0.1/16`, pools `192.168.128.0/17`) in `colima.yaml` (`docker:` section), because the VM's default bridge would capture container traffic to work servers on `172.17.x` |
+| Docker | formulas `colima`, `docker`, `docker-compose`, `docker-buildx` | both | CLI only (the GUI is never used; the company's Docker license stays available): Colima runs Docker Engine in a VM; `docker compose`/`buildx` as CLI plugins (`cliPluginsExtraDirs` in `~/.docker/config.json`); lazydocker via Colima's Docker context. Settings: [Docker (Colima)](#docker-colima) |
 | Claude Code, Codex, opencode | mise (global), not casks | both | like Omarchy: `mise use -g` with Omarchy's `claude`, `codex` (+ `gh`, `node`, `prek`) plus `opencode`; casks `claude-code`/`codex` dropped (two copies would fight over the command) |
 | ChatGPT (with Codex) | cask `chatgpt` (native) | both | work-paid; mirrors Omarchy's native `openai-codex-desktop` |
 | Claude desktop | cask `claude` (native) | both | work-paid (Omarchy has no Claude desktop app) |
@@ -356,3 +356,57 @@ Differences kept:
   reads ([Ruby guide](../guides/ruby.md)).
 - **Python:** Apple's 3.9 (`/usr/bin/python3`); uv brings its own Python
   for ansible and yamllint.
+
+## Docker (Colima)
+
+Decided 2026-10-11. **Omarchy** runs Docker Engine directly:
+`/etc/docker/daemon.json` (package `omarchy-settings`) sets log rotation
+(`json-file`, 10m × 5), `dns` and `bip`; dots moves the networks off
+`172.17.0.0/16`, which the work VPN routes (bridge `172.31.0.1/16`,
+compose pools `192.168.128.0/17`, container DNS on `172.31.0.1`, the
+host's resolver listening on the bridge), and makes Docker sudoless
+(opt-in) ([desktop.md](desktop.md)).
+
+On macOS, **Colima** runs Docker Engine in a Linux VM (Apple's
+Virtualization framework); the Homebrew `docker`, `docker-compose` and
+`docker-buildx` formulas are the CLI. `install.sh`:
+
+- **First setup only:** writes `~/.colima/default/colima.yaml`. Colima
+  takes a config file as is (`yaml.Unmarshal` into an empty struct,
+  `config/configmanager`; unset keys become zero, e.g. disk 0), and its
+  template (`colima template`) hardcodes `vmType: qemu` and
+  `mountType: sshfs` though the command's defaults on macOS 13+ are `vz`
+  and `virtiofs` (`cmd/start.go`). So `install.sh` has Colima write its
+  full default template (`colima template --editor true`, removed again if
+  it didn't exist) and sets `cpu: 4`, `memory: 8` (`COLIMA_CPUS`,
+  `COLIMA_MEMORY` in `lib/dots.sh`; this Mac has 12 cores, 36 GB),
+  `vmType: vz`, `mountType: virtiofs` and the `docker:` section, which
+  becomes the VM's `daemon.json`: Omarchy's log rotation, dots' `bip` and
+  `default-address-pools`. Colima keeps its own additions (BuildKit, the
+  containerd snapshotter, cgroupfs) when the section is set
+  (`environment/container/docker/daemon.go`). Disk 100 GB and the
+  writable `$HOME` mount stay Colima's defaults.
+- **Not Omarchy's `dns`:** on Omarchy it points containers at the host's
+  resolver on the bridge address; nothing listens there in the VM. Colima's
+  VM resolves through macOS (tested: containers resolve and reach the
+  internet). With the AWS VPN connected: to be checked.
+- **Later runs** leave the file alone (Colima rewrites it, sorted, on each
+  start; change settings with `colima stop` then `colima start --edit`)
+  and only warn if dots' `bip` is missing.
+- **Starts at login:** `brew services start colima` (Homebrew's caveat;
+  its service runs `colima start -f`).
+- **CLI plugins:** `docker compose` and `docker buildx` are Homebrew CLI
+  plugins Docker finds through `cliPluginsExtraDirs` (Homebrew's caveat).
+  Docker writes `~/.docker/config.json` itself (`currentContext`, logins),
+  so `install.sh` merges that key with `jq` instead of stowing the file.
+- **Docker context:** Colima activates its `colima` context
+  (`currentContext` in `~/.docker/config.json`); lazydocker reads it
+  (`determineDockerHost`, `pkg/commands/docker.go`: `DOCKER_HOST`, then
+  the current context), so plain `lazydocker` works.
+- **No sudo:** Colima's socket (`~/.colima/default/docker.sock`) belongs
+  to the user; Omarchy's sudoless-Docker question doesn't apply.
+
+Tested on the work MacBook: Docker reports 4 CPUs, 8 GiB, `json-file`;
+the VM's `daemon.json` has the settings; the bridge is `172.31.0.0/16`, a
+compose network got `192.168.128.0/24`; a container read and wrote a file
+under `~/Work`; `docker compose` 5.6.0 and `buildx` 0.38.0 work.

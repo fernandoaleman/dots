@@ -295,7 +295,8 @@ warning; needs a reboot). `install.sh` runs it when
 `omarchy-sudo-docker --configured` says it isn't set up, with
 `OMARCHY_DEFER_REBOOT=1` so it records reboot-required instead of
 rebooting mid-install. Undo: `omarchy-remove-security-sudoless-docker`.
-**Mac:** Docker Desktop has no such restriction.
+**Mac:** Colima's Docker socket belongs to the user, so no sudo or group
+is involved ([macos.md](macos.md#docker-colima)).
 
 ## Docker networks: moved off 172.17.0.0/16 (overrides Omarchy)
 
@@ -349,8 +350,9 @@ old `log-opts` were Omarchy's already. Existing compose networks keep their
 old subnets until recreated (`docker compose down && docker compose up`, or
 `docker network prune`).
 
-**Mac:** the old script was Linux-only; Docker Desktop keeps its bridge
-inside its VM (to confirm in the Mac phase).
+**Mac:** Colima's VM gets the same bridge and pools, plus Omarchy's log
+rotation, but not the `dns` setting
+([macos.md](macos.md#docker-colima)).
 
 ## Work Claude Code plugins: manual for now
 

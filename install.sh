@@ -308,6 +308,72 @@ if [[ $DOTS_OS == macos ]]; then
   mise install --yes
   ok "mise tools installed"
 
+  # Docker on the Mac: Colima runs Docker Engine in a VM (docs/decisions/macos.md).
+  # Colima takes a config file as is (unset keys become zero, not defaults),
+  # and its template hardcodes vmType qemu, so the first setup has Colima
+  # write its full default config, then sets ours: CPUs, memory, vz +
+  # virtiofs (its defaults on macOS 13+) and the docker: section (the VM's
+  # daemon.json) with Omarchy's log rotation and dots' networks off
+  # 172.17.0.0/16. Not Omarchy's dns: nothing listens on the bridge in the
+  # VM. Later runs leave the file to `colima start --edit`.
+  step "Colima (Docker Engine in a VM)"
+  colima_conf="$HOME/.colima/default/colima.yaml"
+  colima_tmpl="$HOME/.colima/_templates/default.yaml"
+  if [[ -f $colima_conf ]]; then
+    if grep -qF "bip: $DOCKER_BRIDGE_IP/16" "$colima_conf"; then
+      ok "Colima config has dots' Docker networks"
+    else
+      warn "${colima_conf/#$HOME/\~} lacks dots' Docker networks; see docs/decisions/macos.md"
+    fi
+  else
+    had_tmpl=0
+    [[ -f $colima_tmpl ]] && had_tmpl=1
+    colima template --editor true >/dev/null 2>&1
+    mkdir -p "$(dirname "$colima_conf")"
+    awk -v cpus="$COLIMA_CPUS" -v mem="$COLIMA_MEMORY" -v bip="$DOCKER_BRIDGE_IP/16" -v pool="$DOCKER_POOL" '
+      /^cpu: / { print "cpu: " cpus; next }
+      /^memory: / { print "memory: " mem; next }
+      /^vmType: / { print "vmType: vz"; next }
+      /^mountType: / { print "mountType: virtiofs"; next }
+      /^docker: \{\}$/ {
+        print "docker:"
+        print "  log-driver: json-file"
+        print "  log-opts:"
+        print "    max-size: 10m"
+        print "    max-file: \"5\""
+        print "  bip: " bip
+        print "  default-address-pools:"
+        print "    - base: " pool
+        print "      size: 24"
+        next
+      }
+      { print }' "$colima_tmpl" >"$colima_conf"
+    ((had_tmpl)) || rm -f "$colima_tmpl"
+    ok "Wrote ${colima_conf/#$HOME/\~} ($COLIMA_CPUS CPUs, ${COLIMA_MEMORY} GiB)"
+  fi
+  if [[ $(brew services info colima --json | jq -r '.[0].running') == true ]]; then
+    ok "Colima already running (starts at login)"
+  else
+    brew services start colima
+    ok "Colima started; starts at login (the first start downloads its VM image)"
+  fi
+
+  # docker compose / buildx are Homebrew CLI plugins; Docker finds them via
+  # cliPluginsExtraDirs. Docker itself writes this file (logins, current
+  # context), so merge the key instead of stowing the file.
+  step "Docker CLI plugins (compose, buildx)"
+  docker_conf="$HOME/.docker/config.json"
+  plugins_dir=/opt/homebrew/lib/docker/cli-plugins
+  mkdir -p "$(dirname "$docker_conf")"
+  [[ -s $docker_conf ]] || echo '{}' >"$docker_conf"
+  if jq -e --arg d "$plugins_dir" '(.cliPluginsExtraDirs // []) | index($d)' "$docker_conf" >/dev/null; then
+    ok "Docker already finds Homebrew's plugins"
+  else
+    merged=$(jq --arg d "$plugins_dir" '.cliPluginsExtraDirs = ((.cliPluginsExtraDirs // []) + [$d])' "$docker_conf")
+    printf '%s\n' "$merged" >"$docker_conf"
+    ok "Added $plugins_dir to ~/.docker/config.json"
+  fi
+
   # Read macOS's own setting: `defaultbrowser` doesn't mark Chrome as current
   # (its bundle ID case differs, com.google.Chrome vs com.google.chrome)
   step "Default browser"
@@ -331,7 +397,7 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Login shell changed (new terminal windows use it)"
   fi
 
-  step "Done (macOS: bash, config, Neovim and mise stage)"
+  step "Done (macOS: bash, config, Neovim, mise and Docker stage)"
   echo "Open a new terminal window to load the new shell."
   echo "Secrets for macOS come in a later stage."
   exit 0

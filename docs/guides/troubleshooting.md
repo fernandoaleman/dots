@@ -639,6 +639,29 @@ pyright, Docker and Ansible language servers, markdownlint-cli2...) or go
 `config-dots.toml`): re-run `install.sh`, then reopen `nvim` and Mason
 retries on its own (or `:MasonInstall <name>`).
 
+### Mac: `docker compose` / `docker buildx`: "unknown command"
+
+**Why:** Homebrew installs them as Docker CLI plugins in
+`/opt/homebrew/lib/docker/cli-plugins`, which Docker only searches when
+`~/.docker/config.json` lists it in `cliPluginsExtraDirs`. **Fix:**
+`install.sh` adds it; re-run it (or add the key by hand).
+
+### Mac: a container can't see a folder (`-v` mount is empty)
+
+**Why:** Colima shares only your home folder with its VM; paths elsewhere
+(`/tmp`, `/var/folders`, `mktemp -d`) don't exist inside it. **Fix:** keep
+projects under `~` (e.g. `~/Work`), or add a mount: `colima stop`,
+`colima start --edit` (`mounts:`).
+
+### Mac: Colima created a `qemu` VM / "qemu-img not found"
+
+**Why:** Colima's template (`colima template`) hardcodes `vmType: qemu` and
+`mountType: sshfs`, unlike the command's macOS defaults (`vz`, `virtiofs`);
+a new VM created from an edited template gets qemu. **Fix:** set
+`vmType: vz` and `mountType: virtiofs` in the template, then
+`colima delete` and start again (the VM type can't change after creation).
+`install.sh` sets both in its first-setup config.
+
 ### Mac: `:checkhealth lazy` shows a luarocks ERROR
 
 **Why:** the Mac has no `luarocks`/Lua 5.1 (Omarchy installs both), so

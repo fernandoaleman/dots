@@ -56,6 +56,10 @@ DOCKER_BRIDGE_IP=172.31.0.1
 DOCKER_POOL=192.168.128.0/17
 DOCKER_DNS_DROPIN=/etc/systemd/resolved.conf.d/30-dots-docker-dns.conf
 
+# macOS: Colima's VM (Docker Engine runs there), set on its first setup
+COLIMA_CPUS=4
+COLIMA_MEMORY=8 # GiB
+
 # dots_include FILE LINE: append LINE to FILE if missing.
 # Prints "present", "added" or "no-file".
 dots_include() {
