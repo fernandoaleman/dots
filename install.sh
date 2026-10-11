@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 #
-# Bootstrap dots on a fresh Omarchy install:
+# Bootstrap dots on a fresh Omarchy install or Mac:
 #
 #   bash <(curl -fsSL https://raw.githubusercontent.com/fernandoaleman/dots/master/install.sh)
 #
-# Safe to re-run. Installs prerequisites and apps (via Omarchy's own
-# installers), clones (or updates) the repo into ~/Work/dots, backs up any
-# real files that would block stow, stows every package listed in
+# Safe to re-run. Installs prerequisites and apps (Omarchy's own installers,
+# or Homebrew on a Mac), clones (or updates) the repo into ~/Work/dots, backs
+# up any real files that would block stow, stows every package listed in
 # lib/dots.sh, then adds one line to Omarchy's config files (e.g. ~/.bashrc)
 # to load ours.
+#
+# The macOS bootstrap below runs under macOS's bash 3.2: keep everything up
+# to its `exec` bash-3.2 safe (no associative arrays, ${var,,}, mapfile...).
 set -euo pipefail
 
 REPO_URL="https://github.com/fernandoaleman/dots.git"
@@ -18,8 +21,85 @@ step() { printf '\n\033[1;34m==> %s\033[0m\n' "$1"; }
 ok() { printf '\033[1;32m✔ %s\033[0m\n' "$1"; }
 warn() { printf '\033[1;33m! %s\033[0m\n' "$1"; }
 
-# Omarchy's helper: ask for sudo once and keep it alive for the whole run
-source omarchy-sudo-keepalive
+case "$(uname -s)" in
+Darwin) DOTS_OS=macos ;;
+*) DOTS_OS=omarchy ;;
+esac
+
+# macOS bootstrap. A fresh Mac has curl and bash 3.2 only (git needs Apple's
+# Command Line Tools). Install Homebrew (its installer also installs the
+# Command Line Tools), the bootstrap tools, get dots, then re-run the repo's
+# install.sh with Homebrew's bash 5: `bash <(curl ...)` leaves no file to
+# re-run. ${1+"$@"}: bash 3.2 treats an empty "$@" as unbound under set -u.
+if [ "$DOTS_OS" = macos ] && [ "${BASH_VERSINFO[0]}" -lt 4 ]; then
+  step "Bootstrapping macOS (Homebrew, bash 5, git, gum, stow, jq)"
+  sudo -v
+  if [ ! -x /opt/homebrew/bin/brew ]; then
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  fi
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+  brew install bash git gum stow jq
+  if [ ! -d "$DOTS_DIR/.git" ]; then
+    mkdir -p "$(dirname "$DOTS_DIR")"
+    git clone "$REPO_URL" "$DOTS_DIR"
+  elif [ -z "$(git -C "$DOTS_DIR" status --porcelain)" ]; then
+    git -C "$DOTS_DIR" pull --no-rebase --ff-only
+  fi
+  exec /opt/homebrew/bin/bash "$DOTS_DIR/install.sh" ${1+"$@"}
+fi
+
+# Sudo once for the whole run: Omarchy's helper, or the same idea on macOS
+if [[ $DOTS_OS == omarchy ]]; then
+  source omarchy-sudo-keepalive
+else
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+  sudo -v
+  while kill -0 "$$" 2>/dev/null; do sudo -n true; sleep 50; done 2>/dev/null &
+fi
+
+# Machine profile: "personal" or "work" (docs/decisions/macos.md). Asked on
+# the first run, remembered in a machine-local file; DOTS_PROFILE overrides.
+profile_file="$HOME/.config/dots/profile"
+if [[ -z ${DOTS_PROFILE:-} && -r $profile_file ]]; then
+  DOTS_PROFILE=$(<"$profile_file")
+fi
+if [[ -z ${DOTS_PROFILE:-} ]]; then
+  step "Machine profile"
+  if command -v gum &>/dev/null; then
+    DOTS_PROFILE=$(gum choose --header "Is this a personal or a work machine?" personal work)
+  else
+    read -rp "Is this a personal or a work machine? [personal/work]: " DOTS_PROFILE
+  fi
+fi
+case $DOTS_PROFILE in
+personal | work) ;;
+*) warn "Unknown profile '$DOTS_PROFILE' (expected personal or work)" && exit 1 ;;
+esac
+mkdir -p "$(dirname "$profile_file")"
+printf '%s\n' "$DOTS_PROFILE" >"$profile_file"
+export DOTS_PROFILE
+ok "Profile: $DOTS_PROFILE ($DOTS_OS)"
+
+# macOS: packages and apps from the Brewfile (personal-only entries follow
+# DOTS_PROFILE). The rest of the Mac setup (shell, configs, Neovim, secrets)
+# is still being built; until then the Mac run stops here.
+if [[ $DOTS_OS == macos ]]; then
+  step "Installing packages and apps (Brewfile)"
+  brew bundle --file="$DOTS_DIR/Brewfile" --no-upgrade
+  ok "Brewfile installed"
+
+  step "Default browser"
+  if defaultbrowser 2>/dev/null | grep -q '^\* chrome'; then
+    ok "Chrome already the default browser"
+  else
+    defaultbrowser chrome || true
+    ok "Asked macOS to make Chrome the default: click \"Use Chrome\""
+  fi
+
+  step "Done (macOS: first stage)"
+  echo "Shell, configs, Neovim and secrets for macOS come in the next stages."
+  exit 0
+fi
 
 # A fresh Omarchy install has no package lists yet (pacman: "database file
 # for 'core' does not exist"; Omarchy shows an "Update System" notice). Run

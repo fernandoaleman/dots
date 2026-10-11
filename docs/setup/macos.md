@@ -1,8 +1,24 @@
 # Fresh Mac setup
 
 Manual steps for a Mac, collected as they're decided. The Mac phase
-(dots 1.x) will turn what it can into a Mac `install.sh`; until then this
-is the checklist. Decisions behind each step are linked.
+(dots 1.x) turns what it can into `install.sh`; the rest is this checklist.
+Decisions behind each step are linked.
+
+## 0. Run install.sh
+
+On the fresh Mac (signed in to a local account; on the work laptop, no
+personal Apple ID), open Terminal and run the same one-liner as on Omarchy:
+
+```sh
+bash <(curl -fsSL https://raw.githubusercontent.com/fernandoaleman/dots/master/install.sh)
+```
+
+It asks for your password, installs Homebrew (and Apple's Command Line
+Tools), bash 5, git, gum, stow and jq, clones dots into `~/Work/dots`, asks
+**personal or work**, then installs the `Brewfile` and asks macOS to make
+Chrome the default browser (click **Use Chrome**). Some casks ask for the
+password again or show macOS permission prompts; that's expected
+([macos.md](../decisions/macos.md#bootstrap-on-a-fresh-mac)).
 
 ## 1. 1Password
 
