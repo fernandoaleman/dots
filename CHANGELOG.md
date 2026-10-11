@@ -24,6 +24,10 @@ by a clean install; macOS support comes in later `1.x` releases.
 - macOS bash: Omarchy's bash defaults (downloaded at a pinned tag) plus a
   Mac add-on (`macos` stow package), with Homebrew's bash 5 as the login
   shell.
+- macOS config files: Omarchy's templates (git, tmux, starship, lazygit,
+  btop, herdr, Ghostty, opencode) seeded from the pinned download, dots' git
+  and tmux settings and tmux plugins, Ghostty with Option as Alt, and tmux's
+  `prefix ?` keybindings help.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 

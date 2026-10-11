@@ -217,3 +217,36 @@ So, on macOS:
 
 Known gap: Omarchy's `sff` uses GNU `find -printf`, which macOS's `find`
 lacks (troubleshooting).
+
+## Omarchy's config files on the Mac
+
+Decided 2026-10-10. **Omarchy** copies its config templates
+(`/usr/share/omarchy/config/`) into `~/.config` once at install; after that
+they're the user's files, and dots adds include lines to git's `config` and
+`tmux.conf`.
+
+On macOS, `install.sh` does the same from the pinned download
+(`OMARCHY_REF`; kept in `~/.local/share/omarchy/config/`): it copies
+`OMARCHY_TEMPLATES` (`lib/dots.sh`: git, tmux, starship, lazygit, btop,
+herdr, Ghostty, opencode) into `~/.config` **only when missing**, then
+stows `git` and `tmux` and adds the same include lines, plus the tmux
+plugins at the same pinned commits. Skipped: Omarchy's Linux desktop
+templates (Hyprland, foot/kitty/alacritty, chromium flags, fcitx5, imv,
+wireplumber, xournalpp, autostart).
+
+- **Ghostty** (the Mac's terminal; Omarchy's is foot): Omarchy's config
+  plus `~/.config/ghostty/config.dots` (`macos` package), loaded by an
+  include line: `macos-option-as-alt = true` (tmux's Alt keys) and
+  `font-size = 13` (Omarchy's 9 suits its desktop; 13 is also Ghostty's Mac
+  default, so `ghostty +show-config` only lists it with
+  `--changes-only=false`). Omarchy's Linux-only lines (`async-backend =
+  epoll`, `gtk-toolbar-style`) pass `ghostty +validate-config` on macOS.
+- **tmux `prefix ?`** calls `omarchy-menu-tmux-keybindings`; its `--print`
+  mode needs only tmux and awk, so that one script is copied from the same
+  download into `~/.local/share/omarchy/bin` (on PATH via `macos-env`).
+- **btop** uses `color_theme = "current"`, Omarchy's theme link, which the
+  Mac doesn't have, so btop shows its default colors. Left as is.
+
+Seeded files are never overwritten on re-runs: a newer `OMARCHY_REF` only
+changes `~/.local/share/omarchy`; compare and merge by hand (as on Omarchy,
+where updates don't rewrite your `~/.config` either).
