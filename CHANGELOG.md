@@ -30,6 +30,9 @@ by a clean install; macOS support comes in later `1.x` releases.
   `prefix ?` keybindings help.
 - Ghostty on macOS: OneDark "dark" theme, generated from onedark.nvim's
   palette.
+- Neovim on macOS: Omarchy's LazyVim config rebuilt from the omarchy-nvim
+  package's sources at pinned commits, dots' `nvim` package and LazyVim
+  Extras, and OneDark "dark" as the colorscheme.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 

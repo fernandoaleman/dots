@@ -609,6 +609,28 @@ shows `~/.local/share/omarchy` and `echo $SHELL` shows
 interface. **Fix:** ask for the interface carrying the default route:
 `ipconfig getifaddr "$(route -n get default | awk '/interface:/{print $2}')"`.
 
+### Mac: first `nvim` start downloads plugins / Mason installs tools
+
+**Why:** on Omarchy the package ships a prebuilt plugin cache; on the Mac
+there isn't one (it's built for Linux), so the first start downloads ~60
+plugins, compiles Tree-sitter parsers and has Mason install language tools.
+Expected; let it finish (`:Lazy`, `:Mason` show progress). Run headless
+(`nvim --headless "+Lazy! sync" +qa`), it quits before Mason is done and
+prints *"Neovim exited while the following packages were installing"*:
+they install on the next normal start.
+
+### Mac: `:checkhealth lazy` shows a luarocks ERROR
+
+**Why:** the Mac has no `luarocks`/Lua 5.1 (Omarchy installs both), so
+lazy.nvim's *hererocks* check fails. Harmless: the same report says *"no
+plugins require `luarocks`, so you can ignore any warnings below"*.
+
+### `brew bundle` warns about the Voxtype tap (`depends_on macos:`, `postflight`)
+
+**Why:** Homebrew 7 deprecated those forms and the `peteonrails/voxtype`
+tap still uses them. Only warnings; the cask installs. Goes away when the
+tap is updated.
+
 ## Syncthing
 
 ### `.sync-conflict` files or a broken git repo inside a synced folder
@@ -732,7 +754,8 @@ nvim --headless "+Lazy! update monokai-pro.nvim" +qa   # switches the remote
 
 `Lazy! install` alone doesn't change an installed plugin's remote; an
 update (of just that plugin) does. Not needed once an Omarchy release
-ships the fix *and* updates your copy.
+ships the fix *and* updates your copy. The Mac's `install.sh` pins the
+fixed commit (`OMARCHY_NVIM_REF`), so a Mac never has this.
 
 ### Lazy shows "Breaking Changes" / "updates available"
 
