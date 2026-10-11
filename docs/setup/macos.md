@@ -17,14 +17,16 @@ It asks for your password, installs Homebrew (and Apple's Command Line
 Tools), bash 5, git, gum, stow and jq, clones dots into `~/Work/dots`, asks
 **personal or work**, sets up bash (Omarchy's defaults plus the Mac
 add-on) and Omarchy's Neovim, installs the `Brewfile` and the mise tools,
-starts Colima (Docker), asks macOS to make Chrome the default browser
+starts Colima (Docker), applies the macOS settings (Dock, Finder,
+keyboard, text input), asks macOS to make Chrome the default browser
 (click **Use Chrome**) and makes Homebrew's bash 5 your login shell. When
-it's done, **quit and reopen Terminal** (and any Ghostty windows) to get the new shell. Some
-casks ask for the password again or show macOS permission prompts; that's
-expected ([macos.md](../decisions/macos.md#bootstrap-on-a-fresh-mac)). The
-first `nvim` start downloads its plugins and tools; let it finish. To
-commit to dots from the Mac, run `make setup` in `~/Work/dots` once (prek
-and its git hooks).
+it's done, **quit and reopen Terminal** (and any Ghostty windows) to get
+the new shell. Some casks ask for the password again or show macOS
+permission prompts; that's expected
+([macos.md](../decisions/macos.md#bootstrap-on-a-fresh-mac)). The first
+`nvim` start downloads its plugins and tools; let it finish. To commit to
+dots from the Mac, run `make setup` in `~/Work/dots` once (prek and its
+git hooks).
 
 **Optional, to let an agent on Omarchy drive the setup over SSH:** System
 Settings > General > Sharing > **Remote Login** on (Allow access: only your
@@ -122,9 +124,6 @@ key** by hand.
 
 ## 8. Small settings
 
-- **Function keys:** System Settings > Keyboard > "Use F1, F2, etc. keys as
-  standard function keys" (Omarchy's `fnmode=2` equivalent;
-  [desktop.md](../decisions/desktop.md)).
 - **`~/.hushlogin`** (silences "Last login" in new shells;
   [dotfiles.md](../decisions/dotfiles.md)).
 - **Mac Studio:** `sudo scutil --set HostName Fernandos-Mac-Studio`. With no

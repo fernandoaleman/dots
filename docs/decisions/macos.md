@@ -430,3 +430,54 @@ DNS must be off wherever the AWS VPN runs ([desktop.md](desktop.md#tailscale--th
   the app's GUI. Scripts use the full path.
 - **Exit node:** not set by `install.sh`; "None" is the default, and
   forcing it would undo a deliberate choice.
+
+## macOS settings (`defaults`)
+
+Decided 2026-10-11, reviewed one setting at a time from the old
+`run_onchange_after_90-setup-osx-defaults.sh.tmpl` on macOS 27.0.1. Rule:
+a setting goes into `install.sh` only after it was run on the MacBook and
+checked (read back, plus macOS's own view of it: System Events, Finder's
+preferences, the System Settings switch, or the effect on screen); a
+setting equal to macOS's own default is skipped (a no-op). **Omarchy** has
+no Dock and no system-wide text substitutions, and its file manager shows
+extensions and its location; most kept settings mirror that.
+
+`MACOS_DEFAULTS` in `install.sh` writes only what differs (value and type),
+quits System Settings first (it can overwrite changes made while open),
+restarts Dock/Finder when their settings changed, then runs
+`activateSettings -u` so key repeat applies without logging out.
+
+| Setting | Key(s) | Checked by |
+|---|---|---|
+| Dock auto-hide | `com.apple.dock autohide` | System Events `autohide of dock preferences` |
+| Dock shows without delay (normal slide kept) | `autohide-delay 0` | on screen |
+| No recent apps in the Dock | `show-recents false` | read-back |
+| Spaces keep their order (Omarchy's fixed workspaces) | `mru-spaces false` | read-back |
+| Save dialogs expanded (Omarchy's full file dialog) | `NSNavPanelExpandedStateForSaveMode`, `…2` | TextEdit's Save dialog on screen |
+| Document apps open a blank file, no Open dialog | `NSShowAppCentricOpenPanelInsteadOfUntitledFile false` | TextEdit reported an "Untitled" document |
+| All file extensions shown | `AppleShowAllExtensions` | Finder: `all name extensions showing` |
+| Finder path bar | `com.apple.finder ShowPathbar` | on screen |
+| No warning when changing an extension | `FXEnableExtensionChangeWarning false` | rename test |
+| New Finder windows: home folder (Omarchy's file manager) | `NewWindowTarget PfHm`, `NewWindowTargetPath file://$HOME/` | Finder: `new window target`; Cmd+N |
+| Key repeat as fast as the sliders go (Omarchy: 40/s, 250 ms, `default/hypr/input.lua`) | `KeyRepeat 2`, `InitialKeyRepeat 15`, **floats** | the System Settings sliders |
+| Autocorrect, capitalization, double-space period, smart quotes **and dashes** off | `NSAutomatic…Enabled false` (dashes added: the same switch) | the System Settings switches |
+| TextEdit plain text | `com.apple.TextEdit RichText false` (lands in its sandbox container) | Format menu shows "Make Rich Text" |
+| No `.DS_Store` on network shares | `com.apple.desktopservices DSDontWriteNetworkStores` | read-back + [Apple's support article](https://support.apple.com/en-us/HT208209) (no share to test; takes effect at next login) |
+
+**Skipped:** menu bar auto-hide (Omarchy's bar is always visible; the
+notch row gains little), always-on scroll bars (macOS's automatic ones
+match Omarchy's overlay bars), large sidebar icons (taste), Activity
+Monitor every 2 s (btop is the monitor, already 2 s), screenshots as PNG
+(macOS's default), F1-F12 as standard function keys (media keys stay the
+default on the Macs). Dropped from the old script: `sudo -v` and its
+keep-alive (no setting needs admin rights).
+
+**Key repeat on macOS 27:** the Keyboard sliders show the repeat speed
+*active now*, which macOS loads from preferences at login, and they write
+**floats**. The old script's `-int` values were stored but never shown;
+`activateSettings -u` (a private helper in
+`SystemAdministration.framework`, skipped if missing) applies stored
+values at once (tested: the sliders moved with each write). Also,
+`defaults write` of a value numerically equal to the stored one is
+ignored (int `2` over float `2` stays an integer), so `install.sh`
+deletes a key before writing it.

@@ -438,6 +438,63 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Asked macOS to make Chrome the default: click \"Use Chrome\""
   fi
 
+  # macOS settings reviewed one by one on macOS 27, each run and checked on
+  # the MacBook before being added (docs/decisions/macos.md). Each entry:
+  # domain|key|type|value. Only what differs is written, so re-runs are quiet.
+  MACOS_DEFAULTS=(
+    "com.apple.dock|autohide|bool|true"                       # Dock hides (Omarchy has none)
+    "com.apple.dock|autohide-delay|float|0"                   # ...and shows without delay
+    "com.apple.dock|show-recents|bool|false"                  # pinned apps only
+    "com.apple.dock|mru-spaces|bool|false"                    # Spaces keep their order
+    "NSGlobalDomain|NSNavPanelExpandedStateForSaveMode|bool|true"  # Save dialogs expanded
+    "NSGlobalDomain|NSNavPanelExpandedStateForSaveMode2|bool|true"
+    "NSGlobalDomain|NSShowAppCentricOpenPanelInsteadOfUntitledFile|bool|false" # blank doc, no Open dialog
+    "NSGlobalDomain|AppleShowAllExtensions|bool|true"         # Finder shows extensions
+    "com.apple.finder|ShowPathbar|bool|true"
+    "com.apple.finder|FXEnableExtensionChangeWarning|bool|false"
+    "com.apple.finder|NewWindowTarget|string|PfHm"            # new windows: home folder
+    "com.apple.finder|NewWindowTargetPath|string|file://$HOME/"
+    "NSGlobalDomain|KeyRepeat|float|2"                        # fastest slider; Omarchy 40/s
+    "NSGlobalDomain|InitialKeyRepeat|float|15"                # shortest slider; Omarchy 250 ms
+    "NSGlobalDomain|NSAutomaticSpellingCorrectionEnabled|bool|false"
+    "NSGlobalDomain|NSAutomaticCapitalizationEnabled|bool|false"
+    "NSGlobalDomain|NSAutomaticPeriodSubstitutionEnabled|bool|false"
+    "NSGlobalDomain|NSAutomaticQuoteSubstitutionEnabled|bool|false"
+    "NSGlobalDomain|NSAutomaticDashSubstitutionEnabled|bool|false"
+    "com.apple.TextEdit|RichText|bool|false"                  # plain text (lands in its container)
+    "com.apple.desktopservices|DSDontWriteNetworkStores|bool|true" # no .DS_Store on shares
+  )
+  step "macOS settings"
+  changed_domains=()
+  for entry in "${MACOS_DEFAULTS[@]}"; do
+    IFS='|' read -r domain key type value <<<"$entry"
+    want=$value
+    [[ $type == bool ]] && { [[ $value == true ]] && want=1 || want=0; }
+    # Same value but another type counts as different: macOS 27's Keyboard
+    # settings ignore an integer KeyRepeat (its sliders write floats)
+    [[ $(defaults read "$domain" "$key" 2>/dev/null) == "$want" &&
+      $(defaults read-type "$domain" "$key" 2>/dev/null) == *"${type/bool/boolean}"* ]] && continue
+    # System Settings can overwrite changes made while it's open
+    ((${#changed_domains[@]})) || osascript -e 'tell application "System Settings" to quit' 2>/dev/null || true
+    # Delete first: macOS ignores a write numerically equal to the stored
+    # value, so int 2 -> float 2 would keep the integer
+    defaults delete "$domain" "$key" 2>/dev/null || true
+    defaults write "$domain" "$key" "-$type" "$value"
+    changed_domains+=("$domain")
+    ok "$domain $key = $value"
+  done
+  if ((${#changed_domains[@]})); then
+    [[ " ${changed_domains[*]} " == *" com.apple.dock "* ]] && killall Dock 2>/dev/null || true
+    [[ " ${changed_domains[*]} " == *" com.apple.finder "* || " ${changed_domains[*]} " == *" NSGlobalDomain "* ]] && killall Finder 2>/dev/null || true
+    # Apply stored settings now (key repeat would otherwise wait for the next
+    # login). Private, undocumented Apple helper: skipped if missing or failing
+    activate=/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings
+    [[ -x $activate ]] && "$activate" -u 2>/dev/null || true
+    ok "Applied; .DS_Store on network shares takes effect after logging out and back in"
+  else
+    ok "All already set"
+  fi
+
   # Bash 5 as the login shell, as on Omarchy (Omarchy's defaults need bash
   # 4+; macOS's /bin/bash is 3.2). chsh only accepts shells in /etc/shells.
   brew_bash=/opt/homebrew/bin/bash
@@ -450,7 +507,7 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Login shell changed (new terminal windows use it)"
   fi
 
-  step "Done (macOS: bash, config, Neovim, mise, Docker and Tailscale stage)"
+  step "Done (macOS: bash, config, Neovim, mise, Docker, Tailscale and settings stage)"
   echo "Open a new terminal window to load the new shell."
   echo "Secrets for macOS come in a later stage."
   exit 0
