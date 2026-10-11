@@ -130,3 +130,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | QLMarkdown | cask `qlmarkdown` | both | renders `.md` in Finder's Quick Look (Space); local only |
 | Raindrop.io | dropped for now | n/a | decide with the bookmarks TODO (Raycast quicklinks are going away; the Omarchy catalog has a Raindrop Bookmarks picker) |
 | Spotify + Reflex | casks `spotify`, `reflex-app` | personal only | personal account (Omarchy installs Spotify too); Reflex sends the Mac's media keys to Spotify instead of Apple Music |
+| Todoist | cask `todoist-app` | both | needed on every machine (used mostly for work, with some personal tasks). Omarchy: a web app (`install.sh` `WEBAPPS`; no official Arch package). The 1Password item "Todoist (Personal)" (`TODOIST_API_TOKEN` for `td` and the agent skills) moves to the **work** 1Password account with the other work items, so `td` works on the work laptop too |

@@ -125,6 +125,7 @@ them. `install.sh` runs the same commands, each guarded:
 | Discord, Zoom | Omarchy's preinstalled web apps |
 | `claude`/`codex`/`opencode`… | Omarchy's mise launchers |
 | Apple Music, iCloud, Claude (old web apps), Loom, Raindrop.io | Dropped for now (re-add a line to `WEBAPPS` in `install.sh`) |
+| Todoist | **Web app** (`WEBAPPS`, added 2026-10-10): no official Arch package (its Linux app is AppImage/Snap/Flatpak); the `td` CLI stays a mise tool |
 
 `WEBAPPS` entries are `"Name|URL|icon URL"`: without an icon URL, `omarchy-webapp-install` fetches the site's own icon (the old PNG icon files weren't kept). `install.sh` recreates a launcher whose URL changed. Making Slack open on a fixed workspace automatically is a **Desktop section** item.
 
