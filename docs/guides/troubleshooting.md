@@ -549,6 +549,22 @@ third-party items fully qualified with `trusted: true` (`cask
 "peteonrails/voxtype/voxtype", trusted: true`), which trusts just that cask,
 not the whole tap. By hand: `brew trust --cask <user>/<tap>/<name>`.
 
+### Personal-only apps installed on the work Mac
+
+**Why:** an early Brewfile read `ENV["DOTS_PROFILE"]`, which Homebrew strips
+(it runs with a cleaned environment), so it always saw "personal". It now
+reads `~/.config/dots/profile`. **Fix:** check that file says `work`, then
+list what isn't in the Brewfile with `brew bundle cleanup --file=~/Work/dots/Brewfile`
+(dry run) and remove each with `brew uninstall --cask --zap <name>` /
+`brew uninstall <name>`, then `brew autoremove`.
+
+### `defaultbrowser` doesn't mark Chrome as current
+
+**Why:** it lists `chrome` without the `*` even when Chrome is the default
+(the bundle ID's case differs: `com.google.Chrome` vs `com.google.chrome`).
+`install.sh` reads macOS's own setting instead:
+`plutil -convert json -o - ~/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist | jq '.LSHandlers[] | select(.LSHandlerURLScheme == "https")'`.
+
 ### `ipconfig getifaddr en0` prints nothing
 
 **Why:** `en0` is Wi-Fi; on a dock or Ethernet adapter the Mac uses another

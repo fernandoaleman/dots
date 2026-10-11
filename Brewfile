@@ -1,8 +1,15 @@
 # Homebrew packages for the Macs (docs/decisions/macos.md). Used only by the
 # macOS branch of install.sh: brew bundle --file=Brewfile --no-upgrade.
-# Not a stow package, so never linked into $HOME. Ruby: the profile
-# ("personal" or "work", from install.sh) decides personal-only entries.
-personal = ENV.fetch("DOTS_PROFILE", "personal") != "work"
+# Not a stow package, so never linked into $HOME. Ruby: the machine profile
+# decides personal-only entries. Read from the file install.sh saves, not
+# from DOTS_PROFILE: brew runs with a cleaned environment (only HOMEBREW_*
+# and a few others survive). No profile, no install: never guess "personal"
+# on a work machine.
+profile_file = File.join(Dir.home, ".config/dots/profile")
+raise "No #{profile_file}: run install.sh first" unless File.exist?(profile_file)
+profile = File.read(profile_file).strip
+raise "Unknown profile #{profile.inspect} in #{profile_file}" unless %w[personal work].include?(profile)
+personal = profile == "personal"
 
 tap "peteonrails/voxtype"
 
