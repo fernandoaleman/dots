@@ -539,6 +539,18 @@ Apps installed by dots come from Homebrew casks: `brew uninstall --cask
 doesn't bring it back. AppCleaner (installed) is the fallback for apps
 installed outside dots.
 
+### `brew uninstall --cask --zap` asks for Full Disk Access
+
+**Why:** some casks' zap lists include macOS-protected paths (Logi
+Options+: `~/Library/Application Support/com.apple.sharedfilelist/…`), and
+deleting those needs Full Disk Access for the terminal. Don't grant it:
+it lets the terminal, and everything run in it, read all protected data.
+**Fix:** `brew uninstall --cask <name>` (no `--zap`; add `--force` if the
+app is already gone), then delete the leftovers you can see. Installer-type
+casks (Logi Options+) can also leave apps and package receipts the cask
+doesn't track: check `pkgutil --pkgs | grep -i <vendor>`, remove the files
+it lists (`pkgutil --files <pkg>`), then `sudo pkgutil --forget <pkg>`.
+
 ### `brew bundle` fails: "Refusing to load cask … from untrusted tap"
 
 **Why:** Homebrew 7 only loads formulae and casks from third-party taps
