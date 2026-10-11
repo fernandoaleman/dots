@@ -111,3 +111,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | Microsoft Teams | Chrome web app (manual: "Install page as app") | both | like Omarchy (`teams.cloud.microsoft`); enough for occasional chats and calls (chat, audio/video, screen sharing in Chrome); the native app (cask `microsoft-teams`) was first chosen, then replaced. Chrome creates real apps in `~/Applications/Chrome Apps/` (own window, Dock icon, found by Spotlight); macOS has no script for it (Chrome's force-install policy needs an MDM), so it's a checklist step |
 | Outlook | Chrome web app (manual) | both | like Omarchy (`outlook.office.com`) |
 | Word, Excel, PowerPoint | not installed | n/a | Office on the web when needed; casks `microsoft-word` / `-excel` / `-powerpoint` exist if ever necessary |
+| Zoom | cask `zoom` (native app) | both | used for work meetings; Zoom's web client is the weakest (pushes to the app); Omarchy keeps its built-in Zoom web app |
