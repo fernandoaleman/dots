@@ -127,3 +127,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | Obsidian | cask `obsidian` | both | already on Omarchy (base package). Vaults move from iCloud to Syncthing (below) |
 | Syncthing | formula `syncthing` (started at login) | both | syncs the **Obsidian vaults only**: the work vault on all three machines, the personal vault only on Omarchy and the Mac Studio. See [packages.md](packages.md) |
 | Plaud | cask `plaud` | both | records Slack huddles, Teams and Zoom calls without a meeting bot; Plaud Desktop is Mac/Windows only. Omarchy: see the [TODO](../TODO.md) |
+| QLMarkdown | cask `qlmarkdown` | both | renders `.md` in Finder's Quick Look (Space); local only |
