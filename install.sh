@@ -35,7 +35,7 @@ omarchy-pkg-add git stow
 ok "git and stow installed"
 
 # Extra packages from the official repos that Omarchy doesn't install
-PACMAN_PACKAGES=(wget nmap mariadb-clients)
+PACMAN_PACKAGES=(wget nmap mariadb-clients pandoc-cli mkcert)
 step "Installing packages: ${PACMAN_PACKAGES[*]}"
 omarchy-pkg-add "${PACMAN_PACKAGES[@]}"
 ok "Packages installed"
