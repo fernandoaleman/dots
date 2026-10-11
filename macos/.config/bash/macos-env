@@ -1,0 +1,29 @@
+# shellcheck shell=bash
+#
+# macOS: the environment Omarchy's bash defaults expect, loaded by
+# ~/.bash_profile before ~/.bashrc. Exports only, so shells started from
+# this one inherit it. On Omarchy, its env-bootstrap does this job.
+
+# Homebrew first in PATH (its bash, git, etc. over macOS's old ones)
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Omarchy's bash defaults, downloaded by install.sh at a pinned tag
+# (/usr/share/omarchy on Omarchy; macOS doesn't allow writing to /usr/share)
+export OMARCHY_PATH="$HOME/.local/share/omarchy"
+
+# Same user tool paths as Omarchy's env-bootstrap, appended
+case ":$PATH:" in
+*":$HOME/.local/share/mise/shims:"*) ;;
+*) PATH="$PATH:$HOME/.local/share/mise/shims" ;;
+esac
+case ":$PATH:" in
+*":$HOME/.local/bin:"*) ;;
+*) PATH="$PATH:$HOME/.local/bin" ;;
+esac
+export PATH
+
+# Omarchy's envs keeps these when already set. Omarchy: EDITOR is
+# `omarchy-launch-editor --inline` (Neovim in the terminal), BROWSER
+# `omarchy-launch-browser`
+export EDITOR=nvim
+export BROWSER=open

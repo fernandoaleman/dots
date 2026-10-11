@@ -18,6 +18,18 @@ INCLUDES=(
   "$HOME/.config/hypr/monitors.lua|do local f = os.getenv(\"HOME\") .. \"/.config/hypr/monitors.dots.lua\"; local h = io.open(f); if h then h:close() dofile(f) end end"
 )
 
+# macOS: the Omarchy release whose defaults and templates the Mac mirrors,
+# downloaded by install.sh (no copies in dots). Bump deliberately, usually to
+# the version the Omarchy desktop runs (`omarchy version`).
+OMARCHY_REF=v4.0.4
+
+# macOS stows and hooks only what's been built for the Mac so far (dots 1.x).
+# There, ~/.bashrc is Omarchy's template seeded by install.sh.
+if [[ $(uname -s) == Darwin ]]; then
+  PACKAGES=(bash macos)
+  INCLUDES=("$HOME/.bashrc|[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots")
+fi
+
 # Docker networks moved off 172.17.0.0/16, which a work VPN routes: the
 # default bridge (and container DNS) to this address, other networks
 # (e.g. docker compose) to this pool. Applied by install.sh.

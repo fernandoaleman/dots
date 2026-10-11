@@ -80,6 +80,7 @@ make ssh
 | Package | Installs | What it does |
 |---|---|---|
 | `bash` | `~/.bashrc.dots`, `~/.config/bash/` (+ one line in Omarchy's `~/.bashrc`) | vi mode, a few aliases and git completion for `g` |
+| `macos` | `~/.bash_profile`, `~/.config/bash/macos-env`, `~/.config/bash/macos` (macOS only) | the environment Omarchy's bash defaults expect (Homebrew, `OMARCHY_PATH`, `EDITOR`), and Mac replacements for their Linux-only parts |
 | `nvim` | `~/.config/nvim/lua/plugins/*.dots.lua` (+ LazyVim Extras merged into Omarchy's `lazyvim.json`) | Omarchy's LazyVim plus super-tab completion keys, grug-far hidden/ignored toggles, and language Extras |
 | `tmux` | `~/.config/tmux/tmux.dots.conf`, `session-picker` (+ one line in Omarchy's `~/.config/tmux/tmux.conf`) | `Ctrl+h/j/k/l` nvim-aware pane movement, `prefix k` session picker, `prefix =` synchronize panes, undercurl, resurrect + continuum (pinned clones) |
 | `mise` | `~/.config/mise/conf.d/config-dots.toml` (mise loads `conf.d/` itself) | `.ruby-version` support and global tools (uv, go, terraform, aws-cli, ansible, yamllint, yarn, confluence-cli, jira-cli), all `latest` |
@@ -93,6 +94,7 @@ make ssh
 install.sh          bootstrap for a fresh install (curl | bash), Omarchy or macOS
 Brewfile            Homebrew packages and apps (macOS only; not stowed)
 bash/               stow package → $HOME
+macos/              stow package → $HOME (macOS only)
 git/                stow package → $HOME
 nvim/               stow package → $HOME
 tmux/               stow package → $HOME

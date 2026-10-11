@@ -577,6 +577,23 @@ list what isn't in the Brewfile with `brew bundle cleanup --file=~/Work/dots/Bre
 `install.sh` reads macOS's own setting instead:
 `plutil -convert json -o - ~/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist | jq '.LSHandlers[] | select(.LSHandlerURLScheme == "https")'`.
 
+### `sff` fails on a Mac ("find: -printf: unknown primary")
+
+**Why:** Omarchy's `sff` (pick a recent file, `scp` it) uses GNU `find
+-printf`; macOS's `find` doesn't have it. Not patched (rarely used;
+[macos.md](../decisions/macos.md#bash-omarchys-defaults-plus-a-mac-add-on)).
+**Workaround:** `scp "$(ff)" host:/tmp/`.
+
+### Mac shell: `omarchy-…` errors, or `open` doesn't work
+
+**Why:** `OMARCHY_PATH`, `EDITOR` and `BROWSER` come from
+`~/.config/bash/macos-env`, loaded by `~/.bash_profile`, i.e. login shells
+only (Terminal, Ghostty and tmux start those). A shell started without
+that environment falls back to Omarchy's Linux values. **Fix:** open a new
+terminal window, or `source ~/.bash_profile`; check `echo $OMARCHY_PATH`
+shows `~/.local/share/omarchy` and `echo $SHELL` shows
+`/opt/homebrew/bin/bash`.
+
 ### `ipconfig getifaddr en0` prints nothing
 
 **Why:** `en0` is Wi-Fi; on a dock or Ethernet adapter the Mac uses another

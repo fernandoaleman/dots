@@ -1,5 +1,9 @@
-# Git completion for Omarchy's `g` alias
-if [[ -f /usr/share/bash-completion/completions/git ]]; then
-  source /usr/share/bash-completion/completions/git
-  __git_complete g __git_main
-fi
+# Git completion for Omarchy's `g` alias (Arch's path, then Homebrew's)
+for f in /usr/share/bash-completion/completions/git /opt/homebrew/share/bash-completion/completions/git; do
+  if [[ -f $f ]]; then
+    source "$f"
+    __git_complete g __git_main
+    break
+  fi
+done
+unset f
