@@ -577,6 +577,15 @@ list what isn't in the Brewfile with `brew bundle cleanup --file=~/Work/dots/Bre
 `install.sh` reads macOS's own setting instead:
 `plutil -convert json -o - ~/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist | jq '.LSHandlers[] | select(.LSHandlerURLScheme == "https")'`.
 
+### btop on the Mac has different colors than on Omarchy
+
+**Why:** Omarchy's `btop.conf` uses `color_theme = "current"`, a link to
+Omarchy's current theme, which the Mac doesn't have; btop falls back to
+its default theme
+([macos.md](../decisions/macos.md#omarchys-config-files-on-the-mac)).
+**Fix (optional):** pick a built-in theme in btop's menu (Esc > Options),
+or put a `.theme` file in `~/.config/btop/themes/current.theme`.
+
 ### `sff` fails on a Mac ("find: -printf: unknown primary")
 
 **Why:** Omarchy's `sff` (pick a recent file, `scp` it) uses GNU `find

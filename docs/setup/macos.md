@@ -105,11 +105,13 @@ user's own plugin does this instead.)
 
 See [desktop.md](../decisions/desktop.md#remote-desktop-sunshine--moonlight-omarchys-via-installsh).
 
-## 7. Terminal: Option as Alt
+## 7. Terminal: use Ghostty
 
-Configure the Mac terminal (likely Ghostty) to send **Option as Alt/Meta**,
-so Omarchy's tmux Alt keys work the same (Alt+Enter splits, Alt+1..9
-windows, Alt+arrows) ([tmux.md](../decisions/tmux.md)).
+`install.sh` configures Ghostty to send **Option as Alt**, so Omarchy's
+tmux Alt keys work the same (Alt+Enter splits, Alt+1..9 windows,
+Alt+arrows) ([tmux.md](../decisions/tmux.md)). Use Ghostty, not Terminal:
+Terminal would need Settings > Profiles > Keyboard > **Use Option as Meta
+key** by hand.
 
 ## 8. Small settings
 
