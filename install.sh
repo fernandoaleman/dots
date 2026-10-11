@@ -133,6 +133,15 @@ else
   ok "Sunshine set to stream DP-2 (middle monitor)"
 fi
 
+# Dictation: Voxtype with Omarchy's installer (menu: Install > AI > Dictation;
+# it asks to confirm, downloads a ~150 MB model, sets up the service; F9 hold
+# or Super+Ctrl+X via Omarchy's Hyprland bindings). Local, nothing in a cloud.
+if omarchy-pkg-missing voxtype-bin; then
+  omarchy-voxtype-install
+else
+  ok "Voxtype (dictation) already installed"
+fi
+
 # Syncthing (Obsidian vaults only; never git repos): Arch package + user
 # service (Omarchy has no installer). Sync (22000 tcp/udp) and LAN discovery
 # (21027/udp) open only to private LANs and tailscale0, like Sunshine; the web
