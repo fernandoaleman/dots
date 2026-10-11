@@ -35,7 +35,13 @@ what `install.sh` does.
 - Keep the Slack window **open, parked on a workspace**: a closed web app
   sends no notifications.
 
-## 3. Log in to GitHub
+## 3. Chrome: AWS Extend Switch Roles
+
+Sign in to Chrome, then install the **AWS Extend Switch Roles** extension
+(Chrome Web Store) and paste its role configuration (daily AWS console role
+switching, used with `aws-role-login`).
+
+## 4. Log in to GitHub
 
 `gh` is preinstalled by Omarchy (through mise).
 
@@ -49,7 +55,7 @@ over HTTPS.
 Use HTTPS until SSH keys are installed, then run `make ssh` in
 `~/Work/dots` to switch the remote.
 
-## 4. Work Claude Code plugins
+## 5. Work Claude Code plugins
 
 Not automated (for now): after `gh auth login` (the marketplace repo is
 private), in Claude Code run `/plugin`, add the work plugin marketplace
@@ -59,7 +65,7 @@ are kept out of this public repo; the old chezmoi script
 
 Same on the Mac.
 
-## 5. Remote desktop (Sunshine) for your Mac
+## 6. Remote desktop (Sunshine) for your Mac
 
 `install.sh` installs and starts Sunshine. Then, once:
 
@@ -81,7 +87,7 @@ Same on the Mac.
 
 Repeat steps 2-4 for each new client device.
 
-## 6. Syncthing (Obsidian vaults)
+## 7. Syncthing (Obsidian vaults)
 
 `install.sh` installs and starts Syncthing. Once per machine, in its web UI
 (`http://localhost:8384`):
@@ -93,7 +99,7 @@ Repeat steps 2-4 for each new client device.
    **personal** vault only between Omarchy and the Mac Studio (never the
    work laptop). Never share `~/Work` or git repos.
 
-## 7. Working on dots (optional)
+## 8. Working on dots (optional)
 
 Only needed to commit changes to this repo. `make setup` installs prek
 (via mise) and shellcheck (via `omarchy-pkg-add`), then activates the git

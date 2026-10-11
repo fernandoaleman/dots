@@ -140,3 +140,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | Pixelmator Pro | dropped | n/a | App Store only; Pinta (Omarchy) for image editing |
 | AdGuard Mini | dropped | n/a | Safari-only (App Store); Chrome is the browser (ad blocking via a Chrome Web Store extension, synced with the profile) |
 | Amphetamine → KeepingYouAwake | cask `keepingyouawake` | both | Amphetamine is App Store only; KeepingYouAwake is a free menu-bar "stay awake" toggle (built-in fallback: `caffeinate -d`) |
+| AWS Extend Switch Roles (Safari, App Store) | dropped | n/a | the Chrome extension (Chrome Web Store) is the one used; set up in each machine's Chrome profile (checklist) |
