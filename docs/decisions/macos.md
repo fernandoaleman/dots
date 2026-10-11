@@ -121,3 +121,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | AppCleaner | cask `appcleaner` | both | installed as a fallback only: remove cask apps with `brew uninstall --cask --zap <name>` (deletes the cask's listed leftovers); AppCleaner for anything installed outside dots |
 | balenaEtcher | dropped | n/a | install when needed (cask `balenaetcher`) |
 | LocalSend | cask `localsend` | personal only | mirrors Omarchy (base package); file sharing between personal Macs and Omarchy. Work laptop: Taildrop covers moving files |
+| Logi Options+ | cask `logi-options+` | personal only | for the Logitech device at the Mac Studio desk |
