@@ -797,6 +797,26 @@ for how to bring it back (`omarchy-pkg-add git-delta`; Omarchy's
 
 ## dots itself
 
+### `op` can't find an item that's in 1Password (two accounts)
+
+**Why:** with more than one account in the 1Password app, `op` without
+`--account` only searches its default account. **Fix:** dots names the
+account on every call (`dots_op_accounts`, `aws-role-login` searches all);
+by hand: `op account list`, then `op --account <ID or sign-in address> …`.
+
+### `op`: "authorization prompt dismissed, please try again"
+
+**Why:** the 1Password app asks to approve CLI access (on the screen of
+the machine running `op`, also for commands run over SSH) and the prompt
+timed out. **Fix:** approve it in time and re-run.
+
+### Moving a 1Password item to another account
+
+`op item move` only moves between vaults of one account, and `op item
+create` can't import an existing SSH key (it creates an unreadable item).
+Use the 1Password app (item ⋯ > Move, with both accounts signed in), then
+check fingerprints or hashes against the installed files.
+
 ### `install.sh` stops at "Checking git identity" ("could not open TTY")
 
 **Why:** `gum input` needs a terminal; run without one (`ssh host

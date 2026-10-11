@@ -15,8 +15,8 @@ item name, so this public repo names no vault, company or work key.
 
 | | Rule | Example |
 |---|---|---|
-| Account | the one signed in to `op` | |
-| Vault | personal items in `Private`; work items in the work vault | `id_ed25519` in `Private` |
+| Account | every account the profile reads (`dots_op_accounts`): **personal** reads the personal and work accounts, **work** only the work account | |
+| Vault | personal items in `Private` (personal account); work items in the work account's own vault (moved there 2026-10-11) | `id_ed25519` in `Private` |
 | Title | exactly the file name it becomes on disk; the path under `~` when the bare name isn't unique | `id_ed25519` → `~/.ssh/id_ed25519`; `.aws/config` → `~/.aws/config` |
 | Category | by what the secret is: **SSH Key** for keys; **Document** for a whole file whose contents are the secret and don't change (AWS config, `.ovpn`); **API Credential** for values dots writes into a file that other tools also change (`~/.aws/credentials`, tokens) | |
 | Tags | one nested `dots/…` tag per item (other tags an item already has are kept): `dots/ssh`, `dots/aws`, `dots/token`, `dots/vpn` (the parent `dots` is implied: `op item list --tags dots` also matches `dots/ssh`, verified) | `dots/ssh` |
@@ -267,3 +267,40 @@ files are left alone.
 
 Titles are checked (plain names / relative paths under `~`, no `..`) before
 anything is written.
+
+## Two accounts: work items in the work account (decided 2026-10-11)
+
+Until 2026-10-11 the "work vault" was a vault **inside the personal
+account**. The work MacBook must read only the work account (no personal
+data on a company machine), so the work items were **moved** into the work
+account's own vault, and dots reads 1Password per machine profile:
+
+- **Personal profile** (Omarchy, the Mac Studio): every account signed in
+  to the 1Password app, personal and work (the work account was added to
+  Omarchy's app). **Work profile** (the work MacBook): only the work
+  account, even if the personal one were signed in. `dots_op_accounts` in
+  `lib/dots.sh` lists them (excluding `DOTS_OP_PERSONAL`, the personal
+  sign-in address, on the work profile); every `op` call names its account
+  (`op --account`), since `op` alone only uses its default account.
+- **Moved** (in the 1Password app: the CLI's `op item move` works only
+  within one account, and `op item create` can't import an existing SSH key,
+  tested: the item it creates is unreadable): the six work SSH keys, the
+  three AWS Documents and the environments file, the VPN profile,
+  `aws-role-switch`, the Atlassian, Cloudflare and PagerTree tokens, and the
+  Todoist token (used for work). The MFA item was already there. Verified
+  after the move, no values printed: key fingerprints and document hashes
+  match the installed files, the token env is identical (hash), the MFA
+  code reads.
+- **Stays personal:** `id_ed25519` (Private). It opens personal GitHub,
+  Omarchy and the Mac Studio, so it never goes on the work Mac (anyone with
+  admin control there could copy it). The work Mac uses GitHub over HTTPS
+  with `gh` (see [git.md](git.md)); AWS hosts use the work keys
+  (`generate-ssh-config` sets a per-host `IdentityFile`), never
+  `id_ed25519`.
+- `install.sh`'s secrets step (`install_secrets`) runs on both systems; the
+  VPN plugin and sshd parts are Omarchy's (the Mac imports the VPN profile
+  by hand, checklist step 5). `aws-role-login` searches every account for
+  the `dots/aws-mfa` item.
+- Tested: Omarchy (both accounts) reports every file up to date; the work
+  Mac installed its keys, AWS files and tokens from the work account only;
+  re-runs change nothing.

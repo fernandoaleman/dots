@@ -24,6 +24,17 @@ INCLUDES=(
 DOTS_GIT_NAME="Fernando Aleman"
 DOTS_GIT_EMAIL="fernandoaleman@mac.com"
 
+# 1Password accounts dots reads secrets from, per machine profile (see
+# docs/decisions/secrets.md): personal reads every account signed in to the
+# 1Password app (personal and work); work never reads the personal account,
+# even if it's signed in. Prints account IDs.
+DOTS_OP_PERSONAL=fernandoaleman.1password.com
+dots_op_accounts() {
+  op account list --format json 2>/dev/null |
+    jq -r --arg p "$DOTS_OP_PERSONAL" --arg profile "${DOTS_PROFILE:-}" \
+      '.[] | select($profile != "work" or (.url != $p)) | .account_uuid'
+}
+
 # macOS: the Omarchy release whose defaults and templates the Mac mirrors,
 # downloaded by install.sh (no copies in dots). Bump deliberately, usually to
 # the version the Omarchy desktop runs (`omarchy version`).
