@@ -32,7 +32,8 @@ by a clean install; macOS support comes in later `1.x` releases.
   palette.
 - Neovim on macOS: Omarchy's LazyVim config rebuilt from the omarchy-nvim
   package's sources at pinned commits, dots' `nvim` package and LazyVim
-  Extras, and OneDark "dark" as the colorscheme.
+  Extras, OneDark "dark" as the colorscheme, and the macOS clipboard
+  (`pbcopy`/`pbpaste`) outside SSH.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 

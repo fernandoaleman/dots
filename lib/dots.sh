@@ -45,6 +45,7 @@ if [[ $(uname -s) == Darwin ]]; then
     "$HOME/.config/git/config|[include] path = ~/.config/git/config.dots"
     "$HOME/.config/tmux/tmux.conf|source-file -q ~/.config/tmux/tmux.dots.conf"
     "$HOME/.config/ghostty/config|config-file = ?\"~/.config/ghostty/config.dots\""
+    "$HOME/.config/nvim/lua/config/options.lua|do local f = vim.fn.stdpath(\"config\") .. \"/lua/config/options.dots.lua\"; if vim.uv.fs_stat(f) then dofile(f) end end"
   )
 fi
 
