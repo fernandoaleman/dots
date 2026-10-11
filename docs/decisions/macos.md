@@ -241,6 +241,15 @@ wireplumber, xournalpp, autostart).
   default, so `ghostty +show-config` only lists it with
   `--changes-only=false`). Omarchy's Linux-only lines (`async-backend =
   epoll`, `gtk-toolbar-style`) pass `ghostty +validate-config` on macOS.
+- **Ghostty theme: OneDark "dark"** (`~/.config/ghostty/themes/onedark-dark`,
+  `theme = onedark-dark` in `config.dots`), copied from
+  [onedark.nvim](https://github.com/navarasu/onedark.nvim) (MIT) at a
+  recorded commit: `palette.lua`'s `dark` colors mapped to the 16 terminal
+  colors as its `terminal.lua` does, plus its `Normal`, `Cursor` (reverse)
+  and `Visual` highlights for background, cursor and selection. Omarchy's
+  theme include (`~/.local/state/omarchy/current/theme/ghostty.conf`) is
+  optional and absent on the Mac. Making it an Omarchy theme too stays in
+  TODO.
 - **tmux `prefix ?`** calls `omarchy-menu-tmux-keybindings`; its `--print`
   mode needs only tmux and awk, so that one script is copied from the same
   download into `~/.local/share/omarchy/bin` (on PATH via `macos-env`).

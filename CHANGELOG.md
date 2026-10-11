@@ -28,6 +28,8 @@ by a clean install; macOS support comes in later `1.x` releases.
   btop, herdr, Ghostty, opencode) seeded from the pinned download, dots' git
   and tmux settings and tmux plugins, Ghostty with Option as Alt, and tmux's
   `prefix ?` keybindings help.
+- Ghostty on macOS: OneDark "dark" theme, generated from onedark.nvim's
+  palette.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 

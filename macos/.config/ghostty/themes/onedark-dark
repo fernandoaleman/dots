@@ -1,0 +1,36 @@
+# OneDark "dark" for Ghostty, from onedark.nvim (MIT, (c) 2021 Navarasu) at
+# commit df4792accde9db0043121f32628bcf8e645d9aea, style "dark":
+# palette.lua's colors, mapped as its terminal.lua does (0-15), plus its
+# Normal (background/foreground), Cursor (reverse) and Visual (selection)
+# highlights. Hand-copied; re-check against those files if onedark.nvim
+# changes its palette. Loaded by `theme = onedark-dark` in config.dots.
+
+# black red green yellow blue purple cyan fg, then grey + the same bright
+palette = 0=#181a1f
+palette = 1=#e86671
+palette = 2=#98c379
+palette = 3=#e5c07b
+palette = 4=#61afef
+palette = 5=#c678dd
+palette = 6=#56b6c2
+palette = 7=#abb2bf
+palette = 8=#5c6370
+palette = 9=#e86671
+palette = 10=#98c379
+palette = 11=#e5c07b
+palette = 12=#61afef
+palette = 13=#c678dd
+palette = 14=#56b6c2
+palette = 15=#abb2bf
+
+# Normal: fg on bg0
+background = #282c34
+foreground = #abb2bf
+
+# Cursor: reverse video (fg block, bg0 text)
+cursor-color = #abb2bf
+cursor-text = #282c34
+
+# Visual: bg3 behind unchanged text
+selection-background = #3b3f4c
+selection-foreground = #abb2bf

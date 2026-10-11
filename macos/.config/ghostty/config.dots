@@ -9,5 +9,10 @@ macos-option-as-alt = true
 # Omarchy's 9 is sized for its Linux desktop; 13 matches the Mac's scaling
 font-size = 13
 
+# OneDark "dark" (themes/onedark-dark, from onedark.nvim). Omarchy's config
+# loads its current theme from ~/.local/state/omarchy, which the Mac doesn't
+# have (that line is optional, so it's skipped).
+theme = onedark-dark
+
 # Machine-local overrides, not stored in dots (skipped if missing)
 config-file = ?"~/.config/ghostty/config.local"
