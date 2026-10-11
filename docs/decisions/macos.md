@@ -145,3 +145,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | LibreOffice | cask `libreoffice` | both | same office suite as Omarchy (`libreoffice-fresh`); Office on the web for Microsoft formats when needed |
 | SonicWall Mobile Connect | dropped | n/a | the AWS VPN replaced the SonicWall VPN. Archive its 1Password login in the 1Password cleanup |
 | Alacritty | dropped | n/a | not installed on Omarchy after all (only Omarchy's config template); Homebrew disabled its cask on 2026-09-01 (`fails_gatekeeper_check`: not notarized), so the Mac would need a Gatekeeper override. foot on Omarchy, Ghostty on the Macs |
+| MacX YouTube Downloader → yt-dlp | formula `yt-dlp` | personal only | the same command-line downloader Omarchy ships, instead of the closed-source GUI app |
