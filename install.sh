@@ -181,7 +181,32 @@ install_tmux_plugins() {
   done
 }
 
-# macOS. What isn't built for the Mac yet (configs, Neovim, secrets) comes
+# LazyVim Extras live in Omarchy's ~/.config/nvim/lazyvim.json, which LazyVim
+# itself rewrites (:LazyExtras), so it can't be stowed. Add ours to its list;
+# nothing is removed, so extras toggled locally are kept. Shared by both OSes.
+add_nvim_extras() {
+  NVIM_EXTRAS=(
+    ai.sidekick
+    lang.ansible lang.docker lang.git lang.go lang.json lang.markdown
+    lang.python lang.ruby lang.sql lang.terraform lang.toml lang.yaml
+  )
+  step "Adding LazyVim Extras"
+  lazyvim_json="$HOME/.config/nvim/lazyvim.json"
+  if [[ -f $lazyvim_json ]]; then
+    extras=$(printf 'lazyvim.plugins.extras.%s\n' "${NVIM_EXTRAS[@]}" | jq -R . | jq -s .)
+    merged=$(jq --argjson add "$extras" '.extras = ((.extras // []) + $add | unique)' "$lazyvim_json")
+    if [[ $merged == "$(jq . "$lazyvim_json")" ]]; then
+      ok "LazyVim Extras already added"
+    else
+      printf '%s\n' "$merged" >"$lazyvim_json"
+      ok "LazyVim Extras added (installed on next nvim start)"
+    fi
+  else
+    warn "No ~/.config/nvim/lazyvim.json found; skipping LazyVim Extras"
+  fi
+}
+
+# macOS. What isn't built for the Mac yet (mise tools, secrets) comes
 # in later stages; until then the Mac run stops at the end of this block.
 if [[ $DOTS_OS == macos ]]; then
   get_dots
@@ -225,7 +250,32 @@ if [[ $DOTS_OS == macos ]]; then
   done
   ((seeded)) || ok "All present; leaving them"
 
+  # Omarchy's Neovim config, seeded once if missing: what the omarchy-nvim
+  # package builds (LazyVim's starter plus Omarchy's files), from the same
+  # pinned sources. Not the package itself: its plugin cache is built for
+  # Linux, so lazy.nvim downloads the plugins on the first nvim start. No
+  # theme.lua link (no Omarchy themes here): the macos package's
+  # theme.dots.lua sets the colorscheme (docs/decisions/macos.md).
+  step "Seeding Omarchy's Neovim config"
+  nvim_dir="$HOME/.config/nvim"
+  if [[ -e $nvim_dir ]]; then
+    ok "${nvim_dir/#$HOME/\~} exists; leaving it"
+  else
+    tmp=$(mktemp -d)
+    mkdir -p "$tmp/nvim" "$tmp/omarchy-nvim"
+    curl -fsSL "https://github.com/LazyVim/starter/archive/$LAZYVIM_STARTER_REF.tar.gz" |
+      tar -xz -C "$tmp/nvim" --strip-components=1
+    curl -fsSL "https://github.com/omacom/omarchy-pkgs/archive/$OMARCHY_NVIM_REF.tar.gz" |
+      tar -xz -C "$tmp/omarchy-nvim" --strip-components=3 "omarchy-pkgs-$OMARCHY_NVIM_REF/pkgbuilds/omarchy-nvim"
+    cp -R "$tmp/omarchy-nvim/lua" "$tmp/omarchy-nvim/plugin" "$tmp/omarchy-nvim/lazyvim.json" "$tmp/nvim/"
+    mkdir -p "$(dirname "$nvim_dir")"
+    mv "$tmp/nvim" "$nvim_dir"
+    rm -rf "$tmp"
+    ok "Copied ${nvim_dir/#$HOME/\~} (plugins download on the first nvim start)"
+  fi
+
   link_dots
+  add_nvim_extras
   install_tmux_plugins
 
   step "Installing packages and apps (Brewfile)"
@@ -255,9 +305,9 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Login shell changed (new terminal windows use it)"
   fi
 
-  step "Done (macOS: bash and config stage)"
+  step "Done (macOS: bash, config and Neovim stage)"
   echo "Open a new terminal window to load the new shell."
-  echo "Neovim, mise tools and secrets for macOS come in the next stages."
+  echo "mise tools and secrets for macOS come in the next stages."
   exit 0
 fi
 
@@ -512,28 +562,7 @@ for agent in claude-code universal; do
   fi
 done
 
-# LazyVim Extras live in Omarchy's ~/.config/nvim/lazyvim.json, which LazyVim
-# itself rewrites (:LazyExtras), so it can't be stowed. Add ours to its list;
-# nothing is removed, so extras toggled locally are kept.
-NVIM_EXTRAS=(
-  ai.sidekick
-  lang.ansible lang.docker lang.git lang.go lang.json lang.markdown
-  lang.python lang.ruby lang.sql lang.terraform lang.toml lang.yaml
-)
-step "Adding LazyVim Extras"
-lazyvim_json="$HOME/.config/nvim/lazyvim.json"
-if [[ -f $lazyvim_json ]]; then
-  extras=$(printf 'lazyvim.plugins.extras.%s\n' "${NVIM_EXTRAS[@]}" | jq -R . | jq -s .)
-  merged=$(jq --argjson add "$extras" '.extras = ((.extras // []) + $add | unique)' "$lazyvim_json")
-  if [[ $merged == "$(jq . "$lazyvim_json")" ]]; then
-    ok "LazyVim Extras already added"
-  else
-    printf '%s\n' "$merged" >"$lazyvim_json"
-    ok "LazyVim Extras added (installed on next nvim start)"
-  fi
-else
-  warn "No ~/.config/nvim/lazyvim.json found; skipping LazyVim Extras"
-fi
+add_nvim_extras
 
 # Sudoless Docker (opt-in; Omarchy's default needs sudo): Omarchy's script adds
 # the user to the docker group (root-equivalent) after its own warning and

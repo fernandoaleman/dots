@@ -16,12 +16,13 @@ bash <(curl -fsSL https://raw.githubusercontent.com/fernandoaleman/dots/master/i
 It asks for your password, installs Homebrew (and Apple's Command Line
 Tools), bash 5, git, gum, stow and jq, clones dots into `~/Work/dots`, asks
 **personal or work**, sets up bash (Omarchy's defaults plus the Mac
-add-on), installs the `Brewfile`, asks macOS to make Chrome the default
-browser (click **Use Chrome**) and makes Homebrew's bash 5 your login
-shell. When it's done, **quit and reopen Terminal** (and any Ghostty
-windows) to get the new shell. Some casks ask for the
-password again or show macOS permission prompts; that's expected
-([macos.md](../decisions/macos.md#bootstrap-on-a-fresh-mac)).
+add-on) and Omarchy's Neovim, installs the `Brewfile`, asks macOS to make
+Chrome the default browser (click **Use Chrome**) and makes Homebrew's
+bash 5 your login shell. When it's done, **quit and reopen Terminal** (and
+any Ghostty windows) to get the new shell. Some casks ask for the password
+again or show macOS permission prompts; that's expected
+([macos.md](../decisions/macos.md#bootstrap-on-a-fresh-mac)). The first
+`nvim` start downloads its plugins and tools; let it finish.
 
 **Optional, to let an agent on Omarchy drive the setup over SSH:** System
 Settings > General > Sharing > **Remote Login** on (Allow access: only your

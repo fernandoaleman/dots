@@ -28,10 +28,18 @@ OMARCHY_REF=v4.0.4
 OMARCHY_TEMPLATES=(git/config tmux/tmux.conf starship.toml lazygit/config.yml
   btop/btop.conf herdr/config.toml ghostty/config opencode/opencode.json)
 
+# macOS: the sources the omarchy-nvim package builds ~/.config/nvim from,
+# downloaded by install.sh (pkgbuilds/omarchy-nvim in omarchy-pkgs). b2e3469
+# is omarchy-nvim 2026.8.13-1, the package Omarchy stable ships, plus its one
+# fix since: monokai-pro.nvim's old repo is gone, which fails a fresh install.
+# The starter is what its PKGBUILD downloads (main, unchanged since 2024-12).
+OMARCHY_NVIM_REF=b2e3469827f4d824472148adc052fa41b3d6f0bb
+LAZYVIM_STARTER_REF=803bc181d7c0d6d5eeba9274d9be49b287294d99
+
 # macOS stows and hooks only what's been built for the Mac so far (dots 1.x).
 # There, Omarchy's files are the templates seeded by install.sh.
 if [[ $(uname -s) == Darwin ]]; then
-  PACKAGES=(bash git tmux macos)
+  PACKAGES=(bash git nvim tmux macos)
   INCLUDES=(
     "$HOME/.bashrc|[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots"
     "$HOME/.config/git/config|[include] path = ~/.config/git/config.dots"

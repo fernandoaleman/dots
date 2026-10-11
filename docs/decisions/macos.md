@@ -259,3 +259,43 @@ wireplumber, xournalpp, autostart).
 Seeded files are never overwritten on re-runs: a newer `OMARCHY_REF` only
 changes `~/.local/share/omarchy`; compare and merge by hand (as on Omarchy,
 where updates don't rewrite your `~/.config` either).
+
+## Neovim: Omarchy's LazyVim, rebuilt from its sources
+
+Decided 2026-10-11. **Omarchy** ships `~/.config/nvim` in the
+`omarchy-nvim` package (`omacom/omarchy-pkgs`, `pkgbuilds/omarchy-nvim`):
+its PKGBUILD downloads [LazyVim's starter](https://github.com/LazyVim/starter),
+copies Omarchy's `lua/`, `plugin/` and `lazyvim.json` over it, and runs
+`Lazy! sync` to ship a plugin cache; new users get both through
+`/etc/skel`, plus a `theme.lua` link to the current Omarchy theme. dots
+then stows the `nvim` package's `.dots.lua` files and merges its LazyVim
+Extras ([nvim.md](nvim.md)).
+
+On macOS, `install.sh` builds the same config from the same sources at
+pinned commits (`OMARCHY_NVIM_REF`, `LAZYVIM_STARTER_REF` in `lib/dots.sh`)
+and copies it to `~/.config/nvim` **only when missing**. Rebuilt at
+omarchy-nvim 2026.8.13-1's commit, it matched this Omarchy machine's
+`/etc/skel/.config/nvim` file for file, except `lazy-lock.json` and
+`theme.lua`, which the build generates. Then the same `nvim` package and
+Extras as on Omarchy (`add_nvim_extras`, shared by both systems).
+
+- **Pin: `b2e3469`**, not 2026.8.13-1's own commit (`f20649b`): stable
+  points `monokai-pro.nvim` at a deleted repo, which fails a fresh install
+  (*"Too many rounds of missing plugins"*); `b2e3469` is that commit plus
+  only Omarchy's one-line fix. Bump deliberately, usually to what the
+  Omarchy desktop's package was built from.
+- **No plugin cache:** the package's cache holds Linux builds (blink.cmp's
+  fuzzy library, Tree-sitter parsers, Mason's tools), so lazy.nvim
+  downloads the plugins on the first `nvim` start (latest commits, as
+  Omarchy's own update check does) and Mason installs Mac builds of its
+  tools. Neovim and `tree-sitter` come from the `Brewfile`.
+- **Theme:** no Omarchy themes on the Mac, so no `theme.lua` link (it
+  would point nowhere). The `macos` package adds
+  `lua/plugins/theme.dots.lua`: [onedark.nvim](https://github.com/navarasu/onedark.nvim)
+  with `style = "dark"`, the palette Ghostty's `onedark-dark` theme is built
+  from, in the same shape as Omarchy's theme specs. Omarchy's
+  `omarchy-theme-hotreload.lua` stays, idle (it only acts on theme
+  switches).
+- **Clipboard:** Omarchy's `remote_clipboard.lua` also runs on the Mac
+  inside tmux (copy as OSC 52; paste asks the terminal). To be tested in
+  Ghostty; a Mac-only override follows if pasting prompts.

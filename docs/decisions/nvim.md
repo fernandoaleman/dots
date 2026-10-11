@@ -195,6 +195,7 @@ panes; decided with its tmux half in [tmux.md](tmux.md).
 
 ## Mac notes
 
-The `.dots` files are shared. The Mac seeds `~/.config/nvim` from Omarchy's
-LazyVim config at a pinned version. It has no Omarchy theme system, so the
-Mac must set a colorscheme directly (Mac-phase decision).
+The `.dots` files and Extras are shared. The Mac seeds `~/.config/nvim`
+from the omarchy-nvim package's sources at pinned commits and sets OneDark
+"dark" in `theme.dots.lua` (no Omarchy themes there); see
+[macos.md](macos.md#neovim-omarchys-lazyvim-rebuilt-from-its-sources).
