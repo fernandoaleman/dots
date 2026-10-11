@@ -70,21 +70,21 @@ Allow notifications when asked.
 **Personal Macs only** (never the work laptop): also `https://discord.com/app`
 as a web app, like Omarchy's built-in Discord web app.
 
-## 4. Tailscale: Use Tailscale DNS **off**
+## 4. Tailscale: sign in, launch at login
 
-Install the Tailscale app and sign in. For **launch at login**, add it in
-System Settings > General > Login Items & Extensions > **Open at Login**
-(**+** > Tailscale): the app's own checkbox may fail with "Start on Login
-could not be set"
+`install.sh` installs the Tailscale app. Open it and sign in. For **launch
+at login**, add it in System Settings > General > Login Items & Extensions
+> **Open at Login** (**+** > Tailscale): the app's own checkbox may fail
+with "Start on Login could not be set"
 ([troubleshooting](../guides/troubleshooting.md#mac-tailscale-start-on-login-could-not-be-set-popup)).
-Then, in its menu (or Settings):
 
-- **Use Tailscale DNS: off** (`tailscale set --accept-dns=false`). Required
-  on every Mac that also runs the AWS VPN: on macOS, Tailscale's DNS
-  replaces the system's resolvers, pushing out the VPN's, and then *nothing*
-  resolves (websites, Claude's API, AWS)
-  ([desktop.md](../decisions/desktop.md#tailscale--the-aws-vpn-on-the-same-machine)).
-- **Exit Node: None.**
+Then **re-run `install.sh`** (if Tailscale wasn't signed in on its first
+run): it turns **Use Tailscale DNS off** (`tailscale set
+--accept-dns=false`). Required on every Mac that also runs the AWS VPN: on
+macOS, Tailscale's DNS replaces the system's resolvers, pushing out the
+VPN's, and then *nothing* resolves (websites, Claude's API, AWS)
+([desktop.md](../decisions/desktop.md#tailscale--the-aws-vpn-on-the-same-machine)).
+Leave **Exit Node: None** (the default).
 
 Consequence: Tailscale short names (`omarchy`) don't resolve on the Mac;
 dots' `~/.ssh/config` uses Tailscale addresses instead.

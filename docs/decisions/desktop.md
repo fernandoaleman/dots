@@ -208,7 +208,9 @@ Investigated 2026-10-10 (both connected, captured live):
   lookup failed (Claude's API, AWS SSO, websites); the Mac Studio also lost
   LAN connectivity until both were quit.
 - **Fix (Macs that run the AWS VPN):** turn **"Use Tailscale DNS" off**
-  (`tailscale set --accept-dns=false`), no exit node. Verified on the Mac
+  (`tailscale set --accept-dns=false`; `install.sh` does it once Tailscale
+  is signed in, see [macos.md](macos.md#tailscale-dns-off-and-the-tailscale-command)),
+  no exit node. Verified on the Mac
   Studio: Tailscale and the VPN connected together, VPN DNS in charge,
   public and AWS lookups, HTTPS and Tailscale (`ping omarchy`, 1 ms) all
   working. Cost: Tailscale short names don't resolve on that Mac, so

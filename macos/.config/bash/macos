@@ -13,3 +13,7 @@ fi
 if command -v fzf &>/dev/null; then
   eval "$(fzf --bash)"
 fi
+
+# `tailscale` as on Omarchy: the Mac app's binary is also its CLI (Tailscale's
+# CLI docs suggest this alias); TAILSCALE_BE_CLI keeps it from opening the app
+alias tailscale='TAILSCALE_BE_CLI=1 /Applications/Tailscale.app/Contents/MacOS/Tailscale'
