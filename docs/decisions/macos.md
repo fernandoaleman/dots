@@ -146,3 +146,21 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | SonicWall Mobile Connect | dropped | n/a | the AWS VPN replaced the SonicWall VPN. Archive its 1Password login in the 1Password cleanup |
 | Alacritty | dropped | n/a | not installed on Omarchy after all (only Omarchy's config template); Homebrew disabled its cask on 2026-09-01 (`fails_gatekeeper_check`: not notarized), so the Mac would need a Gatekeeper override. foot on Omarchy, Ghostty on the Macs |
 | MacX YouTube Downloader → yt-dlp | formula `yt-dlp` | personal only | the same command-line downloader Omarchy ships, instead of the closed-source GUI app |
+
+### Brewfile section 3: extra command-line tools
+
+Decided 2026-10-10, from the Mac Studio's remaining formulae:
+
+- **Kept:** `just` (via **mise**, on every machine), `pandoc`, `mkcert`
+  (Brewfile on the Macs; `pandoc-cli` and `mkcert` from Arch on Omarchy,
+  which already has `nss` so Chrome trusts mkcert's certificates), `rsync`
+  (Macs only: macOS's own `rsync` is limited; Omarchy has the real one).
+- **Dropped:** `cloudflare-wrangler`, `bats-core`, `pipx` (`uv tool install`
+  instead), `coreutils` (`install.sh` uses macOS-compatible commands),
+  `curl` (macOS's is fine), `switchaudio-osx`, `zlib` (a dependency), `nss`
+  (Firefox only on the Mac), `mas` (no App Store apps left).
+- Already decided elsewhere: dropped on Omarchy (`act`, `bottom`, `htop`,
+  `colordiff`, `markdownlint-cli2`, `ncdu`, `thefuck`, `gitmux`, `sesh`,
+  `hunk`); the old setup (`chezmoi`, `age`, `zsh` + plugins,
+  `reattach-to-user-namespace`); via mise (`yarn`, `todoist-cli`, `gh`,
+  `opencode`); `tailscale` (the app), `aws-vpn-cli`.

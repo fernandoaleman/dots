@@ -96,6 +96,8 @@ them. `install.sh` runs the same commands, each guarded:
 | Tool | Decision |
 |---|---|
 | `wget`, `nmap` | **Added**: official repos, installed by `install.sh` via `omarchy-pkg-add` (`PACMAN_PACKAGES`) |
+| `pandoc` (`pandoc-cli`), `mkcert` | **Added** 2026-10-10 (`PACMAN_PACKAGES`; kept from the Mac's tools). `mkcert` uses Omarchy's `nss` so Chrome trusts its local certificates |
+| `just` | **Added** 2026-10-10 as a mise tool (`config-dots.toml`), the same on every machine |
 | `todoist-cli` (`td`) | **Added** as a mise tool, `npm:@doist/todoist-cli` (not in Arch repos/AUR). The old Todoist "skills" setup was Mac-only; `td-login` → bin scripts section |
 | `bottom`, `htop` | Dropped: Omarchy's **btop** |
 | `ncdu` | Dropped: Omarchy's **dua** (`dua i`). For muscle memory, an `ncdu` shell function (in `bash/.config/bash/aliases`) prints the matching `dua i <path>` command and returns 127 |

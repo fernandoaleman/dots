@@ -11,6 +11,7 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
+- `pandoc`, `mkcert` (Omarchy packages) and `just` (mise tool).
 - Bazecor (Dygma keyboard configurator) from the AUR.
 - Voxtype dictation via Omarchy's installer.
 - Todoist web app on Omarchy.
