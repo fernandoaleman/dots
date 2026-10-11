@@ -129,3 +129,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | Plaud | cask `plaud` | both | records Slack huddles, Teams and Zoom calls without a meeting bot; Plaud Desktop is Mac/Windows only. Omarchy: see the [TODO](../TODO.md) |
 | QLMarkdown | cask `qlmarkdown` | both | renders `.md` in Finder's Quick Look (Space); local only |
 | Raindrop.io | dropped for now | n/a | decide with the bookmarks TODO (Raycast quicklinks are going away; the Omarchy catalog has a Raindrop Bookmarks picker) |
+| Spotify + Reflex | casks `spotify`, `reflex-app` | personal only | personal account (Omarchy installs Spotify too); Reflex sends the Mac's media keys to Spotify instead of Apple Music |
