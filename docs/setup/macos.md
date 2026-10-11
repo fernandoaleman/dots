@@ -72,8 +72,12 @@ as a web app, like Omarchy's built-in Discord web app.
 
 ## 4. Tailscale: Use Tailscale DNS **off**
 
-Install the Tailscale app, sign in, set it to **launch at login**. Then, in
-its menu (or Settings):
+Install the Tailscale app and sign in. For **launch at login**, add it in
+System Settings > General > Login Items & Extensions > **Open at Login**
+(**+** > Tailscale): the app's own checkbox may fail with "Start on Login
+could not be set"
+([troubleshooting](../guides/troubleshooting.md#mac-tailscale-start-on-login-could-not-be-set-popup)).
+Then, in its menu (or Settings):
 
 - **Use Tailscale DNS: off** (`tailscale set --accept-dns=false`). Required
   on every Mac that also runs the AWS VPN: on macOS, Tailscale's DNS
