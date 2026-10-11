@@ -377,16 +377,6 @@ install_secrets() {
     fi
   fi
 
-  # Switch the dots remote to SSH once GitHub accepts a key (never on the
-  # work Mac, which has no GitHub key and uses gh over HTTPS). ssh -T exits
-  # 1 even on success (GitHub gives no shell): match the reply
-  local github_reply
-  github_reply=$(ssh -o BatchMode=yes -T git@github.com 2>&1 || true)
-  if [[ $(git -C "$DOTS_DIR" remote get-url origin) == https://* &&
-    $github_reply == *"successfully authenticated"* ]]; then
-    make -C "$DOTS_DIR" --no-print-directory ssh
-  fi
-
   # Todoist logs in through TODOIST_API_TOKEN (a dots/token field, written to
   # ~/.config/dots/env above), so there is no browser login to do
   step "Checking Todoist login"
@@ -397,14 +387,15 @@ install_secrets() {
   fi
 }
 
-# Work profile: GitHub over HTTPS with gh's token (no GitHub SSH key on a
-# work machine). Rewrite SSH GitHub URLs, e.g. in repos synced from another
-# machine, to HTTPS on the fly; the repos themselves keep their SSH remotes.
-# In this machine's own ~/.config/git/config, never in dots.
-git_https_for_work() {
-  [[ $DOTS_PROFILE == work ]] || return 0
-  step "GitHub over HTTPS (work profile)"
-  local from
+# GitHub over HTTPS on every machine (docs/decisions/git.md): gh-role-login
+# signs gh in as the profile allows (work: the company-only token from
+# 1Password; personal: the browser, once per machine), and SSH GitHub URLs,
+# e.g. in repos synced from another machine, are rewritten to HTTPS on the
+# fly (the repos keep their remotes). In this machine's own
+# ~/.config/git/config, never in dots.
+github_https() {
+  step "GitHub over HTTPS"
+  local from rc=0
   for from in git@github.com: ssh://git@github.com/; do
     if git config --global --get-all url."https://github.com/".insteadOf | grep -qxF "$from"; then
       ok "$from already rewritten to HTTPS"
@@ -413,6 +404,13 @@ git_https_for_work() {
       ok "$from now rewritten to HTTPS"
     fi
   done
+  # gh and gh-role-login live in ~/.local/bin (mise launchers, the bin package)
+  PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH" "$HOME/.local/bin/gh-role-login" || rc=$?
+  case $rc in
+  0) ;;
+  2) warn "Run gh-role-login in a terminal to sign gh in to GitHub" ;;
+  *) warn "gh-role-login failed; see above" ;;
+  esac
 }
 
 # macOS. The Mac run stops at the end of this block; what follows is
@@ -485,7 +483,6 @@ if [[ $DOTS_OS == macos ]]; then
 
   link_dots
   check_git_identity
-  git_https_for_work
   add_nvim_extras
   install_tmux_plugins
 
@@ -586,6 +583,7 @@ if [[ $DOTS_OS == macos ]]; then
   fi
 
   install_secrets
+  github_https
 
   # Tailscale DNS off: on macOS, "Use Tailscale DNS" replaces the system's
   # resolvers and pushes out the AWS VPN's, and then nothing resolves
@@ -1002,12 +1000,12 @@ else
 fi
 
 install_secrets
+github_https
 
 # Omarchy's installer sets these from the name and email you enter; ask once
 # if they were left blank. `git config --global` writes them to Omarchy's
 # ~/.config/git/config (as long as no ~/.gitconfig exists), never into dots.
 check_git_identity
-git_https_for_work
 
 # Omarchy's ~/.XCompose types your name (CapsLock, Space, n) and email
 # (CapsLock, Space, e); its installer fills them from the name/email entered

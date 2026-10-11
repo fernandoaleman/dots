@@ -804,6 +804,22 @@ for how to bring it back (`omarchy-pkg-add git-delta`; Omarchy's
 account on every call (`dots_op_accounts`, `aws-role-login` searches all);
 by hand: `op account list`, then `op --account <ID or sign-in address> …`.
 
+### Mac over SSH: `gh` says "The token in default is invalid"
+
+**Why:** `gh` keeps its token in the macOS Keychain, which stays locked in
+SSH sessions, so `gh` can't read it there. It's fine in a local terminal
+(`gh auth status` shows `(keyring)`). Don't sign in again over SSH: `gh`
+would store the new token in plain text (`~/.config/gh/hosts.yml`);
+`gh-role-login` leaves a Keychain token alone over SSH, and moves a
+plain-text one into the Keychain when run locally.
+
+### Work Mac: `gh` or `git push` refused for a personal repo (403)
+
+Expected: the work Mac's token is limited to the company organization
+([git.md](../decisions/git.md)). Push personal repos (dots) from a personal
+machine. If the token expired: renew it on GitHub, paste it into the
+1Password item tagged `dots/gh`, run `gh-role-login`.
+
 ### `op`: "authorization prompt dismissed, please try again"
 
 **Why:** the 1Password app asks to approve CLI access (on the screen of

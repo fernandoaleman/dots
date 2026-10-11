@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+#
+# gh-role-login: sign gh in to GitHub the way this machine's profile allows
+# (~/.config/dots/profile), over HTTPS. Safe to re-run.
+#
+#   work      the fine-grained token (company organization only) from the
+#             1Password item tagged dots/gh; replaces any other sign-in, so
+#             a work machine never holds a token that reaches personal repos
+#   personal  the normal browser sign-in (gh auth login --web), once per
+#             machine; gh keeps the token in the system keyring
+#
+# Exit codes: 0 signed in, 1 error, 2 needs a browser but has no terminal.
+set -euo pipefail
+
+TAG=dots/gh # 1Password item (API Credential, field "credential")
+HOST=github.com
+
+die() { printf 'gh-role-login: %s\n' "$1" >&2; exit 1; }
+say() { printf 'gh-role-login: %s\n' "$1"; }
+
+case ${1:-} in
+-h | --help) sed -n '3,13p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+esac
+
+DOTS_DIR=${DOTS_DIR:-$HOME/Work/dots}
+profile=$(cat "$HOME/.config/dots/profile" 2>/dev/null) || die "no ~/.config/dots/profile (run install.sh)"
+command -v gh >/dev/null || die "gh not found"
+
+# What gh holds now, judged by the token's prefix (never printed):
+# github_pat_ = fine-grained, gho_ = browser/OAuth sign-in
+token_kind() {
+  local t
+  t=$(gh auth token --hostname "$HOST" 2>/dev/null) || { echo none; return; }
+  case $t in
+  github_pat_*) echo fine-grained ;;
+  gho_*) echo oauth ;;
+  *) echo other ;;
+  esac
+}
+works() { gh api user --jq .login >/dev/null 2>&1; }
+# gh falls back to plain text (hosts.yml) when the system keyring can't be
+# reached, e.g. over SSH; a local terminal can store it in the keyring
+# (gh auth status exits non-zero when it can't use the token: capture first,
+# so pipefail doesn't hide a match)
+auth_status() { gh auth status --hostname "$HOST" 2>&1 || true; }
+in_plain_file() { [[ $(auth_status) == *'hosts.yml)'* ]]; }
+local_session() { [[ -z ${SSH_CONNECTION:-} ]]; }
+# Over SSH the macOS Keychain stays locked, so a token kept there looks
+# invalid ("(default)" store); signing in again would put it in plain text
+status=$(auth_status)
+if ! local_session && [[ $status == *'(default)'* || $status == *'(keyring)'* ]] &&
+  ! gh auth token --hostname "$HOST" >/dev/null 2>&1; then
+  say "gh's token is in the system keyring, which SSH sessions can't read; leaving it"
+  exit 0
+fi
+
+kind=$(token_kind)
+case $profile in
+work)
+  if [[ $kind == fine-grained ]] && works && ! { in_plain_file && local_session; }; then
+    say "signed in with the work token (company organization only)"
+  else
+    command -v op >/dev/null || die "op (1Password CLI) not found"
+    # shellcheck source=/dev/null
+    source "$DOTS_DIR/lib/dots.sh" # dots_op_accounts: work never reads the personal account
+    matches=$(DOTS_PROFILE=work dots_op_accounts | while read -r account; do
+      op --account "$account" item list --tags "$TAG" --format json |
+        jq -r --arg a "$account" '.[] | [$a, .id, .vault.id] | @tsv'
+    done)
+    [[ -n $matches && $(wc -l <<<"$matches") -eq 1 ]] ||
+      die "need exactly one 1Password item tagged $TAG (the fine-grained token)"
+    IFS=$'\t' read -r account item vault <<<"$matches"
+    if [[ $kind == fine-grained ]]; then
+      if works; then say "moving the token from plain text into the system keyring"; fi
+      gh auth logout --hostname "$HOST" >/dev/null 2>&1 || true
+    elif [[ $kind != none ]]; then
+      gh auth logout --hostname "$HOST" >/dev/null 2>&1 || true
+      say "signed out of the previous sign-in ($kind): not allowed on a work machine"
+    fi
+    op --account "$account" read "op://$vault/$item/credential" |
+      gh auth login --hostname "$HOST" --git-protocol https --with-token
+    works || die "GitHub refused the token: expired or revoked? Renew it on GitHub, update the 1Password item, re-run"
+    say "signed in with the work token (company organization only)"
+  fi
+  ;;
+personal)
+  if [[ $kind != none ]] && works; then
+    say "signed in ($kind)"
+  else
+    [[ -t 0 ]] || { say "needs a browser sign-in: run gh-role-login in a terminal"; exit 2; }
+    gh auth login --hostname "$HOST" --git-protocol https --web
+  fi
+  ;;
+*) die "unknown profile '$profile' in ~/.config/dots/profile" ;;
+esac
+# HTTPS for git (the credential helper is gh's, in ~/.config/git/config.dots)
+gh config set --host "$HOST" git_protocol https
+if in_plain_file; then
+  say "note: the token is stored in plain text (~/.config/gh/hosts.yml, 600);"
+  say "re-run gh-role-login in a local terminal to keep it in the system keyring"
+fi

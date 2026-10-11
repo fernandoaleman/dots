@@ -108,15 +108,26 @@ the credential reset keeps Homebrew git's `osxkeychain` from competing for
 GitHub (checked: `credential.helper` stays `osxkeychain` for other hosts,
 github.com uses `gh auth git-credential`).
 
-### GitHub on the work profile: HTTPS with `gh` (decided 2026-10-11)
+### GitHub over HTTPS on every machine, `gh-role-login` (decided 2026-10-11)
 
-No GitHub SSH key on a work machine (the personal `id_ed25519` stays off
-it, [secrets.md](secrets.md#two-accounts-work-items-in-the-work-account-decided-2026-10-11)).
-Commits aren't signed, so a key is only needed to push and pull: `gh auth
-login` (protocol HTTPS) once, and the existing
-`credential.https://github.com.helper` (`gh auth git-credential`) does the
-rest. `install.sh` (work profile) adds, to the machine's own
-`~/.config/git/config`, `url."https://github.com/".insteadOf` for
-`git@github.com:` and `ssh://git@github.com/`: repos synced from another
-machine keep their SSH remotes but use HTTPS here; back on a personal
-machine they use SSH again.
+No SSH key for GitHub anywhere: one way to work on every machine, and each
+machine holds its own revocable `gh` token instead of one shared key.
+Commits aren't signed, so a credential is only needed to push and pull;
+`credential.https://github.com.helper` (`gh auth git-credential`, in
+`config.dots`) supplies `gh`'s token.
+
+- **Sign-in:** `gh-role-login` ([bin.md](bin.md)) as the profile allows:
+  the **work** machine gets a fine-grained token limited to the company
+  organization (it can't reach personal repos; one organization, no
+  Packages, so it covers admin work through `gh`), **personal** machines the
+  normal browser sign-in. Not a classic token for the personal machines: a
+  fine-grained token has one owner (user or organization), a classic one is
+  broad and long-lived, and the browser sign-in happens once per machine.
+- **URLs:** `install.sh` adds `url."https://github.com/".insteadOf` for
+  `git@github.com:` and `ssh://git@github.com/` to the machine's own
+  `~/.config/git/config` on every profile: repos synced from another machine
+  (and dots' old `git@` remote on Omarchy) go over HTTPS without editing
+  them. `install.sh` no longer switches remotes to SSH; `make ssh` is left
+  for anyone who wants it.
+- The personal SSH key comes off GitHub once HTTPS works on every machine
+  ([secrets.md](secrets.md)).

@@ -262,6 +262,7 @@ files are left alone.
 | `dots/*` Documents whose title is a path | `~/<title>` (600): `.aws/config`, `.aws/config.sso`, `.config/generate-ssh-config/environments` (the VPN profile has no path yet, so it is skipped) |
 | `dots/aws` API Credentials | `~/.aws/credentials` profile `[<title>]`, replaced in place (other profiles such as `[mfa]` kept; values passed to `awk` through its environment, not the command line) |
 | `dots/token` fields named like variables | `~/.config/dots/env` (600), loaded by `~/.bashrc.dots` |
+| `dots/gh` API Credential (work account) | read by `gh-role-login` on the work profile and handed to `gh` (macOS Keychain); not a file |
 | `id_ed25519` public key (type + key) | `omarchy-setup-security-sshd --key=…`, skipped when sshd is active, hardened and the key authorized |
 | — | `make ssh` once `ssh -T git@github.com` authenticates |
 

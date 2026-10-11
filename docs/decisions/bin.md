@@ -93,6 +93,34 @@ Studio's installed version, identical logic to the old repo):
 - Verified end to end in a throwaway home: 49 hosts and 18 groups,
   identical to the Mac Studio's files (IPs excluded).
 
+## gh-role-login: `bin` package (new, 2026-10-11)
+
+Signs `gh` in to GitHub **over HTTPS** as the machine's profile
+(`~/.config/dots/profile`) allows, like `aws-role-login` for AWS; run by
+`install.sh` (`github_https`) and safe to re-run:
+
+- **work:** the fine-grained token (resource owner: the company
+  organization; repository and organization permissions for admin work)
+  from the 1Password item tagged `dots/gh` (API Credential, field
+  `credential`, work account only, via `dots_op_accounts`), passed to `gh
+  auth login --with-token` through a pipe. Any other sign-in (a `gho_…`
+  browser token) is signed out first: a work machine never holds a token
+  that reaches personal repos. A refused token (expired or revoked) says to
+  renew it and update the 1Password item.
+- **personal:** `gh auth login --web`, once per machine (exit code 2 with
+  a hint when there's no terminal).
+- Judges the current sign-in by the token's prefix (`github_pat_` vs
+  `gho_`), never printing it. On macOS over SSH the Keychain is locked:
+  `gh` would store a new token in plain text (`~/.config/gh/hosts.yml`), so
+  a Keychain token it can't read over SSH is left alone, and a token in the
+  plain file is moved into the Keychain when run in a local terminal (work)
+  or reported (personal).
+- Tested on the work Mac: company repo read and `git` (an SSH URL rewritten
+  to HTTPS) and an org admin call allowed; a private personal repo refused;
+  a push to dots refused by GitHub (*"Permission … denied"*, 403); the
+  token ends up in the Keychain. On Omarchy: the existing browser sign-in
+  is kept and `gh` switched to HTTPS.
+
 ## tmux-ssh: `install.sh`, pinned commit
 
 The user's own project ([tmux-ssh/tmux-ssh](https://github.com/tmux-ssh/tmux-ssh),

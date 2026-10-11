@@ -46,14 +46,12 @@ switching, used with `aws-role-login`).
 `gh` is preinstalled by Omarchy (through mise).
 
 ```sh
-gh auth login      # GitHub.com → HTTPS → web browser
+gh-role-login      # browser sign-in, HTTPS (install.sh offers it too)
 ```
 
 No `gh auth setup-git` needed: dots' git config already uses gh for GitHub
-over HTTPS.
-
-Use HTTPS until SSH keys are installed, then run `make ssh` in
-`~/Work/dots` to switch the remote.
+over HTTPS. GitHub stays on HTTPS (no SSH key for GitHub;
+[git.md](../decisions/git.md)).
 
 ## 5. Work Claude Code plugins
 
