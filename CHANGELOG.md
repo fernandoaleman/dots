@@ -17,6 +17,12 @@ by a clean install; macOS support comes in later `1.x` releases.
 - Todoist web app on Omarchy.
 - Syncthing on Omarchy (Obsidian vaults; ports open to the LAN and Tailscale
   only).
+- macOS, first stage: the same `install.sh` one-liner bootstraps a fresh Mac
+  (Homebrew, bash 5, git, gum, stow, jq, then dots) and installs the
+  `Brewfile` (packages and apps; personal-only entries by profile), with
+  Chrome as the default browser.
+- Machine profile (`personal` or `work`), asked on the first run and kept in
+  `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 
 ## [1.1.0] - 2026-10-10
 

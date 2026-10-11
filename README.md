@@ -2,7 +2,8 @@
 
 My dotfiles for [Omarchy](https://omarchy.org), managed with
 [GNU Stow](https://www.gnu.org/software/stow/). A macOS setup that mirrors
-Omarchy is planned.
+Omarchy is being built: the same one-liner bootstraps a fresh Mac
+(Homebrew + the `Brewfile`; see [docs/setup/macos.md](docs/setup/macos.md)).
 
 The rule is **Omarchy first**: if Omarchy already provides an alias, package
 or config, this repo uses it and only adds what Omarchy doesn't have. Every
@@ -89,7 +90,8 @@ make ssh
 ## Repository layout
 
 ```
-install.sh          bootstrap for a fresh install (curl | bash)
+install.sh          bootstrap for a fresh install (curl | bash), Omarchy or macOS
+Brewfile            Homebrew packages and apps (macOS only; not stowed)
 bash/               stow package → $HOME
 git/                stow package → $HOME
 nvim/               stow package → $HOME
