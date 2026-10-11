@@ -123,3 +123,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | LocalSend | cask `localsend` | personal only | mirrors Omarchy (base package); file sharing between personal Macs and Omarchy. Work laptop: Taildrop covers moving files |
 | Logi Options+ | cask `logi-options+` | personal only | for the Logitech device at the Mac Studio desk |
 | Loom | dropped | n/a | no longer used |
+| MacDown, MarkText | dropped | n/a | both casks are disabled in Homebrew; Neovim's Markdown preview, Obsidian and QLMarkdown cover it |
