@@ -30,7 +30,12 @@ building anything. Candidates seen 2026-10-04:
   `io.github.terrifiedbug.omacast`.
 
 Raycast is being dropped on the Macs (2026-10-10; Spotlight instead), so
-its quicklinks need a new home too (Chrome bookmarks or the picker).
+its quicklinks and snippets need a new home. Candidates to weigh then:
+**Raindrop.io** for bookmarks (Mac cask `raindropio`; the Omarchy catalog
+has a Raindrop Bookmarks picker plugin), and **espanso** for snippets on
+Omarchy and the Macs (dropped earlier only because Raycast covered it; the
+catalog has an espanso plugin, `io.github.taisau.espanso`), with its
+snippet files synced by Syncthing.
 Things to settle then: the JSON format (Raycast's export vs. the plugin's),
 where the JSON lives (dots if nothing private, else 1Password), and the
 shared keybindings.
