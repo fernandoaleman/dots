@@ -29,9 +29,16 @@ for arg in "$@"; do
 done
 if [[ -z $code ]]; then
   command -v op >/dev/null || die "op (1Password CLI) not found; pass the MFA code instead"
-  item=$(op item list --tags "$OTP_TAG" --format json | jq -r 'if length == 1 then .[0].id else empty end')
-  [[ -n $item ]] || die "need exactly one 1Password item tagged $OTP_TAG (or pass the MFA code)"
-  code=$(op item get "$item" --otp)
+  # Search every account the 1Password app is signed in to (the item lives
+  # in the work account; op alone only searches its default account)
+  matches=$(op account list --format json | jq -r '.[].account_uuid' | while read -r account; do
+    op --account "$account" item list --tags "$OTP_TAG" --format json |
+      jq -r --arg a "$account" '.[] | [$a, .id] | @tsv'
+  done)
+  [[ -n $matches && $(wc -l <<<"$matches") -eq 1 ]] ||
+    die "need exactly one 1Password item tagged $OTP_TAG (or pass the MFA code)"
+  IFS=$'\t' read -r account item <<<"$matches"
+  code=$(op --account "$account" item get "$item" --otp)
 fi
 [[ $code =~ ^[0-9]{6}$ ]] || die "MFA code must be 6 digits"
 

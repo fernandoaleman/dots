@@ -107,3 +107,16 @@ Omarchy's mise launcher ([macos.md](macos.md#mise-omarchys-setup-plus-dots-tools
 the credential reset keeps Homebrew git's `osxkeychain` from competing for
 GitHub (checked: `credential.helper` stays `osxkeychain` for other hosts,
 github.com uses `gh auth git-credential`).
+
+### GitHub on the work profile: HTTPS with `gh` (decided 2026-10-11)
+
+No GitHub SSH key on a work machine (the personal `id_ed25519` stays off
+it, [secrets.md](secrets.md#two-accounts-work-items-in-the-work-account-decided-2026-10-11)).
+Commits aren't signed, so a key is only needed to push and pull: `gh auth
+login` (protocol HTTPS) once, and the existing
+`credential.https://github.com.helper` (`gh auth git-credential`) does the
+rest. `install.sh` (work profile) adds, to the machine's own
+`~/.config/git/config`, `url."https://github.com/".insteadOf` for
+`git@github.com:` and `ssh://git@github.com/`: repos synced from another
+machine keep their SSH remotes but use HTTPS here; back on a personal
+machine they use SSH again.

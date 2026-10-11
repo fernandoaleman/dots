@@ -241,8 +241,182 @@ check_git_identity() {
   done
 }
 
-# macOS. What isn't built for the Mac yet (secrets) comes
-# in later stages; until then the Mac run stops at the end of this block.
+# Secrets from 1Password, found by tag (never by vault or item name; see
+# docs/decisions/secrets.md), in every account this machine's profile reads
+# (dots_op_accounts, lib/dots.sh). Never prints a value. A file whose contents
+# differ is backed up as <file>.bak.<stamp> before the 1Password version is
+# installed; unchanged files are left alone. Shared by both OSes; the AWS VPN
+# plugin and sshd parts are Omarchy's.
+install_secrets() {
+  step "Installing secrets from 1Password"
+
+  # put_secret FILE MODE < contents: install FILE from stdin, via a temp file
+  # next to it (not in /tmp)
+  put_secret() {
+    local file=$1 mode=$2 tmp short=${1/#$HOME/\~}
+    mkdir -p "$(dirname "$file")"
+    tmp=$(mktemp "$(dirname "$file")/.dots-secret.XXXXXX")
+    cat >"$tmp"
+    if [[ -f $file ]] && cmp -s "$tmp" "$file"; then
+      rm -f "$tmp"
+      chmod "$mode" "$file"
+      ok "$short up to date"
+      return
+    fi
+    if [[ -e $file ]]; then
+      mv "$file" "$file.bak.$stamp"
+      warn "Backed up $short to $short.bak.$stamp"
+    fi
+    chmod "$mode" "$tmp"
+    mv "$tmp" "$file"
+    ok "$short installed"
+  }
+  safe_name() { [[ $1 =~ ^[A-Za-z0-9._-]+$ ]]; }                 # a file name
+  safe_path() { [[ $1 =~ ^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)+$ && $1 != *..* ]]; } # under ~
+
+  # Accounts to read: `op account list` never prompts; `op vault list` with
+  # stdin closed can't ask anything either, and fails for an account the app
+  # can't open
+  local accounts=() acct
+  if command -v op &>/dev/null; then
+    while read -r acct; do
+      if op --account "$acct" vault list </dev/null &>/dev/null; then
+        accounts+=("$acct")
+      else
+        warn "1Password account $acct can't be read; skipping it"
+      fi
+    done < <(dots_op_accounts)
+  fi
+  if ((${#accounts[@]} == 0)); then
+    warn "1Password CLI can't read your vaults: sign in to the 1Password app, turn on"
+    warn "Settings > Developer > Integrate with 1Password CLI, then re-run install.sh"
+    return 0
+  fi
+  ok "Reading ${#accounts[@]} 1Password account(s) (profile: $DOTS_PROFILE)"
+  # items TAG [CATEGORY]: "account<TAB>id<TAB>vault<TAB>title" in every account
+  items() {
+    local a
+    for a in "${accounts[@]}"; do
+      op --account "$a" item list --tags "$1" ${2:+--categories "$2"} --format json |
+        jq -r --arg a "$a" '.[] | [$a, .id, .vault.id, .title] | @tsv'
+    done
+  }
+
+  # dots/ssh: SSH Key items -> ~/.ssh/<title> (600) and <title>.pub (644)
+  mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
+  while IFS=$'\t' read -r acct id vault title; do
+    safe_name "$title" || { warn "Skipping SSH key with an unusable title: $title"; continue; }
+    op --account "$acct" read "op://$vault/$id/private key?ssh-format=openssh" | put_secret "$HOME/.ssh/$title" 600
+    op --account "$acct" read "op://$vault/$id/public key" | put_secret "$HOME/.ssh/$title.pub" 644
+  done < <(items dots/ssh "SSH Key")
+
+  # dots/*: Documents whose title is a path -> ~/<title> (600)
+  while IFS=$'\t' read -r acct id vault title; do
+    safe_path "$title" || continue # e.g. the VPN profile: installed below
+    op --account "$acct" document get "$id" --vault "$vault" | put_secret "$HOME/$title" 600
+  done < <(items dots Document)
+  [[ -d $HOME/.aws ]] && chmod 700 "$HOME/.aws"
+
+  # dots/aws: API Credential items -> ~/.aws/credentials profile [<title>];
+  # other profiles (e.g. [mfa], written by aws-role-login) are kept. Values
+  # go to awk through its environment, never on a command line.
+  local creds="$HOME/.aws/credentials"
+  while IFS=$'\t' read -r acct id vault title; do
+    safe_name "$title" || { warn "Skipping AWS credential with an unusable title: $title"; continue; }
+    AWS_KEY_ID=$(op --account "$acct" read "op://$vault/$id/access key id") \
+      AWS_SECRET=$(op --account "$acct" read "op://$vault/$id/secret access key") \
+      awk -v profile="$title" '
+        function section() {
+          print "[" profile "]"
+          print "aws_access_key_id = " ENVIRON["AWS_KEY_ID"]
+          print "aws_secret_access_key = " ENVIRON["AWS_SECRET"]
+        }
+        # Replace the section in place, keeping the file layout (blank
+        # lines) as the AWS CLI left it, so re-runs find nothing to change
+        $0 == "[" profile "]" { section(); found = 1; skip = 1; next }
+        /^\[/ { skip = 0 }
+        skip && /^[[:space:]]*$/ { print; next }
+        !skip { print }
+        END { if (!found) { if (NR) print ""; section() } }' "$( [[ -f $creds ]] && echo "$creds" || echo /dev/null)" |
+      cat -s | put_secret "$creds" 600
+  done < <(items dots/aws "API Credential")
+
+  # dots/token: every ALL_CAPS_WITH_UNDERSCORE field -> ~/.config/dots/env
+  # (600), loaded by ~/.bashrc.dots
+  {
+    echo "# Generated by dots install.sh from 1Password (tag dots/token); edit there."
+    items dots/token | while IFS=$'\t' read -r acct id vault title; do
+      op --account "$acct" item get "$id" --vault "$vault" --format json --reveal |
+        jq -r '.fields[] | select((.label // "") | test("^[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$")) | [.label, .value] | @tsv'
+    done | sort | while IFS=$'\t' read -r name value; do printf 'export %s=%q\n' "$name" "$value"; done
+  } | put_secret "$HOME/.config/dots/env" 600
+
+  if [[ $DOTS_OS == omarchy ]]; then
+    # dots/vpn Documents -> the AWS VPN plugin's profiles (600), registered
+    # once, in place, named after the file without .ovpn (on the Mac the AWS
+    # VPN client imports the profile by hand: docs/setup/macos.md)
+    local vpn_profiles="$HOME/.config/omarchy/aws-vpn-client/profiles"
+    while IFS=$'\t' read -r acct id vault title; do
+      safe_name "$title" && [[ $title == *.ovpn ]] || { warn "Skipping VPN profile with an unusable title: $title"; continue; }
+      op --account "$acct" document get "$id" --vault "$vault" | put_secret "$vpn_profiles/$title" 600
+      if omarchy-aws-vpn-client list | grep -qw -- "${title%.ovpn}"; then
+        ok "VPN profile ${title%.ovpn} already registered"
+      else
+        omarchy-aws-vpn-client add "$vpn_profiles/$title" --name "${title%.ovpn}" --link
+      fi
+    done < <(items dots/vpn Document)
+
+    # Incoming SSH: Omarchy's script, authorizing only the personal key
+    local pubkey
+    pubkey=$(op --account "$DOTS_OP_PERSONAL" read "op://Private/id_ed25519/public key" | awk '{print $1, $2}')
+    if systemctl is-active --quiet sshd && [[ -f /etc/ssh/sshd_config.d/10-omarchy-hardening.conf ]] &&
+      awk '{print $1, $2}' "$HOME/.ssh/authorized_keys" 2>/dev/null | grep -qxF "$pubkey"; then
+      ok "sshd already set up (key authorized, passwords off)"
+    else
+      omarchy-setup-security-sshd --key="$pubkey"
+    fi
+  fi
+
+  # Switch the dots remote to SSH once GitHub accepts a key (never on the
+  # work Mac, which has no GitHub key and uses gh over HTTPS). ssh -T exits
+  # 1 even on success (GitHub gives no shell): match the reply
+  local github_reply
+  github_reply=$(ssh -o BatchMode=yes -T git@github.com 2>&1 || true)
+  if [[ $(git -C "$DOTS_DIR" remote get-url origin) == https://* &&
+    $github_reply == *"successfully authenticated"* ]]; then
+    make -C "$DOTS_DIR" --no-print-directory ssh
+  fi
+
+  # Todoist logs in through TODOIST_API_TOKEN (a dots/token field, written to
+  # ~/.config/dots/env above), so there is no browser login to do
+  step "Checking Todoist login"
+  if (set -a && source "$HOME/.config/dots/env" 2>/dev/null && mise exec -- td auth status &>/dev/null); then
+    ok "Todoist authenticated (TODOIST_API_TOKEN)"
+  else
+    warn "Todoist not authenticated: add TODOIST_API_TOKEN to a 1Password item tagged dots/token"
+  fi
+}
+
+# Work profile: GitHub over HTTPS with gh's token (no GitHub SSH key on a
+# work machine). Rewrite SSH GitHub URLs, e.g. in repos synced from another
+# machine, to HTTPS on the fly; the repos themselves keep their SSH remotes.
+# In this machine's own ~/.config/git/config, never in dots.
+git_https_for_work() {
+  [[ $DOTS_PROFILE == work ]] || return 0
+  step "GitHub over HTTPS (work profile)"
+  local from
+  for from in git@github.com: ssh://git@github.com/; do
+    if git config --global --get-all url."https://github.com/".insteadOf | grep -qxF "$from"; then
+      ok "$from already rewritten to HTTPS"
+    else
+      git config --global --add url."https://github.com/".insteadOf "$from"
+      ok "$from now rewritten to HTTPS"
+    fi
+  done
+}
+
+# macOS. The Mac run stops at the end of this block; what follows is
+# Omarchy's.
 if [[ $DOTS_OS == macos ]]; then
   get_dots
 
@@ -311,6 +485,7 @@ if [[ $DOTS_OS == macos ]]; then
 
   link_dots
   check_git_identity
+  git_https_for_work
   add_nvim_extras
   install_tmux_plugins
 
@@ -410,6 +585,8 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Added $plugins_dir to ~/.docker/config.json"
   fi
 
+  install_secrets
+
   # Tailscale DNS off: on macOS, "Use Tailscale DNS" replaces the system's
   # resolvers and pushes out the AWS VPN's, and then nothing resolves
   # (docs/decisions/desktop.md). The app's own CLI, kept in CLI mode by
@@ -507,9 +684,8 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Login shell changed (new terminal windows use it)"
   fi
 
-  step "Done (macOS: bash, config, Neovim, mise, Docker, Tailscale and settings stage)"
+  step "Done (macOS)"
   echo "Open a new terminal window to load the new shell."
-  echo "Secrets for macOS come in a later stage."
   exit 0
 fi
 
@@ -825,138 +1001,13 @@ else
   warn "No $daemon_json (Docker not installed?); skipping"
 fi
 
-# Secrets from 1Password, found by tag (never by vault or item name; see
-# docs/decisions/secrets.md). Never prints a value. A file whose contents
-# differ is backed up as <file>.bak.<stamp> before the 1Password version is
-# installed; unchanged files are left alone.
-step "Installing secrets from 1Password"
-
-# put_secret FILE MODE < contents: install FILE from stdin, via a temp file
-# next to it (not in /tmp)
-put_secret() {
-  local file=$1 mode=$2 tmp short=${1/#$HOME/\~}
-  mkdir -p "$(dirname "$file")"
-  tmp=$(mktemp "$(dirname "$file")/.dots-secret.XXXXXX")
-  cat >"$tmp"
-  if [[ -f $file ]] && cmp -s "$tmp" "$file"; then
-    rm -f "$tmp"
-    chmod "$mode" "$file"
-    ok "$short up to date"
-    return
-  fi
-  if [[ -e $file ]]; then
-    mv "$file" "$file.bak.$stamp"
-    warn "Backed up $short to $short.bak.$stamp"
-  fi
-  chmod "$mode" "$tmp"
-  mv "$tmp" "$file"
-  ok "$short installed"
-}
-safe_name() { [[ $1 =~ ^[A-Za-z0-9._-]+$ ]]; }                 # a file name
-safe_path() { [[ $1 =~ ^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)+$ && $1 != *..* ]]; } # under ~
-
-# `op account list` never prompts; without an account, `op vault list` would
-# ask to add one interactively, so it only runs once an account exists
-# (stdin closed, so it can't ask anything either way)
-if ! command -v op &>/dev/null ||
-  [[ -z $(op account list --format json 2>/dev/null | jq -r '.[]?.url' 2>/dev/null) ]] ||
-  ! op vault list </dev/null &>/dev/null; then
-  warn "1Password CLI can't read your vaults: sign in to the 1Password app, turn on"
-  warn "Settings > Developer > Integrate with 1Password CLI, then re-run install.sh"
-else
-  # dots/ssh: SSH Key items -> ~/.ssh/<title> (600) and <title>.pub (644)
-  mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
-  while IFS=$'\t' read -r id vault title; do
-    safe_name "$title" || { warn "Skipping SSH key with an unusable title: $title"; continue; }
-    op read "op://$vault/$id/private key?ssh-format=openssh" | put_secret "$HOME/.ssh/$title" 600
-    op read "op://$vault/$id/public key" | put_secret "$HOME/.ssh/$title.pub" 644
-  done < <(op item list --tags dots/ssh --categories "SSH Key" --format json | jq -r '.[] | [.id, .vault.id, .title] | @tsv')
-
-  # dots/*: Documents whose title is a path -> ~/<title> (600)
-  while IFS=$'\t' read -r id vault title; do
-    safe_path "$title" || continue # e.g. the VPN profile: no install path yet
-    op document get "$id" --vault "$vault" | put_secret "$HOME/$title" 600
-  done < <(op item list --tags dots --categories Document --format json | jq -r '.[] | [.id, .vault.id, .title] | @tsv')
-  [[ -d $HOME/.aws ]] && chmod 700 "$HOME/.aws"
-
-  # dots/aws: API Credential items -> ~/.aws/credentials profile [<title>];
-  # other profiles (e.g. [mfa], written by aws-role-login) are kept. Values
-  # go to awk through its environment, never on a command line.
-  creds="$HOME/.aws/credentials"
-  while IFS=$'\t' read -r id vault title; do
-    safe_name "$title" || { warn "Skipping AWS credential with an unusable title: $title"; continue; }
-    AWS_KEY_ID=$(op read "op://$vault/$id/access key id") \
-      AWS_SECRET=$(op read "op://$vault/$id/secret access key") \
-      awk -v profile="$title" '
-        function section() {
-          print "[" profile "]"
-          print "aws_access_key_id = " ENVIRON["AWS_KEY_ID"]
-          print "aws_secret_access_key = " ENVIRON["AWS_SECRET"]
-        }
-        # Replace the section in place, keeping the file layout (blank
-        # lines) as the AWS CLI left it, so re-runs find nothing to change
-        $0 == "[" profile "]" { section(); found = 1; skip = 1; next }
-        /^\[/ { skip = 0 }
-        skip && /^[[:space:]]*$/ { print; next }
-        !skip { print }
-        END { if (!found) { if (NR) print ""; section() } }' "$( [[ -f $creds ]] && echo "$creds" || echo /dev/null)" |
-      cat -s | put_secret "$creds" 600
-  done < <(op item list --tags dots/aws --categories "API Credential" --format json | jq -r '.[] | [.id, .vault.id, .title] | @tsv')
-
-  # dots/token: every ALL_CAPS_WITH_UNDERSCORE field -> ~/.config/dots/env
-  # (600), loaded by ~/.bashrc.dots
-  {
-    echo "# Generated by dots install.sh from 1Password (tag dots/token); edit there."
-    op item list --tags dots/token --format json | jq -r '.[].id' | while read -r id; do
-      op item get "$id" --format json --reveal |
-        jq -r '.fields[] | select((.label // "") | test("^[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$")) | [.label, .value] | @tsv'
-    done | sort | while IFS=$'\t' read -r name value; do printf 'export %s=%q\n' "$name" "$value"; done
-  } | put_secret "$HOME/.config/dots/env" 600
-
-  # dots/vpn Documents -> the AWS VPN plugin's profiles (600), registered once,
-  # in place, named after the file without .ovpn
-  vpn_profiles="$HOME/.config/omarchy/aws-vpn-client/profiles"
-  while IFS=$'\t' read -r id vault title; do
-    safe_name "$title" && [[ $title == *.ovpn ]] || { warn "Skipping VPN profile with an unusable title: $title"; continue; }
-    op document get "$id" --vault "$vault" | put_secret "$vpn_profiles/$title" 600
-    if omarchy-aws-vpn-client list | grep -qw -- "${title%.ovpn}"; then
-      ok "VPN profile ${title%.ovpn} already registered"
-    else
-      omarchy-aws-vpn-client add "$vpn_profiles/$title" --name "${title%.ovpn}" --link
-    fi
-  done < <(op item list --tags dots/vpn --categories Document --format json | jq -r '.[] | [.id, .vault.id, .title] | @tsv')
-
-  # Incoming SSH: Omarchy's script, authorizing only the personal key
-  pubkey=$(op read "op://Private/id_ed25519/public key" | awk '{print $1, $2}')
-  if systemctl is-active --quiet sshd && [[ -f /etc/ssh/sshd_config.d/10-omarchy-hardening.conf ]] &&
-    awk '{print $1, $2}' "$HOME/.ssh/authorized_keys" 2>/dev/null | grep -qxF "$pubkey"; then
-    ok "sshd already set up (key authorized, passwords off)"
-  else
-    omarchy-setup-security-sshd --key="$pubkey"
-  fi
-
-  # Switch the dots remote to SSH once GitHub accepts the key
-  # (ssh -T exits 1 even on success, GitHub gives no shell: match the reply)
-  github_reply=$(ssh -o BatchMode=yes -T git@github.com 2>&1 || true)
-  if [[ $(git -C "$DOTS_DIR" remote get-url origin) == https://* &&
-    $github_reply == *"successfully authenticated"* ]]; then
-    make -C "$DOTS_DIR" --no-print-directory ssh
-  fi
-fi
-
-# Todoist logs in through TODOIST_API_TOKEN (a dots/token field, written to
-# ~/.config/dots/env above), so there is no browser login to do
-step "Checking Todoist login"
-if (set -a && source "$HOME/.config/dots/env" 2>/dev/null && td auth status &>/dev/null); then
-  ok "Todoist authenticated (TODOIST_API_TOKEN)"
-else
-  warn "Todoist not authenticated: add TODOIST_API_TOKEN to a 1Password item tagged dots/token"
-fi
+install_secrets
 
 # Omarchy's installer sets these from the name and email you enter; ask once
 # if they were left blank. `git config --global` writes them to Omarchy's
 # ~/.config/git/config (as long as no ~/.gitconfig exists), never into dots.
 check_git_identity
+git_https_for_work
 
 # Omarchy's ~/.XCompose types your name (CapsLock, Space, n) and email
 # (CapsLock, Space, e); its installer fills them from the name/email entered

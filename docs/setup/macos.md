@@ -45,8 +45,15 @@ can see it's on).
 
 ## 1. 1Password
 
-Install 1Password, sign in, and turn on **Settings > Developer > Integrate
-with 1Password CLI** (dots reads secrets with `op`).
+Sign in to 1Password (**work laptop: only the company account**; personal
+Macs: your personal account, and the company account too) and turn on
+**Settings > Developer > Integrate with 1Password CLI** (dots reads secrets
+with `op`). Re-run `install.sh`: it installs the SSH keys, AWS files and
+tokens, approving the 1Password prompt when asked.
+
+**Work laptop, GitHub:** run `gh auth login` (GitHub.com, **HTTPS**, log in
+with a web browser). No SSH key for GitHub on the work laptop; `install.sh`
+makes git use HTTPS for SSH GitHub URLs there.
 
 ## 2. Chrome profile
 

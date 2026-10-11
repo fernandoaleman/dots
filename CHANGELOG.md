@@ -48,11 +48,17 @@ by a clean install; macOS support comes in later `1.x` releases.
   folder), expanded Save dialogs, fast key repeat, text substitutions off,
   TextEdit plain text and no `.DS_Store` on network shares, each verified
   on macOS 27.
+- Secrets on macOS, and 1Password per machine profile: work items live in
+  the work account; the personal profile reads both accounts, the work
+  profile only the work account. GitHub over HTTPS with `gh` on the work
+  profile (SSH GitHub URLs rewritten).
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 
 ### Fixed
 
+- `aws-role-login` finds the MFA item when the 1Password app has more than
+  one account.
 - `install.sh` no longer stops at the git identity prompt when run without
   a terminal (e.g. over `ssh host …`).
 
