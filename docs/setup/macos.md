@@ -16,6 +16,10 @@ with 1Password CLI** (dots reads secrets with `op`).
   Workspace). Never your personal Google account there: it would sync your
   personal history, bookmarks and passwords onto a machine IT manages.
 - **Personal Macs:** your personal Google account, as on Omarchy.
+- In that Chrome profile, install the **AWS Extend Switch Roles** extension
+  (Chrome Web Store) and paste its role configuration (the daily console
+  role switching; it syncs with the profile only if Chrome sync covers
+  extension settings, so keep a copy of the configuration).
 
 ## 3. Web apps (Teams, Outlook; Discord on personal Macs)
 
