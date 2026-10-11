@@ -102,3 +102,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 |---|---|---|---|
 | 1Password + CLI | casks `1password`, `1password-cli` | both | work profile: sign in to the work account only. "1Password for Safari" (App Store) dropped: 1Password 8's Safari extension is believed to ship in the app (verify on the fresh Mac); Chrome's extension comes from the Chrome Web Store |
 | Google Chrome | cask `google-chrome` | both | the only browser (Brave, Helium dropped). Default browser: `install.sh` runs `defaultbrowser chrome` (formula `defaultbrowser`); macOS asks once to confirm |
+| Tailscale | cask `tailscale-app` only | both | not the `tailscale` formula too (two Tailscale setups on one Mac). The app ships the CLI: try `tailscale set --accept-dns=false` from `install.sh` on the fresh Mac; checklist step until then |
