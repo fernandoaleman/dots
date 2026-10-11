@@ -138,3 +138,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | Bazecor | cask `bazecor` | personal only | Dygma keyboard configurator (layouts live on the keyboard). Omarchy too: AUR `bazecor` via `omarchy-pkg-aur-add` ([packages.md](packages.md)) |
 | TickTick | dropped | n/a | Todoist replaced it |
 | Pixelmator Pro | dropped | n/a | App Store only; Pinta (Omarchy) for image editing |
+| AdGuard Mini | dropped | n/a | Safari-only (App Store); Chrome is the browser (ad blocking via a Chrome Web Store extension, synced with the profile) |
