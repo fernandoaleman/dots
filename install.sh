@@ -206,6 +206,38 @@ add_nvim_extras() {
   fi
 }
 
+# Git identity in Omarchy's ~/.config/git/config (machine-local, never in
+# dots), asked once if missing (docs/decisions/git.md). Shared by both OSes.
+check_git_identity() {
+  step "Checking git identity"
+  ask() {
+    # No terminal (e.g. `ssh host install.sh`): gum would fail and stop the
+    # run, so leave the key unset (warned below) and carry on
+    [[ -t 0 ]] || return 0
+    if command -v gum &>/dev/null; then
+      gum input --prompt "$1: " --placeholder "$1"
+    else
+      read -rp "$1: " reply && printf '%s' "$reply"
+    fi
+  }
+  if [[ -e $HOME/.gitconfig ]]; then
+    warn "Found ~/.gitconfig; git config --global writes there instead of ~/.config/git/config"
+  fi
+  for key in user.name user.email; do
+    if [[ -n $(git config --global --get "$key") ]]; then
+      ok "git $key: $(git config --global --get "$key")"
+    else
+      value=$(ask "git $key")
+      if [[ -n $value ]]; then
+        git config --global "$key" "$value"
+        ok "git $key set"
+      else
+        warn "git $key left unset"
+      fi
+    fi
+  done
+}
+
 # macOS. What isn't built for the Mac yet (secrets) comes
 # in later stages; until then the Mac run stops at the end of this block.
 if [[ $DOTS_OS == macos ]]; then
@@ -275,6 +307,7 @@ if [[ $DOTS_OS == macos ]]; then
   fi
 
   link_dots
+  check_git_identity
   add_nvim_extras
   install_tmux_plugins
 
@@ -863,30 +896,7 @@ fi
 # Omarchy's installer sets these from the name and email you enter; ask once
 # if they were left blank. `git config --global` writes them to Omarchy's
 # ~/.config/git/config (as long as no ~/.gitconfig exists), never into dots.
-step "Checking git identity"
-ask() {
-  if command -v gum &>/dev/null; then
-    gum input --prompt "$1: " --placeholder "$1"
-  else
-    read -rp "$1: " reply && printf '%s' "$reply"
-  fi
-}
-if [[ -e $HOME/.gitconfig ]]; then
-  warn "Found ~/.gitconfig; git config --global writes there instead of ~/.config/git/config"
-fi
-for key in user.name user.email; do
-  if [[ -n $(git config --global --get "$key") ]]; then
-    ok "git $key: $(git config --global --get "$key")"
-  else
-    value=$(ask "git $key")
-    if [[ -n $value ]]; then
-      git config --global "$key" "$value"
-      ok "git $key set"
-    else
-      warn "git $key left unset"
-    fi
-  fi
-done
+check_git_identity
 
 # Omarchy's ~/.XCompose types your name (CapsLock, Space, n) and email
 # (CapsLock, Space, e); its installer fills them from the name/email entered

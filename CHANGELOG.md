@@ -40,10 +40,17 @@ by a clean install; macOS support comes in later `1.x` releases.
 - Docker on macOS: Colima (4 CPUs, 8 GiB, starts at login) with Omarchy's
   log rotation and dots' networks off 172.17, and `docker compose`/`buildx`
   found by Docker.
+- Git identity on macOS: asked once if missing, as on Omarchy.
 - Tailscale on macOS: `install.sh` turns Use Tailscale DNS off (it breaks
   the AWS VPN's DNS there), and a `tailscale` command (alias).
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
+
+### Fixed
+
+- `install.sh` no longer stops at the git identity prompt when run without
+  a terminal (e.g. over `ssh host …`); it leaves the identity unset and
+  warns.
 
 ## [1.1.0] - 2026-10-10
 
