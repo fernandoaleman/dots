@@ -619,6 +619,16 @@ Expected; let it finish (`:Lazy`, `:Mason` show progress). Run headless
 prints *"Neovim exited while the following packages were installing"*:
 they install on the next normal start.
 
+### Mac: Neovim paste fails, "Waiting for OSC 52 response" / E353
+
+**Why:** inside tmux, Omarchy's `remote_clipboard.lua` pastes by asking the
+terminal (OSC 52) when there's no Wayland, and tmux answers only from its
+own paste buffers, so text copied in other apps never arrives. **Fix (in
+dots):** the `macos` package's `lua/config/options.dots.lua` clears that
+outside SSH, so Neovim uses `pbcopy`/`pbpaste`. If it comes back, check the
+include line at the end of `~/.config/nvim/lua/config/options.lua` and
+`:lua print(vim.g.clipboard)` (should print `nil`); re-run `install.sh`.
+
 ### Mac: `:checkhealth lazy` shows a luarocks ERROR
 
 **Why:** the Mac has no `luarocks`/Lua 5.1 (Omarchy installs both), so

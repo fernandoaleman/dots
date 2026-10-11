@@ -25,8 +25,9 @@ fixed what it worked around? Checked against LazyVim 16.0.0 and Neovim
     `lua/plugins/*.lua` by path (`loadfile`, `lazy/core/plugin.lua`),
     alphabetically, so dotted names work (Lua `require` would not).
   - options, keymaps and autocmds would go in `lua/config/<name>.dots.lua`,
-    each loaded by one line `install.sh` adds to Omarchy's file. None are
-    needed so far.
+    each loaded by one line `install.sh` adds to Omarchy's file. Only the
+    Mac has one so far (`options.dots.lua`, the clipboard; see
+    [macos.md](macos.md#neovim-omarchys-lazyvim-rebuilt-from-its-sources)).
 
 ## Decisions
 

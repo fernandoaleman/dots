@@ -296,6 +296,17 @@ Extras as on Omarchy (`add_nvim_extras`, shared by both systems).
   from, in the same shape as Omarchy's theme specs. Omarchy's
   `omarchy-theme-hotreload.lua` stays, idle (it only acts on theme
   switches).
-- **Clipboard:** Omarchy's `remote_clipboard.lua` also runs on the Mac
-  inside tmux (copy as OSC 52; paste asks the terminal). To be tested in
-  Ghostty; a Mac-only override follows if pasting prompts.
+- **Clipboard: Neovim's own `pbcopy`/`pbpaste` outside SSH.** Omarchy's
+  `remote_clipboard.lua` (inside tmux, SSH or herdr) copies as OSC 52 and
+  pastes from Wayland (`wl-paste`), asking the terminal only when there's no
+  Wayland. The Mac has none, so inside tmux every paste asked tmux, whose
+  `get-clipboard buffer` (its default) answers only from tmux's own paste
+  buffers: text copied in other apps failed with *"Waiting for OSC 52
+  response"* and E353 (tested 2026-10-11). `lua/config/options.dots.lua`
+  (`macos` package, loaded last by an include line in Omarchy's
+  `options.lua`) clears `vim.g.clipboard` unless in an SSH session, so
+  Neovim picks `pbcopy`/`pbpaste`, the Mac's counterpart of Omarchy's
+  `wl-paste` path. Over SSH, Omarchy's OSC 52 behavior stays. Not chosen:
+  tmux `get-clipboard request` plus Ghostty `clipboard-read = allow`, which
+  would let any program in the terminal (remote hosts included) read the
+  clipboard without asking.
