@@ -529,6 +529,16 @@ when Omarchy ships it (`omarchy update`). If it keeps lagging, the patched
 upstream build is AUR `sunshine-bin`:
 `omarchy-pkg-drop sunshine && omarchy-pkg-aur-add sunshine-bin`.
 
+## macOS
+
+### How do I remove a Mac app completely?
+
+Apps installed by dots come from Homebrew casks: `brew uninstall --cask
+--zap <name>` removes the app and the leftover files listed in its cask
+(settings, caches), then drop it from the `Brewfile` so `install.sh`
+doesn't bring it back. AppCleaner (installed) is the fallback for apps
+installed outside dots.
+
 ## Missing tools
 
 ### `htop` / `btm` / `ncdu` / `colordiff` / `thefuck` / `act` / `hunk` not found
