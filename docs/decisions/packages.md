@@ -129,6 +129,16 @@ them. `install.sh` runs the same commands, each guarded:
 
 `WEBAPPS` entries are `"Name|URL|icon URL"`: without an icon URL, `omarchy-webapp-install` fetches the site's own icon (the old PNG icon files weren't kept). `install.sh` recreates a launcher whose URL changed. Making Slack open on a fixed workspace automatically is a **Desktop section** item.
 
+## Voxtype (dictation): Omarchy's installer
+
+Was installed by hand from Omarchy's menu (Install > AI > Dictation), so
+`install.sh` runs `omarchy-voxtype-install` when `voxtype-bin` is missing
+(decided 2026-10-10). It asks to confirm, installs `wtype` + `voxtype-bin`,
+copies Omarchy's `default/voxtype/config.toml`, downloads a model, sets up
+its user service; Omarchy's Hyprland bindings give F9 (hold, push-to-talk)
+and Super+Ctrl+X (toggle). Local transcription; the Macs get the same
+([macos.md](macos.md)).
+
 ## Syncthing: Obsidian vaults across machines
 
 Decided 2026-10-10. The vaults (mostly work, some personal) leave iCloud.
