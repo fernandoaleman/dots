@@ -143,3 +143,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | AWS Extend Switch Roles (Safari, App Store) | dropped | n/a | the Chrome extension (Chrome Web Store) is the one used; set up in each machine's Chrome profile (checklist) |
 | Keynote, Numbers, Pages | dropped | n/a | App Store only (needs an Apple ID); LibreOffice instead |
 | LibreOffice | cask `libreoffice` | both | same office suite as Omarchy (`libreoffice-fresh`); Office on the web for Microsoft formats when needed |
+| SonicWall Mobile Connect | dropped | n/a | the AWS VPN replaced the SonicWall VPN. Archive its 1Password login in the 1Password cleanup |
