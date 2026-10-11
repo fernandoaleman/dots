@@ -9,6 +9,11 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ## [Unreleased]
 
+### Added
+
+- Syncthing on Omarchy (Obsidian vaults; ports open to the LAN and Tailscale
+  only).
+
 ## [1.1.0] - 2026-10-10
 
 Remote desktop: use the Omarchy desktop from a Mac with Moonlight, at home

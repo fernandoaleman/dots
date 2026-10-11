@@ -133,6 +133,29 @@ else
   ok "Sunshine set to stream DP-2 (middle monitor)"
 fi
 
+# Syncthing (Obsidian vaults only; never git repos): Arch package + user
+# service (Omarchy has no installer). Sync (22000 tcp/udp) and LAN discovery
+# (21027/udp) open only to private LANs and tailscale0, like Sunshine; the web
+# UI stays on localhost:8384. Devices/folders are paired by hand.
+omarchy-pkg-add syncthing
+if systemctl --user is-enabled --quiet syncthing.service; then
+  ok "Syncthing service already enabled"
+else
+  systemctl --user enable --now syncthing.service
+  ok "Syncthing service enabled and started"
+fi
+for rule in "22000 tcp" "22000 udp" "21027 udp"; do
+  read -r port proto <<<"$rule"
+  for cidr in 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16; do
+    sudo ufw allow in proto "$proto" from "$cidr" to any port "$port" comment dots-syncthing >/dev/null
+  done
+  if ip link show tailscale0 &>/dev/null; then
+    sudo ufw allow in on tailscale0 to any port "$port" proto "$proto" comment dots-syncthing >/dev/null
+  fi
+done
+sudo ufw reload >/dev/null
+ok "Syncthing ports open to private LANs$(ip link show tailscale0 &>/dev/null && echo " and Tailscale")"
+
 # AWS VPN: the user's Omarchy plugin, from its GitHub repo (not yet in the
 # plugin catalog). The daemon comes first, with Omarchy's AUR installer, so
 # the plugin's setup skips its own yay step. setup (safe to re-run): systemd

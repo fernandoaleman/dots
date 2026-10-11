@@ -81,7 +81,19 @@ Same on the Mac.
 
 Repeat steps 2-4 for each new client device.
 
-## 6. Working on dots (optional)
+## 6. Syncthing (Obsidian vaults)
+
+`install.sh` installs and starts Syncthing. Once per machine, in its web UI
+(`http://localhost:8384`):
+
+1. Set a GUI username and password (Settings > GUI; store it in 1Password).
+2. **Add the other devices** by their Device ID (Actions > Show ID on each);
+   Tailscale lets them find each other anywhere.
+3. **Share folders:** the **work** vault with all three machines; the
+   **personal** vault only between Omarchy and the Mac Studio (never the
+   work laptop). Never share `~/Work` or git repos.
+
+## 7. Working on dots (optional)
 
 Only needed to commit changes to this repo. `make setup` installs prek
 (via mise) and shellcheck (via `omarchy-pkg-add`), then activates the git

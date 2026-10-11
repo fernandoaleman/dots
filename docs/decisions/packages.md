@@ -128,6 +128,32 @@ them. `install.sh` runs the same commands, each guarded:
 
 `WEBAPPS` entries are `"Name|URL|icon URL"`: without an icon URL, `omarchy-webapp-install` fetches the site's own icon (the old PNG icon files weren't kept). `install.sh` recreates a launcher whose URL changed. Making Slack open on a fixed workspace automatically is a **Desktop section** item.
 
+## Syncthing: Obsidian vaults across machines
+
+Decided 2026-10-10. The vaults (mostly work, some personal) leave iCloud.
+Considered: Dropbox (Omarchy has `omarchy-install-service-dropbox`, but the
+free plan allows 3 devices and 2 GB base storage, and work notes would sit in
+a personal cloud account), Obsidian Sync (paid, best on iPhone), Google
+Drive (no official Linux client). **Chosen: Syncthing**: free, open source,
+no device or storage limits, syncs directly between the user's machines
+(no third-party copy; works anywhere over Tailscale; the always-on Omarchy
+desktop acts as the hub). The work vault goes to all three machines, the
+personal vault only to Omarchy and the Mac Studio. Caveat: iPhone clients
+are limited (occasional reading only; revisit if needed).
+
+`install.sh` on Omarchy: `omarchy-pkg-add syncthing` (Arch `extra`; Omarchy
+has no installer), the user service `syncthing.service`, and firewall rules
+for sync (22000 tcp/udp) and LAN discovery (21027/udp, per Syncthing's own
+ufw profile) open only to private LANs and `tailscale0` (comment
+`dots-syncthing`); the web UI stays on `localhost:8384`. Pairing devices and
+sharing folders is manual ([setup](../setup/omarchy.md)).
+
+**Not for git repos / `~/Work`:** concurrent writes to `.git` create
+`.sync-conflict` files and corrupt repos, platform-specific files
+(`node_modules`, `.venv`, compiled gems) break across Linux and macOS, and
+macOS's case-insensitive file names conflict with Linux. Git (push/pull)
+syncs repos; Syncthing is for notes and documents.
+
 ## Still to review
 
 - **Group A**: done. (`tmux-ssh` moves to the bin scripts
