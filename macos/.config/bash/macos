@@ -1,0 +1,15 @@
+# shellcheck shell=bash
+#
+# macOS: replace the Linux-only parts of Omarchy's bash defaults. Loaded
+# first by ~/.bashrc.dots, right after Omarchy's defaults.
+
+# Omarchy's open() runs xdg-open; macOS has its own open
+unset -f open
+
+# Homebrew's bash-completion and fzf (Omarchy loads both from /usr/share)
+if [[ ! -v BASH_COMPLETION_VERSINFO && -r /opt/homebrew/etc/profile.d/bash_completion.sh ]]; then
+  source /opt/homebrew/etc/profile.d/bash_completion.sh
+fi
+if command -v fzf &>/dev/null; then
+  eval "$(fzf --bash)"
+fi

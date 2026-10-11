@@ -80,10 +80,114 @@ printf '%s\n' "$DOTS_PROFILE" >"$profile_file"
 export DOTS_PROFILE
 ok "Profile: $DOTS_PROFILE ($DOTS_OS)"
 
-# macOS: packages and apps from the Brewfile (personal-only entries follow
-# the profile file saved above). The rest of the Mac setup (shell, configs, Neovim, secrets)
-# is still being built; until then the Mac run stops here.
+# Get (or update) dots and load lib/dots.sh. Shared by both OSes.
+get_dots() {
+  step "Getting dots"
+  if [[ -d $DOTS_DIR/.git ]]; then
+    if [[ -n $(git -C "$DOTS_DIR" status --porcelain) ]]; then
+      warn "$DOTS_DIR has local changes; skipping update"
+    elif git -C "$DOTS_DIR" rev-parse --abbrev-ref '@{upstream}' &>/dev/null; then
+      # --no-rebase overrides Omarchy's pull.rebase=true; --ff-only never merges
+      git -C "$DOTS_DIR" pull --no-rebase --ff-only
+      ok "Updated $DOTS_DIR"
+    else
+      warn "$DOTS_DIR has no upstream branch; using it as is"
+    fi
+  else
+    mkdir -p "$(dirname "$DOTS_DIR")"
+    git clone "$REPO_URL" "$DOTS_DIR"
+    ok "Cloned into $DOTS_DIR"
+  fi
+
+  # Packages, include lines and drift checks shared with the Omarchy
+  # post-update hook (omarchy/…/post-update.d/dots.hook) and `make doctor`
+  source "$DOTS_DIR/lib/dots.sh"
+}
+
+# Link dots into $HOME: stow the packages and add the include lines to
+# Omarchy's config files. Shared by both OSes; what gets stowed and hooked
+# comes from lib/dots.sh (per OS).
+link_dots() {
+  # stow refuses to replace real files, so move any in the way aside first.
+  # Anything that already resolves into dots (a stowed file, or a file under a
+  # stowed directory like ~/.config/bash) is left alone.
+  step "Backing up files that would conflict with stow"
+  stamp="$(date +%Y%m%d%H%M%S)"
+  backed_up=0
+  for pkg in "${PACKAGES[@]}"; do
+    while IFS= read -r -d '' src; do
+      rel="${src#"$DOTS_DIR/$pkg/"}"
+      target="$HOME/$rel"
+      # Only real files are in the way (macOS's realpath has no -m, so test
+      # existence first)
+      [[ -e $target && ! -L $target ]] || continue
+      [[ $(realpath "$target") == "$DOTS_DIR"/* ]] && continue
+      mv "$target" "$target.bak.$stamp"
+      warn "Moved ~/$rel to ~/$rel.bak.$stamp"
+      backed_up=1
+    done < <(find "$DOTS_DIR/$pkg" -type f -print0)
+  done
+  ((backed_up)) || ok "Nothing to back up"
+
+  # --no-folding: real folders, links only for our files. With folding, a
+  # folder missing on a fresh machine (e.g. ~/.ssh) becomes one link into the
+  # repo, and whatever else is later written there (keys!) lands in the repo.
+  step "Stowing packages: ${PACKAGES[*]}"
+  [[ " ${PACKAGES[*]} " == *" ssh "* ]] && mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
+  stow --dir "$DOTS_DIR" --target "$HOME" --restow --no-folding "${PACKAGES[@]}"
+  ok "Stowed"
+
+  # Omarchy's own config files stay real files that Omarchy (and its update
+  # migrations) can keep editing. Each gets one line, added last, that loads
+  # our stowed file so our settings override Omarchy's (INCLUDES in lib/dots.sh).
+  step "Hooking dots into Omarchy's config files"
+  for entry in "${INCLUDES[@]}"; do
+    file=${entry%%|*} short=${entry%%|*}
+    short=${short/#$HOME/\~}
+    case $(dots_include "$file" "${entry#*|}") in
+    present) ok "$short already loads dots" ;;
+    added) ok "$short now loads dots" ;;
+    no-file) warn "$short not found; skipping" ;;
+    esac
+  done
+}
+
+# macOS. What isn't built for the Mac yet (configs, Neovim, secrets) comes
+# in later stages; until then the Mac run stops at the end of this block.
 if [[ $DOTS_OS == macos ]]; then
+  get_dots
+
+  # Omarchy's bash defaults (and ~/.bashrc template) at the pinned tag, laid
+  # out like /usr/share/omarchy (macOS doesn't allow writing to /usr/share).
+  # macos-env points OMARCHY_PATH here (docs/decisions/macos.md).
+  omarchy_dir="$HOME/.local/share/omarchy"
+  step "Omarchy's defaults ($OMARCHY_REF)"
+  if [[ $(cat "$omarchy_dir/.dots-ref" 2>/dev/null) == "$OMARCHY_REF" ]]; then
+    ok "Already at $OMARCHY_REF"
+  else
+    tmp=$(mktemp -d)
+    curl -fsSL "https://github.com/omacom/omarchy/archive/refs/tags/$OMARCHY_REF.tar.gz" |
+      tar -xz -C "$tmp" --strip-components=1
+    rm -rf "$omarchy_dir"
+    mkdir -p "$omarchy_dir/default"
+    cp -R "$tmp/default/bash" "$tmp/default/bashrc" "$omarchy_dir/default/"
+    rm -rf "$tmp"
+    echo "$OMARCHY_REF" >"$omarchy_dir/.dots-ref"
+    ok "Downloaded into ${omarchy_dir/#$HOME/\~}"
+  fi
+
+  # ~/.bashrc is Omarchy's template, seeded once (Omarchy's skel does this
+  # on Omarchy); link_dots then adds the line that loads ours
+  step "Seeding ~/.bashrc"
+  if [[ -f $HOME/.bashrc ]]; then
+    ok "Keeping the existing ~/.bashrc"
+  else
+    cp "$omarchy_dir/default/bashrc" "$HOME/.bashrc"
+    ok "Copied Omarchy's ~/.bashrc template"
+  fi
+
+  link_dots
+
   step "Installing packages and apps (Brewfile)"
   brew bundle --file="$DOTS_DIR/Brewfile" --no-upgrade
   ok "Brewfile installed"
@@ -99,8 +203,21 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Asked macOS to make Chrome the default: click \"Use Chrome\""
   fi
 
-  step "Done (macOS: first stage)"
-  echo "Shell, configs, Neovim and secrets for macOS come in the next stages."
+  # Bash 5 as the login shell, as on Omarchy (Omarchy's defaults need bash
+  # 4+; macOS's /bin/bash is 3.2). chsh only accepts shells in /etc/shells.
+  brew_bash=/opt/homebrew/bin/bash
+  step "Login shell: $brew_bash"
+  grep -qxF "$brew_bash" /etc/shells || echo "$brew_bash" | sudo tee -a /etc/shells >/dev/null
+  if [[ $(dscl . -read "$HOME" UserShell | awk '{print $2}') == "$brew_bash" ]]; then
+    ok "Already the login shell"
+  else
+    sudo chsh -s "$brew_bash" "$USER"
+    ok "Login shell changed (new terminal windows use it)"
+  fi
+
+  step "Done (macOS: bash stage)"
+  echo "Open a new terminal window to load the new shell."
+  echo "Configs, Neovim and secrets for macOS come in the next stages."
   exit 0
 fi
 
@@ -300,68 +417,8 @@ for webapp in "${WEBAPPS[@]}"; do
   fi
 done
 
-step "Getting dots"
-if [[ -d $DOTS_DIR/.git ]]; then
-  if [[ -n $(git -C "$DOTS_DIR" status --porcelain) ]]; then
-    warn "$DOTS_DIR has local changes; skipping update"
-  elif git -C "$DOTS_DIR" rev-parse --abbrev-ref '@{upstream}' &>/dev/null; then
-    # --no-rebase overrides Omarchy's pull.rebase=true; --ff-only never merges
-    git -C "$DOTS_DIR" pull --no-rebase --ff-only
-    ok "Updated $DOTS_DIR"
-  else
-    warn "$DOTS_DIR has no upstream branch; using it as is"
-  fi
-else
-  mkdir -p "$(dirname "$DOTS_DIR")"
-  git clone "$REPO_URL" "$DOTS_DIR"
-  ok "Cloned into $DOTS_DIR"
-fi
-
-# Packages, include lines and drift checks shared with the Omarchy
-# post-update hook (omarchy/…/post-update.d/dots.hook) and `make doctor`
-source "$DOTS_DIR/lib/dots.sh"
-
-# stow refuses to replace real files, so move any in the way aside first.
-# Anything that already resolves into dots (a stowed file, or a file under a
-# stowed directory like ~/.config/bash) is left alone.
-step "Backing up files that would conflict with stow"
-stamp="$(date +%Y%m%d%H%M%S)"
-backed_up=0
-for pkg in "${PACKAGES[@]}"; do
-  while IFS= read -r -d '' src; do
-    rel="${src#"$DOTS_DIR/$pkg/"}"
-    target="$HOME/$rel"
-    [[ $(realpath -m "$target") == "$DOTS_DIR"/* ]] && continue
-    if [[ -e $target && ! -L $target ]]; then
-      mv "$target" "$target.bak.$stamp"
-      warn "Moved ~/$rel to ~/$rel.bak.$stamp"
-      backed_up=1
-    fi
-  done < <(find "$DOTS_DIR/$pkg" -type f -print0)
-done
-((backed_up)) || ok "Nothing to back up"
-
-# --no-folding: real folders, links only for our files. With folding, a
-# folder missing on a fresh machine (e.g. ~/.ssh) becomes one link into the
-# repo, and whatever else is later written there (keys!) lands in the repo.
-step "Stowing packages: ${PACKAGES[*]}"
-mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
-stow --dir "$DOTS_DIR" --target "$HOME" --restow --no-folding "${PACKAGES[@]}"
-ok "Stowed"
-
-# Omarchy's own config files stay real files that Omarchy (and its update
-# migrations) can keep editing. Each gets one line, added last, that loads
-# our stowed file so our settings override Omarchy's (INCLUDES in lib/dots.sh).
-step "Hooking dots into Omarchy's config files"
-for entry in "${INCLUDES[@]}"; do
-  file=${entry%%|*} short=${entry%%|*}
-  short=${short/#$HOME/\~}
-  case $(dots_include "$file" "${entry#*|}") in
-  present) ok "$short already loads dots" ;;
-  added) ok "$short now loads dots" ;;
-  no-file) warn "$short not found; skipping" ;;
-  esac
-done
+get_dots
+link_dots
 
 # tmux plugins, cloned at pinned commits (no TPM). Bump a pin deliberately.
 TMUX_PLUGINS_DIR="$HOME/.local/share/tmux/plugins"

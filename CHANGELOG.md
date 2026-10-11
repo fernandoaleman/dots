@@ -21,6 +21,9 @@ by a clean install; macOS support comes in later `1.x` releases.
   (Homebrew, bash 5, git, gum, stow, jq, then dots) and installs the
   `Brewfile` (packages and apps; personal-only entries by profile), with
   Chrome as the default browser.
+- macOS bash: Omarchy's bash defaults (downloaded at a pinned tag) plus a
+  Mac add-on (`macos` stow package), with Homebrew's bash 5 as the login
+  shell.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 

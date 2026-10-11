@@ -175,3 +175,45 @@ Decided 2026-10-10, from the Mac Studio's remaining formulae:
   `hunk`); the old setup (`chezmoi`, `age`, `zsh` + plugins,
   `reattach-to-user-namespace`); via mise (`yarn`, `todoist-cli`, `gh`,
   `opencode`); `tailscale` (the app), `aws-vpn-cli`.
+
+## Bash: Omarchy's defaults plus a Mac add-on
+
+Decided 2026-10-10. **Omarchy** (4.0.4, checked in `/usr/share/omarchy`):
+`~/.bashrc` is its template (`default/bashrc`), which sources
+`default/bash/env-bootstrap` (`OMARCHY_PATH`, mise shims, `~/.local/bin`) and
+then `default/bash/rc` (`envs`, `shell`, `aliases`, `functions`, `init`,
+`inputrc`); dots' include line ends it. `~/.bash_profile` comes from Arch's
+bash package and only loads `~/.bashrc`.
+
+On a Mac those defaults can't run as is: the paths are fixed to
+`/usr/share/omarchy` (macOS doesn't allow writing to `/usr/share`); `EDITOR`
+and `BROWSER` call `omarchy-launch-*`; `open()` is redefined as `xdg-open`;
+bash-completion and fzf load from `/usr/share`; and they need bash 4+
+(`local -A`, `[[ -v`), while macOS's `/bin/bash` is 3.2.
+
+So, on macOS:
+
+- **Omarchy's real defaults, pinned:** `install.sh` downloads Omarchy's
+  release tarball at `OMARCHY_REF` (`lib/dots.sh`, `v4.0.4`, the desktop's
+  version) and keeps `default/bash/` and `default/bashrc` in
+  `~/.local/share/omarchy/` (same layout as `/usr/share/omarchy`; re-downloaded
+  only when the pin changes). No copies in dots. Bump the pin deliberately.
+- **`~/.bashrc`:** Omarchy's template, seeded once if missing, plus dots'
+  usual include line. Its first line (`/usr/share/omarchy/…/env-bootstrap`)
+  is skipped on the Mac because the file doesn't exist there.
+- **`macos` stow package** (Mac only), the add-on in two parts:
+  - `~/.bash_profile`: loads `~/.config/bash/macos-env`, then `~/.bashrc`.
+    `macos-env` (exports only, inherited by child shells) does
+    env-bootstrap's job: Homebrew's `brew shellenv`, `OMARCHY_PATH`, mise
+    shims and `~/.local/bin`, plus `EDITOR=nvim` and `BROWSER=open`
+    (Omarchy's `envs` keeps values already set, so nothing is patched).
+  - `~/.config/bash/macos`, loaded first by `~/.bashrc.dots`: restores
+    macOS's `open`, loads Homebrew's bash-completion and `fzf --bash`.
+    dots' git completion for `g` also tries Homebrew's path.
+- **Login shell:** Homebrew's bash 5 (`/opt/homebrew/bin/bash`, added to
+  `/etc/shells`, `chsh`), so Ghostty, Terminal, tmux and SSH get the same
+  shell as on Omarchy. Rejected: keeping zsh and starting bash only in
+  Ghostty (SSH and other tools would land in zsh).
+
+Known gap: Omarchy's `sff` uses GNU `find -printf`, which macOS's `find`
+lacks (troubleshooting).

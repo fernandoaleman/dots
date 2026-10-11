@@ -1,5 +1,9 @@
 # Loaded by the last line of Omarchy's ~/.bashrc (added by dots' install.sh),
 # after Omarchy's defaults, so anything here overrides them
+
+# macOS: replace Omarchy's Linux-only defaults first (macos stow package)
+[[ $OSTYPE == darwin* && -r ~/.config/bash/macos ]] && source ~/.config/bash/macos
+
 source ~/.config/bash/aliases
 source ~/.config/bash/completions
 
