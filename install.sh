@@ -38,7 +38,12 @@ if [ "$DOTS_OS" = macos ] && [ "${BASH_VERSINFO[0]}" -lt 4 ]; then
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   fi
   eval "$(/opt/homebrew/bin/brew shellenv)"
-  brew install bash git gum stow jq
+  missing=""
+  for formula in bash git gum stow jq; do
+    brew list --formula "$formula" >/dev/null 2>&1 || missing="$missing $formula"
+  done
+  # shellcheck disable=SC2086 # word splitting intended (bash 3.2: no arrays of names here)
+  [ -z "$missing" ] || brew install $missing
   if [ ! -d "$DOTS_DIR/.git" ]; then
     mkdir -p "$(dirname "$DOTS_DIR")"
     git clone "$REPO_URL" "$DOTS_DIR"
