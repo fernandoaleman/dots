@@ -93,7 +93,8 @@ Decided 2026-10-10, same for both profiles:
   rocks); Docker (apps section).
 - **mise:** our stowed `config-dots.toml`, plus Omarchy's global tools
   (`claude`, `codex`, `gh`, `node`, `prek`) via `mise use -g`, plus Omarchy's
-  `~/Work/.mise.toml` (adds a project's `bin/` to PATH).
+  `~/Work/.mise.toml` (adds a project's `bin/` to PATH); built in
+  [mise on the Mac](#mise-omarchys-setup-plus-dots-tools).
 
 ### Apps: Homebrew first, App Store last
 
@@ -310,3 +311,48 @@ Extras as on Omarchy (`add_nvim_extras`, shared by both systems).
   tmux `get-clipboard request` plus Ghostty `clipboard-read = allow`, which
   would let any program in the terminal (remote hosts included) read the
   clipboard without asking.
+
+## mise: Omarchy's setup plus dots' tools
+
+Decided 2026-10-11. **Omarchy** sets mise up at install
+(`install/user/mise.sh`, `install/user/mise-work.sh`): `mise settings set
+upgrade.auto_prune false` (so `mise up` never deletes a version a running
+tool executes from), `~/Work` and `~/Work/tries`, `~/Work/.mise.toml`
+(`[env] _.path = "{{ cwd }}/bin"`, trusted: a project's `bin/` on PATH
+anywhere under `~/Work`) and `mise use -g node@latest`. Coding tools get
+first-run launchers in `~/.local/bin` from `omarchy-mise-install` (about 15:
+claude, codex, gh, opencode, crush, gemini, copilot, playwright, pi, omp,
+grok, cursor-agent, ghui, hunk, muse), each running `mise use -g <tool>`
+the first time and then the tool. dots adds `conf.d/config-dots.toml` and
+`mise install --yes` ([packages.md](packages.md)); `prek` comes from the
+repo's `make setup`.
+
+On macOS, `install.sh` does the same after the `Brewfile` (which installs
+mise):
+
+- the auto-prune setting, `~/Work/tries`, `~/Work/.mise.toml` (written only
+  if missing) with `mise trust`, and global Node (only if not set yet);
+- launchers from **Omarchy's own `omarchy-mise-install`**, copied from the
+  pinned download into `~/.local/share/omarchy/bin`, for the Mac's coding
+  tools only: **claude, codex, gh, opencode** (the work laptop doesn't need
+  the rest; `omarchy-mise-install <tool>` adds one);
+- the `mise` stow package and `mise install --yes`: every tool in
+  `config-dots.toml` has a macOS build in mise's registry (tested: all 12
+  install and resolve, including aws-cli from AWS's `.pkg` without sudo);
+- `prek`: `make setup` in `~/Work/dots`, as on Omarchy.
+
+Node and Go are also what Mason needs for npm- and go-built tools
+(json-lsp, yaml-language-server, pyright, gopls...); with them, all 28 of
+LazyVim's Mason tools install on the Mac.
+
+Differences kept:
+
+- **Updates:** Omarchy runs `mise up` on every `omarchy update`; the Mac
+  has no equivalent, so run Omarchy's `mup` alias now and then (re-running
+  `install.sh` installs missing tools, it doesn't upgrade). A Mac update
+  command may come with `dots doctor`.
+- **Ruby:** Arch's 3.4 on Omarchy; on the Mac, Homebrew's 4.0 (a
+  dependency of `try`). Projects pin theirs in `.ruby-version`, which mise
+  reads ([Ruby guide](../guides/ruby.md)).
+- **Python:** Apple's 3.9 (`/usr/bin/python3`); uv brings its own Python
+  for ansible and yamllint.

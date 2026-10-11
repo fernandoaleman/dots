@@ -39,7 +39,7 @@ LAZYVIM_STARTER_REF=803bc181d7c0d6d5eeba9274d9be49b287294d99
 # macOS stows and hooks only what's been built for the Mac so far (dots 1.x).
 # There, Omarchy's files are the templates seeded by install.sh.
 if [[ $(uname -s) == Darwin ]]; then
-  PACKAGES=(bash git nvim tmux macos)
+  PACKAGES=(bash git nvim tmux mise macos)
   INCLUDES=(
     "$HOME/.bashrc|[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots"
     "$HOME/.config/git/config|[include] path = ~/.config/git/config.dots"

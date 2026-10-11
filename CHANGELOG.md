@@ -34,6 +34,9 @@ by a clean install; macOS support comes in later `1.x` releases.
   package's sources at pinned commits, dots' `nvim` package and LazyVim
   Extras, OneDark "dark" as the colorscheme, and the macOS clipboard
   (`pbcopy`/`pbpaste`) outside SSH.
+- mise on macOS: Omarchy's setup (no auto-prune, `~/Work/.mise.toml`,
+  global Node, first-run launchers for claude, codex, gh and opencode) and
+  dots' tools from `config-dots.toml`.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 
