@@ -50,8 +50,10 @@ by a clean install; macOS support comes in later `1.x` releases.
   on macOS 27.
 - Secrets on macOS, and 1Password per machine profile: work items live in
   the work account; the personal profile reads both accounts, the work
-  profile only the work account. GitHub over HTTPS with `gh` on the work
-  profile (SSH GitHub URLs rewritten).
+  profile only the work account.
+- GitHub over HTTPS on every machine: `gh-role-login` signs `gh` in as the
+  profile allows (work: a company-only fine-grained token from 1Password;
+  personal: the browser), and SSH GitHub URLs are rewritten to HTTPS.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 

@@ -51,9 +51,11 @@ Macs: your personal account, and the company account too) and turn on
 with `op`). Re-run `install.sh`: it installs the SSH keys, AWS files and
 tokens, approving the 1Password prompt when asked.
 
-**Work laptop, GitHub:** run `gh auth login` (GitHub.com, **HTTPS**, log in
-with a web browser). No SSH key for GitHub on the work laptop; `install.sh`
-makes git use HTTPS for SSH GitHub URLs there.
+**GitHub:** run `gh-role-login` **in a local terminal** (not over SSH, so
+`gh` keeps the token in the Keychain). The work laptop signs in with the
+company-only token from 1Password (tag `dots/gh`; create it first:
+[bin.md](../decisions/bin.md#gh-role-login-bin-package-new-2026-10-11)), a
+personal Mac with the browser. No SSH key for GitHub on any machine.
 
 ## 2. Chrome profile
 
