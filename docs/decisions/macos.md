@@ -139,3 +139,4 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | TickTick | dropped | n/a | Todoist replaced it |
 | Pixelmator Pro | dropped | n/a | App Store only; Pinta (Omarchy) for image editing |
 | AdGuard Mini | dropped | n/a | Safari-only (App Store); Chrome is the browser (ad blocking via a Chrome Web Store extension, synced with the profile) |
+| Amphetamine → KeepingYouAwake | cask `keepingyouawake` | both | Amphetamine is App Store only; KeepingYouAwake is a free menu-bar "stay awake" toggle (built-in fallback: `caffeinate -d`) |
