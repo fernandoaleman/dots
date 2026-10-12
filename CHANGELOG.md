@@ -64,6 +64,7 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Fixed
 
+- `aws-role-login` on macOS shows the session's expiry as a local time.
 - `aws-role-login` finds the MFA item when the 1Password app has more than
   one account.
 - `install.sh` no longer stops at the git identity prompt when run without
