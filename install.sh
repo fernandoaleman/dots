@@ -181,6 +181,33 @@ install_tmux_plugins() {
   done
 }
 
+# tmux-ssh (synchronized SSH panes per host or group), downloaded at a
+# pinned commit into ~/.local/bin (on PATH via Omarchy's bash envs). The
+# SHA-256 skips the download on re-runs and rejects anything else. Bump
+# both deliberately. Hashed from stdin: macOS's sha256sum has no --status
+# and its -c rejects a correct line.
+install_tmux_ssh() {
+  local commit=1a27fb4064a1839e5fc04cdcd00ddf3fb2da347c
+  local sha256=1ad96c5123535619d59245b2a6975d94bf4954cf3fe0c24d85034767ab78c934
+  local file="$HOME/.local/bin/tmux-ssh" download
+  sha256_ok() { [[ -f $1 && $(sha256sum <"$1") == "$sha256 "* ]]; }
+  step "Installing tmux-ssh"
+  if sha256_ok "$file"; then
+    ok "tmux-ssh already at ${commit:0:7}"
+    return
+  fi
+  mkdir -p "$(dirname "$file")"
+  download=$(mktemp)
+  curl -fsSL "https://raw.githubusercontent.com/tmux-ssh/tmux-ssh/$commit/tmux-ssh" -o "$download"
+  if sha256_ok "$download"; then
+    install -m 755 "$download" "$file"
+    ok "tmux-ssh at ${commit:0:7}"
+  else
+    warn "tmux-ssh download doesn't match its pinned SHA-256; not installed"
+  fi
+  rm -f "$download"
+}
+
 # LazyVim Extras live in Omarchy's ~/.config/nvim/lazyvim.json, which LazyVim
 # itself rewrites (:LazyExtras), so it can't be stowed. Add ours to its list;
 # nothing is removed, so extras toggled locally are kept. Shared by both OSes.
@@ -486,6 +513,7 @@ if [[ $DOTS_OS == macos ]]; then
   check_git_identity
   add_nvim_extras
   install_tmux_plugins
+  install_tmux_ssh
 
   step "Installing packages and apps (Brewfile)"
   brew bundle --file="$DOTS_DIR/Brewfile" --no-upgrade
@@ -909,28 +937,7 @@ link_dots
 
 install_tmux_plugins
 
-# tmux-ssh (synchronized SSH panes per host or group), downloaded at a
-# pinned commit into ~/.local/bin (on PATH via Omarchy's bash envs). The
-# SHA-256 skips the download on re-runs and rejects anything else. Bump
-# both deliberately.
-TMUX_SSH_COMMIT=1a27fb4064a1839e5fc04cdcd00ddf3fb2da347c
-TMUX_SSH_SHA256=1ad96c5123535619d59245b2a6975d94bf4954cf3fe0c24d85034767ab78c934
-step "Installing tmux-ssh"
-tmux_ssh="$HOME/.local/bin/tmux-ssh"
-if [[ -f $tmux_ssh ]] && sha256sum -c --status <<<"$TMUX_SSH_SHA256  $tmux_ssh"; then
-  ok "tmux-ssh already at ${TMUX_SSH_COMMIT:0:7}"
-else
-  mkdir -p "$(dirname "$tmux_ssh")"
-  download=$(mktemp)
-  curl -fsSL "https://raw.githubusercontent.com/tmux-ssh/tmux-ssh/$TMUX_SSH_COMMIT/tmux-ssh" -o "$download"
-  if sha256sum -c --status <<<"$TMUX_SSH_SHA256  $download"; then
-    install -m 755 "$download" "$tmux_ssh"
-    ok "tmux-ssh at ${TMUX_SSH_COMMIT:0:7}"
-  else
-    warn "tmux-ssh download doesn't match its pinned SHA-256; not installed"
-  fi
-  rm -f "$download"
-fi
+install_tmux_ssh
 
 # Global mise tools (ours in ~/.config/mise/conf.d/config-dots.toml, plus
 # Omarchy's); later kept current by `mise up` in every `omarchy update`

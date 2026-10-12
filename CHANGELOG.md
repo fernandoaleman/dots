@@ -60,6 +60,7 @@ by a clean install; macOS support comes in later `1.x` releases.
   (its own script); Colima no longer edits `~/.ssh/config`.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
+- macOS: tmux-ssh is installed too (`install.sh`).
 
 ### Fixed
 

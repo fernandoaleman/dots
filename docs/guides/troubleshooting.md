@@ -716,6 +716,13 @@ own value, remove that line from `MACOS_DEFAULTS`
 ([macos.md](../decisions/macos.md#macos-settings-defaults)). The F-keys are
 deliberately not set: hold Fn for F1-F12.
 
+### Mac: `sha256sum -c --status` prints "usage: sha256sum [-bctwz]"
+
+**Why:** macOS 27's own `sha256sum` (`/sbin`) has no `--status`, and its
+`-c` returned 1 even for a correct line (tested 2026-10-11). **Fix:** hash
+from stdin and compare, which works on both systems:
+`[[ $(sha256sum <file) == "<hash> "* ]]` (as `install_tmux_ssh` does).
+
 ### Mac: `:checkhealth lazy` shows a luarocks ERROR
 
 **Why:** the Mac has no `luarocks`/Lua 5.1 (Omarchy installs both), so
