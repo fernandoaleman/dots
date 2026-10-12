@@ -84,13 +84,13 @@ Allow notifications when asked.
 **Personal Macs only** (never the work laptop): also `https://discord.com/app`
 as a web app, like Omarchy's built-in Discord web app.
 
-## 4. Tailscale: sign in, launch at login
+## 4. Tailscale: sign in
 
-`install.sh` installs the Tailscale app. Open it and sign in. For **launch
-at login**, add it in System Settings > General > Login Items & Extensions
-> **Open at Login** (**+** > Tailscale): the app's own checkbox may fail
-with "Start on Login could not be set"
-([troubleshooting](../guides/troubleshooting.md#mac-tailscale-start-on-login-could-not-be-set-popup)).
+`install.sh` installs the Tailscale app and adds it to Login Items (Open at
+Login; the app's own checkbox may fail with "Start on Login could not be
+set",
+[troubleshooting](../guides/troubleshooting.md#mac-tailscale-start-on-login-could-not-be-set-popup)).
+Open it and sign in.
 
 Then **re-run `install.sh`** (if Tailscale wasn't signed in on its first
 run): it turns **Use Tailscale DNS off** (`tailscale set

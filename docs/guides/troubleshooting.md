@@ -697,8 +697,8 @@ so it can't enable it. Seen 2026-10-11 on the work MacBook (Tailscale
 Re-registering the app (`lsregister -f /Applications/Tailscale.app`, then
 reopening it) and restarting didn't help. **Workaround (works):** System
 Settings > General > Login Items & Extensions > **Open at Login** > **+** >
-Tailscale; it starts at login (verified after a restart). The checkbox
-stays broken. Not tried: `sfltool resetbtm` (resets every app's
+Tailscale; it starts at login (verified after a restart). `install.sh` now
+adds this entry itself (2026-10-12). The checkbox stays broken. Not tried: `sfltool resetbtm` (resets every app's
 background-item approvals). Follow-up in [TODO](../TODO.md).
 
 ### Mac: Keyboard sliders don't move after `defaults write -g KeyRepeat`

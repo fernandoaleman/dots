@@ -695,6 +695,22 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Wrote /etc/ssh/ssh_config.d/20-omarchy-keepalive.conf"
   fi
 
+  # Tailscale at login: the app's own "Launch at login" checkbox can fail
+  # ("Start on Login could not be set"; docs/guides/troubleshooting.md), so
+  # add it to Login Items the way `voxtype setup app-bundle` does. macOS may
+  # ask once whether the terminal may control System Events.
+  step "Tailscale: open at login"
+  if [[ ! -d /Applications/Tailscale.app ]]; then
+    warn "Tailscale app not installed; skipping"
+  elif osascript -e 'tell application "System Events" to get the name of every login item' 2>/dev/null |
+    tr ',' '\n' | grep -qx ' *Tailscale'; then
+    ok "Already in Login Items"
+  elif osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Tailscale.app", hidden:false}' >/dev/null; then
+    ok "Added to Login Items"
+  else
+    warn "Couldn't add Tailscale to Login Items; add it in System Settings > General > Login Items"
+  fi
+
   # Tailscale DNS off: on macOS, "Use Tailscale DNS" replaces the system's
   # resolvers and pushes out the AWS VPN's, and then nothing resolves
   # (docs/decisions/desktop.md). The app's own CLI, kept in CLI mode by
