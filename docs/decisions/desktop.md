@@ -340,7 +340,8 @@ What `install.sh` does (values in `lib/dots.sh`), guarded:
 - **ufw:** the same two DNS allow rules for `172.31.0.1`. Omarchy's
   `172.17.0.1` rules are left in place (harmless: nothing listens there).
 - **Drift:** `dots_doctor` (`make doctor`, the post-update hook) reports
-  when `bip` is no longer `172.31.0.1/16` or the drop-in is gone.
+  when `bip` is no longer `172.31.0.1/16` or the drop-in is gone (on the
+  Mac, Colima's `bip`: [macos.md](macos.md)).
 
 Verified live (2026-10-04): `docker0` is `172.31.0.1/16` with no
 `172.17` route left; resolved listens on `172.31.0.1:53` only (Omarchy's

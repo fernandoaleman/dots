@@ -731,6 +731,9 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Login shell changed (new terminal windows use it)"
   fi
 
+  step "Checking dots"
+  dots_doctor || true
+
   step "Done (macOS)"
   echo "Open a new terminal window to load the new shell."
   exit 0

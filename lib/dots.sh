@@ -111,7 +111,9 @@ dots_doctor() {
 
   while IFS= read -r path; do
     rel=${path#*/}
-    if [[ $(realpath -m "$HOME/$rel") != "$DOTS_DIR/$path" ]]; then
+    # plain realpath (macOS has no -m): a missing file or broken link
+    # resolves elsewhere or not at all, so it's reported either way
+    if [[ $(realpath "$HOME/$rel" 2>/dev/null) != "$DOTS_DIR/$path" ]]; then
       issues+=("$HOME/$rel is not linked to dots (replaced or missing; run install.sh)")
     fi
   done < <(git -C "$DOTS_DIR" ls-files -- "${PACKAGES[@]}")
@@ -128,6 +130,11 @@ dots_doctor() {
   if [[ -f /etc/docker/daemon.json ]] &&
     [[ $(jq -r '.bip // ""' /etc/docker/daemon.json) != "$DOCKER_BRIDGE_IP/16" || ! -f $DOCKER_DNS_DROPIN ]]; then
     issues+=("Docker networks are on 172.17.0.0/16, which clashes with the work VPN (run install.sh)")
+  fi
+  # Same on the Mac, in Colima's config (install.sh writes it only once)
+  local colima_conf="$HOME/.colima/default/colima.yaml"
+  if [[ -f $colima_conf ]] && ! grep -qF "bip: $DOCKER_BRIDGE_IP/16" "$colima_conf"; then
+    issues+=("$colima_conf lacks dots' Docker networks (172.17.0.0/16 clashes with the work VPN; see docs/decisions/macos.md)")
   fi
 
   if [[ -n $(git -C "$DOTS_DIR" status --porcelain --untracked-files=no) ]]; then

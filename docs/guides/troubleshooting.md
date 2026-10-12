@@ -891,6 +891,12 @@ or run `make doctor` in `~/Work/dots`:
   your own unfinished edits, or a migration wrote through a link into the
   repo (commit or `git restore` it).
 
+### Mac: `make doctor` says every file "is not linked to dots"
+
+**Why:** it used `realpath -m`; macOS's `realpath` has no `-m` (prints
+"illegal option -- m"), so every check failed. **Fixed** (2026-10-11): plain
+`realpath`, which works on both systems.
+
 ## Known Omarchy issues (not caused by dots)
 
 ### Lazy reports `monokai-pro.nvim` "fetch failed: Repository not found"
