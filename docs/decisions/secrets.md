@@ -309,7 +309,10 @@ account's own vault, and dots reads 1Password per machine profile:
   tested: the item it creates is unreadable): the six work SSH keys, the
   three AWS Documents and the environments file, the VPN profile,
   `aws-role-switch`, the Atlassian, Cloudflare and PagerTree tokens, and the
-  Todoist token (used for work). The MFA item was already there. Verified
+  Todoist token (used for work), and the AWS SSO login (moved later the
+  same day: not used by dots, but the VPN's sign-in needs its username,
+  password and code, and the work Mac couldn't see it). The MFA item was
+  already there. Verified
   after the move, no values printed: key fingerprints and document hashes
   match the installed files, the token env is identical (hash), the MFA
   code reads.

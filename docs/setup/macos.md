@@ -107,7 +107,9 @@ dots' `~/.ssh/config` uses Tailscale addresses instead.
 
 Install AWS's client (`brew install --cask aws-vpn-client`) and import the
 work profile by hand: the 1Password Document `work.ovpn` (work vault,
-tag `dots/vpn`). Connect it **after** Tailscale is up. (On Omarchy the
+tag `dots/vpn`). Connect it **after** Tailscale is up. Sign in with the
+**AWS SSO** login's username, password and code (work account), not AWS
+Role Switch's. (On Omarchy the
 user's own plugin does this instead.)
 
 ## 6. Moonlight (remote desktop into Omarchy)
