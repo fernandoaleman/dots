@@ -164,10 +164,18 @@ upgrade.
 
 1. Check the **device name** (Actions > Settings > General): it defaults to
    the hostname, which on a Mac without a HostName can be the AWS VPN's
-   `ip-…compute.internal`; rename it (e.g. `MacBook Pro (work)`).
+   `ip-…compute.internal`; rename it (e.g. `MacBook Pro`).
 2. Set a GUI username and password (Settings > GUI; store it in 1Password).
-3. **Add the other devices** by their Device ID (Actions > Show ID on each);
-   Tailscale lets them find each other anywhere.
-4. **Share folders:** the **work** vault with all three machines; the
-   **personal** vault only between Omarchy and the Mac Studio (never the
-   work laptop). Never share `~/Work` or git repos.
+3. **Pair with Omarchy only** (the hub; Actions > Show ID on each): add
+   Omarchy on a Mac, the Mac on Omarchy, with the address
+   `tcp://<Tailscale IP>:22000, dynamic` so they find each other anywhere.
+4. **Share folders**, same paths everywhere
+   ([packages.md](../decisions/packages.md#syncthing-obsidian-vaults-across-machines)):
+   `obsidian-work` at `~/Obsidian/Work` on all three machines;
+   `obsidian-personal` at `~/Obsidian/Personal` only between Omarchy and the
+   Mac Studio (never the work laptop). Create the folder with its
+   `.stignore` (`.obsidian/workspace*.json`) before accepting the share.
+   Never share `~/Work` or git repos.
+5. In Obsidian: Open folder as vault > `~/Obsidian/Work` (and `Personal`).
+
+The work Mac's GUI password goes in the work 1Password account.
