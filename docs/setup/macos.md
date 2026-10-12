@@ -177,5 +177,8 @@ upgrade.
    `.stignore` (`.obsidian/workspace*.json`) before accepting the share.
    Never share `~/Work` or git repos.
 5. In Obsidian: Open folder as vault > `~/Obsidian/Work` (and `Personal`).
+6. **Omarchy and the Mac Studio only:** Edit each folder > File Versioning >
+   Staggered, Maximum Age 365 days (keeps old and deleted notes in
+   `.stversions`).
 
 The work Mac's GUI password goes in the work 1Password account.

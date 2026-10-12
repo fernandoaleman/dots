@@ -188,6 +188,16 @@ syncs repos; Syncthing is for notes and documents.
 - **Ignored:** `.obsidian/workspace*.json` (`.stignore` in each vault, not
   synced itself): Obsidian rewrites the window layout constantly, which
   would make conflict copies; settings and plugins still sync.
+- **Versioning (staggered, 365 days) on Omarchy and the Mac Studio**, both
+  vaults: Syncthing has no off-site copy, so a deleted or damaged note
+  would spread everywhere. Versions land in each vault's `.stversions`
+  (never synced): one per 30 s for an hour, hourly for a day, daily for 30
+  days, then weekly. A version is kept only for changes made **on another
+  device** (`man syncthing-versioning`), so one machine isn't enough: with
+  both, every change has a version on a machine other than where it was
+  made. Not on the work MacBook (redundant, and history on the company
+  machine). Tested both ways (edits on the MacBook kept on Omarchy, edits
+  on Omarchy kept on the Mac Studio).
 - Verified: the 262 vault files hash the same on all three machines; the
   MacBook has only the work folder.
 

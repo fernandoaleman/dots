@@ -102,6 +102,9 @@ Repeat steps 2-4 for each new client device.
    `.stignore` (`.obsidian/workspace*.json`) before accepting the share.
    Never share `~/Work` or git repos.
 4. In Obsidian: Open folder as vault > `~/Obsidian/Work` (and `Personal`).
+5. **Omarchy and the Mac Studio only:** Edit each folder > File Versioning >
+   Staggered, Maximum Age 365 days (keeps old and deleted notes in
+   `.stversions`).
 
 ## 8. Working on dots (optional)
 

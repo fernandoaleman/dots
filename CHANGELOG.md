@@ -62,7 +62,8 @@ by a clean install; macOS support comes in later `1.x` releases.
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 - macOS: tmux-ssh is installed too (`install.sh`).
 - Syncthing on macOS starts at login (Homebrew service); vaults in
-  `~/Obsidian`, Omarchy as the hub (setup steps updated).
+  `~/Obsidian`, Omarchy as the hub, versioning on Omarchy and the Mac
+  Studio (setup steps updated).
 - Voxtype on macOS: Omarchy's config, the `base.en` model and Voxtype.app
   in Login Items; record from its menu bar.
 - macOS: `install.sh` ends with the dots check (`dots_doctor`), which also

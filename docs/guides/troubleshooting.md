@@ -756,6 +756,14 @@ it in System Settings > Network > Firewall > Options (or `sudo
 /usr/libexec/ApplicationFirewall/socketfilterfw --add $(brew --prefix
 syncthing)/bin/syncthing`), then `brew services restart syncthing`.
 
+### Syncthing: get back an old or deleted note
+
+Omarchy and the Mac Studio keep versions in the vault's `.stversions`
+folder (file name plus a timestamp, e.g. `note~20261012-170153.md`), for
+changes made on **another** machine: look on the machine where you didn't
+make the change. Copy the version back into the vault, or use the web UI
+(folder > Versions). Kept up to 365 days.
+
 ### Syncthing: a machine was wiped or reinstalled
 
 **Why:** Syncthing's device ID comes from a key made on first start, so a
