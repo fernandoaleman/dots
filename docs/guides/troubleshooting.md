@@ -469,6 +469,16 @@ Tailscale (sites come back), then start Tailscale first, then the VPN.
 Omarchy isn't affected (`systemd-resolved` keeps each connection's DNS
 separate). New Macs: [macos.md](../setup/macos.md) step 2.
 
+### AWS VPN sign-in: "Looks like this code isn't right" (work Mac)
+
+**Why:** the VPN signs in through AWS SSO (the `awsapps.com` start page),
+whose MFA is a different device from the **AWS Role Switch** item's (the
+IAM console). The work Mac reads only the work 1Password account, so if the
+**AWS SSO** login is missing there, the Role Switch code gets copied and
+rejected (seen 2026-10-11; the clock was fine). **Fix:** move the AWS SSO
+login to the work account in the 1Password app, then sign in with its
+username, password and code.
+
 ### A Mac's terminal prompt shows `ip-10-0-0-30` instead of its name
 
 **Why:** with no HostName set, macOS names itself after a reverse DNS

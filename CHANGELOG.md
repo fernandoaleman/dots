@@ -67,6 +67,8 @@ by a clean install; macOS support comes in later `1.x` releases.
   one account.
 - `install.sh` no longer stops at the git identity prompt when run without
   a terminal (e.g. over `ssh host …`).
+- macOS checklist: the AWS VPN signs in with the AWS SSO login (now in the
+  work account), not AWS Role Switch.
 
 ## [1.1.0] - 2026-10-10
 
