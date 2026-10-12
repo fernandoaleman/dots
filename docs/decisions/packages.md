@@ -200,6 +200,21 @@ syncs repos; Syncthing is for notes and documents.
   on Omarchy kept on the Mac Studio).
 - Verified: the 262 vault files hash the same on all three machines; the
   MacBook has only the work folder.
+- **Scripted** (2026-10-12, `setup_syncthing_vaults` in `install.sh`, both
+  systems): the vault folders with their `.stignore`, Personal and
+  versioning by profile (personal only); on a Mac also the device name
+  (its model, when still the default hostname) and Omarchy as the hub
+  (`SYNCTHING_HUB_ID`, `SYNCTHING_HUB_ADDRESS` in `lib/dots.sh`; a device
+  ID is safe to publish, it can't connect without approval), sharing its
+  vaults with it. Left by hand: approving a new Mac on Omarchy (the
+  deliberate step), the GUI password, opening the vaults in Obsidian.
+  Existing folders, shares and hand-set names are left alone. Tested on
+  throwaway Syncthing instances (Omarchy personal; MacBook work: no
+  Personal, no versioning) and against the real three (no change).
+- **GUI password:** set by hand on each machine (Settings > GUI), stored
+  in 1Password. The GUI and API listen on 127.0.0.1 only; without a
+  password any program under the user could change Syncthing. `syncthing
+  cli` uses the API key, so the scripts don't need it.
 
 ## Still to review
 

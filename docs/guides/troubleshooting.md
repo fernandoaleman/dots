@@ -772,8 +772,9 @@ make the change. Copy the version back into the vault, or use the web UI
 **Why:** Syncthing's device ID comes from a key made on first start, so a
 reinstalled machine is a new device. **Fix:** check Omarchy (the hub) shows
 the vaults Up to Date **before** wiping; afterwards remove the old device
-on Omarchy, pair the new one and share the folders again (same IDs and
-`~/Obsidian/<vault>` paths, with the `.stignore` first), and it syncs back.
+on Omarchy, run `install.sh` on the reinstalled machine (it recreates the
+folders, `.stignore` and versioning, and on a Mac pairs with Omarchy), then
+approve it on Omarchy, and it syncs back.
 
 ### Mac: Syncthing's device name is `ip-10-0-0-…compute.internal`
 

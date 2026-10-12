@@ -208,6 +208,61 @@ install_tmux_ssh() {
   rm -f "$download"
 }
 
+# Syncthing's Obsidian vaults (docs/decisions/packages.md): ~/Obsidian/Work
+# everywhere, ~/Obsidian/Personal and staggered versioning (365 days) on
+# personal machines only, each vault ignoring Obsidian's window layout. A Mac
+# also names itself after its model and adds Omarchy, the hub, sharing its
+# vaults with it; approving a new Mac stays a click on Omarchy. Anything
+# already there (folder, share, name changed by hand) is left alone.
+setup_syncthing_vaults() {
+  local st=syncthing id name model vault folder key gui i
+  step "Syncthing: Obsidian vaults"
+  for i in {1..30}; do $st cli show system &>/dev/null && break; sleep 1; done
+  if ! id=$($st cli show system 2>/dev/null | jq -r .myID); then
+    warn "Syncthing isn't answering; re-run install.sh later"
+    return
+  fi
+  if [[ $DOTS_OS == macos ]]; then
+    name=$($st cli config devices "$id" name get)
+    model=$(system_profiler SPHardwareDataType 2>/dev/null | awk -F': ' '/Model Name/ {print $2}')
+    if [[ $name == "$(hostname)" && -n $model ]]; then
+      $st cli config devices "$id" name set "$model"
+      ok "Device name: $model"
+    fi
+    if ! $st cli config devices list | grep -qx "$SYNCTHING_HUB_ID"; then
+      $st cli config devices add --device-id "$SYNCTHING_HUB_ID" --name Omarchy \
+        --addresses "$SYNCTHING_HUB_ADDRESS" --addresses dynamic
+      ok "Added Omarchy (approve this Mac in Omarchy's Syncthing: http://localhost:8384)"
+    fi
+  fi
+  key=$($st cli config gui apikey get)
+  gui=http://$($st cli config gui raw-address get)
+  for vault in Work Personal; do
+    [[ $vault == Personal && $DOTS_PROFILE != personal ]] && continue
+    folder=obsidian-${vault,,}
+    mkdir -p "$HOME/Obsidian/$vault"
+    [[ -f $HOME/Obsidian/$vault/.stignore ]] ||
+      printf '%s\n' "// Obsidian rewrites its window layout constantly; each machine keeps its own" \
+        ".obsidian/workspace*.json" >"$HOME/Obsidian/$vault/.stignore"
+    if ! $st cli config folders list | grep -qx "$folder"; then
+      $st cli config folders add --id "$folder" --label "$vault" --path "$HOME/Obsidian/$vault"
+      ok "Folder $folder at ~/Obsidian/$vault"
+    fi
+    if [[ $DOTS_OS == macos ]] &&
+      ! $st cli config folders "$folder" devices list | grep -qx "$SYNCTHING_HUB_ID"; then
+      $st cli config folders "$folder" devices add --device-id "$SYNCTHING_HUB_ID"
+      ok "Sharing $folder with Omarchy"
+    fi
+    if [[ $DOTS_PROFILE == personal && $($st cli config folders "$folder" versioning type get) != staggered ]]; then
+      curl -fsS -X PATCH -H "X-API-Key: $key" -H 'Content-Type: application/json' \
+        "$gui/rest/config/folders/$folder" -d '{"versioning": {"type": "staggered",
+          "params": {"maxAge": "31536000", "cleanInterval": "3600"}, "cleanupIntervalS": 3600}}'
+      ok "Versioning on $folder: staggered, 365 days"
+    fi
+  done
+  ok "Vaults set up (pair new machines and set the GUI password by hand: docs/setup)"
+}
+
 # LazyVim Extras live in Omarchy's ~/.config/nvim/lazyvim.json, which LazyVim
 # itself rewrites (:LazyExtras), so it can't be stowed. Add ours to its list;
 # nothing is removed, so extras toggled locally are kept. Shared by both OSes.
@@ -579,6 +634,7 @@ if [[ $DOTS_OS == macos ]]; then
     brew services start syncthing
     ok "Syncthing started; starts at login (web UI: http://localhost:8384)"
   fi
+  setup_syncthing_vaults
 
   # mise as Omarchy sets it up (install/user/mise.sh, mise-work.sh): no pruning
   # of a running tool's old version on `mise up`, ~/Work with its .mise.toml
@@ -960,6 +1016,7 @@ else
   systemctl --user enable --now syncthing.service
   ok "Syncthing service enabled and started"
 fi
+setup_syncthing_vaults
 for rule in "22000 tcp" "22000 udp" "21027 udp"; do
   read -r port proto <<<"$rule"
   for cidr in 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16; do
