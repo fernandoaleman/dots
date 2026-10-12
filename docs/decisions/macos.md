@@ -143,7 +143,7 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | Raindrop.io | dropped for now | n/a | decide with the bookmarks TODO (Raycast quicklinks are going away; the Omarchy catalog has a Raindrop Bookmarks picker) |
 | Spotify + Reflex | casks `spotify`, `reflex-app` | personal only | personal account (Omarchy installs Spotify too); Reflex sends the Mac's media keys to Spotify instead of Apple Music |
 | Todoist | cask `todoist-app` | both | needed on every machine (used mostly for work, with some personal tasks). Omarchy: a web app (`install.sh` `WEBAPPS`; no official Arch package). The 1Password item "Todoist (Personal)" (`TODOIST_API_TOKEN` for `td` and the agent skills) moves to the **work** 1Password account with the other work items, so `td` works on the work laptop too |
-| Voxtype (dictation) | tap `peteonrails/voxtype`, cask `voxtype` | both | same dictation as Omarchy, fully local (*"No cloud, no subscription, no telemetry"*), so fine on the work laptop; macOS port with Metal on Apple Silicon. Config: Omarchy's `default/voxtype/config.toml` (v4.0.4) seeded to `~/.config/voxtype/config.toml`, plus the Mac's built-in hotkey on (F9, since there's no Hyprland binding): hold F9 to dictate on both. First run: `voxtype configure` (model, permissions). Verify hotkey and permission names on the fresh Mac |
+| Voxtype (dictation) | tap `peteonrails/voxtype`, cask `voxtype` | both | same dictation as Omarchy, fully local (*"No cloud, no subscription, no telemetry"*), so fine on the work laptop; macOS build with Metal. Set up by `install.sh`, see [Voxtype](#voxtype-dictation) |
 | Wispr Flow | dropped | n/a | no Linux version (macOS, Windows, iOS, Android only); paid, and the free tier runs out quickly. Voxtype instead |
 | KeyStats | dropped | n/a | keystroke/mouse statistics (third-party tap); needs Input Monitoring, i.e. sees every key |
 | TablePlus | dropped | n/a | not used (cask `tableplus` exists) |
@@ -510,3 +510,33 @@ Mac:
 - Tested on the work Mac: clean apart from expected uncommitted test
   changes; a broken `~/.ssh/config` link and a Colima `bip` of 172.17 were
   each reported; Omarchy reports the same as before.
+
+## Voxtype (dictation)
+
+Omarchy (`omarchy-voxtype-install`) copies `default/voxtype/config.toml`
+(Voxtype's hotkey **off**: Hyprland binds hold F9 and Super+Ctrl+X toggle),
+downloads `base.en`, enables Vulkan if present and installs a systemd user
+service. Decided 2026-10-11 for the Mac (Voxtype 0.7.5, checked with
+`voxtype setup check`, `voxtype config` and its source), in `install.sh`:
+
+- **Config:** Omarchy's file from the pinned download, seeded once to
+  `~/Library/Application Support/voxtype/config.toml` (the Mac path, not
+  `~/.config`), with `pause_media = false`: it pauses players with
+  `playerctl`, Linux-only (a warning on every recording otherwise).
+- **Model:** `voxtype setup --download` (`base.en`, as on Omarchy) when
+  missing. No GPU step: the Mac build has Metal built in; `setup gpu` is
+  Vulkan.
+- **Running:** `voxtype setup app-bundle` (Voxtype's recommendation):
+  `/Applications/Voxtype.app` in Login Items, the only way it gets
+  Microphone, Input Monitoring and Accessibility (`setup launchd` doesn't
+  get the microphone). It copies the binary and resets two permissions
+  when that changes, so `install.sh` runs it only when the app is missing
+  or its version differs from `voxtype --version` (after `brew upgrade`).
+- **Recording: the menu bar**, hotkey off as in Omarchy's file. Tried hold
+  F9: with media keys on it needs fn+F9, and Voxtype's macOS hotkey only
+  *listens* (a listen-only event tap), so the key also reaches the app in
+  front, which beeps on every key repeat. Right Command (no beep, but its
+  shortcuts start empty recordings) and Hammerspoon (takes the key like
+  Hyprland; [TODO](../TODO.md)) were the alternatives.
+- Tested on the work Mac: transcription typed into TextEdit, from the menu
+  bar and with fn+F9; Login Item present; re-runs change nothing.

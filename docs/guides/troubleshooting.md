@@ -467,7 +467,7 @@ turn **Use Tailscale DNS** off (`tailscale set --accept-dns=false`) and keep
 Exit Node on None. If the Mac is already stuck: disconnect the VPN and quit
 Tailscale (sites come back), then start Tailscale first, then the VPN.
 Omarchy isn't affected (`systemd-resolved` keeps each connection's DNS
-separate). New Macs: [macos.md](../setup/macos.md) step 2.
+separate). New Macs: [macos.md](../setup/macos.md) step 4.
 
 ### AWS VPN sign-in: "Looks like this code isn't right" (work Mac)
 
@@ -722,6 +722,29 @@ deliberately not set: hold Fn for F1-F12.
 `-c` returned 1 even for a correct line (tested 2026-10-11). **Fix:** hash
 from stdin and compare, which works on both systems:
 `[[ $(sha256sum <file) == "<hash> "* ]]` (as `install_tmux_ssh` does).
+
+### Mac: beeping while holding the Voxtype hotkey
+
+**Why:** Voxtype's macOS hotkey only listens (listen-only event tap), so
+the key also reaches the app in front; an app with nothing on that key
+plays the alert sound, again on every key repeat. On Omarchy, Hyprland
+takes the key. **Fix:** dots leaves the hotkey off; record from the menu
+bar ([macos.md](../decisions/macos.md)). Hammerspoon is the possible way
+back to a key ([TODO](../TODO.md)).
+
+### Mac: Voxtype stopped typing or hearing the hotkey after an upgrade
+
+**Why:** `voxtype setup app-bundle` (run by `install.sh` after `brew
+upgrade` changes the version) copies the new binary and resets its
+Accessibility and Input Monitoring permissions. **Fix:** turn both back
+on for Voxtype in System Settings > Privacy & Security, then `pkill -f
+voxtype-bin; open /Applications/Voxtype.app`.
+
+### Mac: Voxtype logs "playerctl not found" / "Failed to spawn voxtype-osd"
+
+Harmless Linux leftovers: `pause_media` uses `playerctl` (dots seeds it
+off on the Mac; an older seeded config may still have it on), and the
+on-screen display is a Linux helper. The menu bar icon shows the state.
 
 ### Mac: `:checkhealth lazy` shows a luarocks ERROR
 

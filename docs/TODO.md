@@ -163,6 +163,16 @@ Look into it later (not urgent): whether a newer Tailscale fixes it, check
 `sudo sfltool dumpbtm` for Tailscale's entries, and whether the Mac Studio
 shows the same; then drop the workaround if the checkbox works.
 
+### Mac: Voxtype hotkey with Hammerspoon
+
+The Mac records from Voxtype's menu bar (decided 2026-10-11): its own
+hotkey only watches keys, so the app in front still gets F9 and beeps
+([macos.md](decisions/macos.md)). Explore **Hammerspoon** (cask), which
+takes the key for itself like Hyprland does on Omarchy: Voxtype ships
+`voxtype setup hammerspoon` (hold or toggle). Check F9 with media keys on
+(likely still fn+F9), Hammerspoon's own Accessibility permission, and
+whether Hammerspoon could also serve the window manager decision.
+
 ### Retire the old repos (Mac phase)
 
 Archive `fernandoaleman/nvim` once the Mac uses dots.

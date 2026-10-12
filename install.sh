@@ -450,7 +450,7 @@ if [[ $DOTS_OS == macos ]]; then
   # macos-env points OMARCHY_PATH here (docs/decisions/macos.md).
   omarchy_dir="$HOME/.local/share/omarchy"
   omarchy_keep=(default/bash default/bashrc config bin/omarchy-menu-tmux-keybindings bin/omarchy-mise-install
-    install/config/ssh-keepalive.sh)
+    install/config/ssh-keepalive.sh default/voxtype)
   omarchy_want="$OMARCHY_REF ${omarchy_keep[*]}"
   step "Omarchy's defaults and templates ($OMARCHY_REF)"
   if [[ $(cat "$omarchy_dir/.dots-ref" 2>/dev/null) == "$omarchy_want" ]]; then
@@ -518,6 +518,40 @@ if [[ $DOTS_OS == macos ]]; then
   step "Installing packages and apps (Brewfile)"
   brew bundle --file="$DOTS_DIR/Brewfile" --no-upgrade
   ok "Brewfile installed"
+
+  # Voxtype (dictation, from the Brewfile) as Omarchy's omarchy-voxtype-install
+  # sets it up: Omarchy's config (once), the base.en model, then the Mac's
+  # stand-in for its systemd service. Voxtype's own hotkey stays off as in
+  # Omarchy's config: on the Mac it can't swallow the key, so the app in front
+  # beeps; record from the menu bar instead (docs/decisions/macos.md).
+  # pause_media off: it pauses players with playerctl, which is Linux-only.
+  step "Voxtype (dictation)"
+  voxtype_dir="$HOME/Library/Application Support/voxtype"
+  if [[ -f $voxtype_dir/config.toml ]]; then
+    ok "Config already there"
+  else
+    mkdir -p "$voxtype_dir"
+    sed 's/^pause_media = true$/pause_media = false/' \
+      "$omarchy_dir/default/voxtype/config.toml" >"$voxtype_dir/config.toml"
+    ok "Seeded Omarchy's config"
+  fi
+  if [[ -f $voxtype_dir/models/ggml-base.en.bin ]]; then
+    ok "Model base.en already downloaded"
+  else
+    voxtype setup --download --no-post-install
+  fi
+  # app-bundle copies the binary into /Applications/Voxtype.app, adds it to
+  # Login Items and launches it; only an app bundle gets Microphone, Input
+  # Monitoring and Accessibility. It resets the last two when the binary
+  # changes, so run it only when missing or after a Voxtype upgrade.
+  voxtype_app=/Applications/Voxtype.app
+  voxtype_version=$(voxtype --version | awk '{print $2}')
+  if [[ $(plutil -extract CFBundleShortVersionString raw "$voxtype_app/Contents/Info.plist" 2>/dev/null) == "$voxtype_version" ]]; then
+    ok "Voxtype.app $voxtype_version already set up"
+  else
+    voxtype setup app-bundle
+    warn "Grant Voxtype Accessibility, Input Monitoring and Microphone (docs/setup/macos.md)"
+  fi
 
   # mise as Omarchy sets it up (install/user/mise.sh, mise-work.sh): no pruning
   # of a running tool's old version on `mise up`, ~/Work with its .mise.toml
