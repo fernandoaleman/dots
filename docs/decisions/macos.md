@@ -559,3 +559,18 @@ opens its ports in ufw to private LANs and Tailscale only
   survives a re-run; 22000 is reachable over the LAN and Tailscale (the
   firewall lists `syncthing` as allowed); the GUI listens on 127.0.0.1
   only.
+
+## HostName: from the model (`mac-studio`, `macbook-pro`)
+
+Omarchy's hostname (`omarchy`) is set once at install. A Mac with no
+HostName names itself after the network; with the AWS VPN connected that's
+`ip-10-0-0-…us-east-2.compute.internal`, which `hostname` and apps that name
+themselves (Syncthing's device name) pick up. Decided 2026-10-12:
+`install.sh` sets HostName, only when unset, from the model name
+(`system_profiler`: "Mac Studio" → `mac-studio`, "MacBook Pro" →
+`macbook-pro`), matching `omarchy` and the hosts in dots' `~/.ssh/config`.
+LocalHostName (the `.local` name) and ComputerName (Finder, AirDrop, likely
+what IT's tools list) stay as macOS set them. Omarchy's prompt (starship)
+doesn't show the host, so the prompt doesn't change. Replaces the Mac
+Studio's manual step. Tested on the work Mac: set to `macbook-pro`, a
+re-run skips it.

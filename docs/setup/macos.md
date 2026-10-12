@@ -138,9 +138,6 @@ key** by hand.
 
 ## 8. Small settings
 
-- **Mac Studio:** `sudo scutil --set HostName Fernandos-Mac-Studio`. With no
-  HostName set, macOS names itself after a reverse DNS lookup, which shows
-  up as `ip-10-0-0-30` while the AWS VPN is connected.
 - **Work Mac: firewall on** (System Settings > Network > Firewall); IT
   manages it, so leave its options to IT.
 
