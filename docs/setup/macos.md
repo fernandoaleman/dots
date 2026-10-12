@@ -138,8 +138,6 @@ key** by hand.
 
 ## 8. Small settings
 
-- **`~/.hushlogin`** (silences "Last login" in new shells;
-  [dotfiles.md](../decisions/dotfiles.md)).
 - **Mac Studio:** `sudo scutil --set HostName Fernandos-Mac-Studio`. With no
   HostName set, macOS names itself after a reverse DNS lookup, which shows
   up as `ip-10-0-0-30` while the AWS VPN is connected.
