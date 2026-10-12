@@ -63,6 +63,9 @@ interactive `ssh omarchy` already prints nothing (empty `/etc/motd`, Arch's
 `PrintMotd no` in `/etc/ssh/sshd_config.d/99-archlinux.conf`), and Hyprland
 terminals never go through `login`. **Mac phase:** keep it (macOS prints
 "Last login: … on ttys000" in every new shell; the Mac Studio has it).
+**Done 2026-10-12:** an empty `macos/.hushlogin`, stowed like the other
+Mac home files (so `make doctor` notices if it goes). Tested on the work
+Mac: a new SSH login no longer prints "Last login".
 
 ## `.confluence-cli/config.json`: dropped
 
