@@ -144,7 +144,18 @@ key** by hand.
   HostName set, macOS names itself after a reverse DNS lookup, which shows
   up as `ip-10-0-0-30` while the AWS VPN is connected.
 
-## 9. Syncthing (Obsidian vaults)
+## 9. Voxtype permissions
+
+`install.sh` sets up Voxtype.app (dictation). If macOS asks whether the
+terminal may control **System Events**, allow it (adds the Login Item).
+Then in System Settings > Privacy & Security turn on **Voxtype** under
+**Accessibility** and **Input Monitoring** (add it with **+** from
+`/Applications` if missing), allow the **Microphone** prompt on first use,
+and restart it: `pkill -f voxtype-bin; open /Applications/Voxtype.app`.
+Record from its menu bar icon. Redo the two toggles after a Voxtype
+upgrade.
+
+## 10. Syncthing (Obsidian vaults)
 
 `install.sh` installs and starts Syncthing. Once per machine, in its web UI
 (`http://localhost:8384`):
