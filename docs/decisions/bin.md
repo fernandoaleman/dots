@@ -92,6 +92,10 @@ Studio's installed version, identical logic to the old repo):
   days the login hadn't happened yet.)
 - Verified end to end in a throwaway home: 49 hosts and 18 groups,
   identical to the Mac Studio's files (IPs excluded).
+- **Mac** (work MacBook, 2026-10-11): `aws-role-login` from the work
+  1Password account, then the same 49 hosts and 18 groups as Omarchy; each
+  host uses its environment's work key (`ssh -G`), never `id_ed25519`, and
+  a real connection over the AWS VPN worked.
 
 ## gh-role-login: `bin` package (new, 2026-10-11)
 
