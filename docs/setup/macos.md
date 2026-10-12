@@ -105,26 +105,25 @@ dots' `~/.ssh/config` uses Tailscale addresses instead.
 
 ## 5. AWS VPN
 
-Install AWS's client (`brew install --cask aws-vpn-client`) and import the
-work profile by hand: the 1Password Document `1000bulbs.ovpn` (work vault,
-tag `dots/vpn`). Connect it **after** Tailscale is up. Sign in with the
-**AWS SSO** login's username, password and code (work account), not AWS
-Role Switch's. (On Omarchy the
-user's own plugin does this instead.)
+`install.sh` installs AWS's client; import the work profile by hand: the
+1Password Document tagged `dots/vpn` (work account). Connect it **after**
+Tailscale is up. Sign in with the **AWS SSO** login's username, password
+and code (work account), not AWS Role Switch's. (On Omarchy the user's own
+plugin does this instead.)
 
 ## 6. Moonlight (remote desktop into Omarchy)
 
-1. Install Moonlight (`brew install --cask moonlight`).
+1. Open Moonlight (installed by `install.sh`).
 2. Add the Omarchy desktop by its **Tailscale address `100.121.13.36`**
    (works at home and away). Moonlight shows a **PIN**.
 3. On Omarchy, open **Sunshine Admin** (`https://localhost:47990`; login in
    1Password), **PIN** tab: enter it and name the Mac.
-4. Moonlight's **gear icon** (top right of its main window; not the macOS
-   menu): tick **Capture system keyboard shortcuts**, choose **in
-   fullscreen**. Stream full screen (**Ctrl+Option+Shift+X**) so Cmd reaches
-   Omarchy as Super, Cmd+Space included (Spotlight's hotkey on the Mac).
-   **Ctrl+Option+Shift+Q** ends the stream, **Ctrl+Option+Shift+Z** releases
-   the keyboard.
+4. `install.sh` already sets Moonlight's **Capture system keyboard
+   shortcuts: in fullscreen** (gear icon; if it shows off, Moonlight was
+   running during install: quit it and re-run). Stream full screen
+   (**Ctrl+Option+Shift+X**) so Cmd reaches Omarchy as Super, Cmd+Space
+   included (Spotlight's hotkey on the Mac). **Ctrl+Option+Shift+Q** ends
+   the stream, **Ctrl+Option+Shift+Z** releases the keyboard.
 
 See [desktop.md](../decisions/desktop.md#remote-desktop-sunshine--moonlight-omarchys-via-installsh).
 

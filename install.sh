@@ -764,6 +764,10 @@ if [[ $DOTS_OS == macos ]]; then
     "NSGlobalDomain|NSAutomaticDashSubstitutionEnabled|bool|false"
     "com.apple.TextEdit|RichText|bool|false"                  # plain text (lands in its container)
     "com.apple.desktopservices|DSDontWriteNetworkStores|bool|true" # no .DS_Store on shares
+    # Moonlight: capture system keyboard shortcuts in fullscreen (0 off, 1
+    # fullscreen, 2 always), so Cmd reaches Omarchy as Super; written while
+    # Moonlight isn't running (it saves its settings on quit)
+    "com.moonlight-stream.Moonlight|capturesyskeys|int|1"
   )
   step "macOS settings"
   changed_domains=()
