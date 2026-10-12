@@ -479,12 +479,15 @@ rejected (seen 2026-10-11; the clock was fine). **Fix:** move the AWS SSO
 login to the work account in the 1Password app, then sign in with its
 username, password and code.
 
-### A Mac's terminal prompt shows `ip-10-0-0-30` instead of its name
+### A Mac shows `ip-10-0-0-30` (or `…compute.internal`) instead of its name
 
 **Why:** with no HostName set, macOS names itself after a reverse DNS
 lookup of its IP; with the AWS VPN connected, AWS's resolver answers in its
-`ip-a-b-c-d` style. Cosmetic. **Fix:**
-`sudo scutil --set HostName <Name>` (e.g. `Fernandos-Mac-Studio`).
+`ip-a-b-c-d` style. **Fixed:** `install.sh` sets HostName from the model
+(`mac-studio`, `macbook-pro`) when it's unset. Two Macs of the same model
+would get the same name: set one by hand, `sudo scutil --set HostName
+<name>` (install.sh then leaves it). Renaming the Mac in System Settings
+doesn't change HostName.
 
 ## Remote desktop (Sunshine / Moonlight)
 
@@ -776,8 +779,9 @@ on Omarchy, pair the new one and share the folders again (same IDs and
 
 **Why:** Syncthing names itself after the hostname; a Mac with no HostName
 gets one from reverse DNS, which the AWS VPN answers. **Fix:** rename the
-device in Syncthing's web UI (Actions > Settings), or set a HostName
-(`sudo scutil --set HostName <Name>`).
+device in Syncthing's web UI (Actions > Settings). `install.sh` now sets a
+HostName first, so a new Mac's Syncthing starts with `mac-studio` /
+`macbook-pro`.
 
 ### Mac: `:checkhealth lazy` shows a luarocks ERROR
 

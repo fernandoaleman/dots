@@ -515,6 +515,20 @@ if [[ $DOTS_OS == macos ]]; then
   install_tmux_plugins
   install_tmux_ssh
 
+  # A HostName, as Omarchy's fixed `omarchy`: unset, macOS names itself after
+  # the network (with the AWS VPN on, `ip-…compute.internal`), and apps such
+  # as Syncthing take that. From the model: mac-studio, macbook-pro. Only
+  # when unset; LocalHostName and ComputerName stay (docs/decisions/macos.md).
+  step "HostName"
+  if current=$(scutil --get HostName 2>/dev/null); then
+    ok "Already set: $current"
+  else
+    model=$(system_profiler SPHardwareDataType 2>/dev/null | awk -F': ' '/Model Name/ {print $2}')
+    name=$(tr '[:upper:] ' '[:lower:]-' <<<"$model")
+    sudo scutil --set HostName "$name"
+    ok "Set to $name"
+  fi
+
   step "Installing packages and apps (Brewfile)"
   brew bundle --file="$DOTS_DIR/Brewfile" --no-upgrade
   ok "Brewfile installed"
