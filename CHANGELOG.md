@@ -61,10 +61,13 @@ by a clean install; macOS support comes in later `1.x` releases.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 - macOS: tmux-ssh is installed too (`install.sh`).
+- macOS: `install.sh` ends with the dots check (`dots_doctor`), which also
+  checks Colima's Docker networks.
 
 ### Fixed
 
 - `aws-role-login` on macOS shows the session's expiry as a local time.
+- `make doctor` on macOS no longer reports every file as unlinked.
 - `aws-role-login` finds the MFA item when the 1Password app has more than
   one account.
 - `install.sh` no longer stops at the git identity prompt when run without

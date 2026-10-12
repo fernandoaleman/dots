@@ -488,3 +488,25 @@ values at once (tested: the sliders moved with each write). Also,
 `defaults write` of a value numerically equal to the stored one is
 ignored (int `2` over float `2` stays an integer), so `install.sh`
 deletes a key before writing it.
+
+## Doctor (`dots_doctor`, `make doctor`)
+
+Omarchy has no drift check; `dots_doctor` (`lib/dots.sh`) is dots' own.
+On Omarchy it runs after every `omarchy update` (post-update hook), from
+`make doctor` and at the end of `install.sh`. Decided 2026-10-11 for the
+Mac:
+
+- **Same checks:** include lines, every stowed file still linked, nothing
+  uncommitted in the packages or the repo. The link check used
+  `realpath -m`, which macOS's `realpath` lacks (every file was reported
+  unlinked); plain `realpath` gives the same result on both systems (a
+  missing file or broken link doesn't resolve into the repo).
+- **Docker networks:** besides Omarchy's `daemon.json`, it checks that
+  Colima's `~/.colima/default/colima.yaml` still has `bip: 172.31.0.1/16`
+  (`install.sh` writes that config only once).
+- **When it runs:** at the end of the Mac `install.sh` and with `make
+  doctor`; the Mac has no `omarchy update`, so no hook, and no
+  notification (`--notify` is the hook's, Omarchy-only).
+- Tested on the work Mac: clean apart from expected uncommitted test
+  changes; a broken `~/.ssh/config` link and a Colima `bip` of 172.17 were
+  each reported; Omarchy reports the same as before.
