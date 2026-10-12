@@ -157,7 +157,8 @@ once remote desktop into Omarchy works ([bin.md](decisions/bin.md)).
 
 On the work MacBook the checkbox fails ("Start on Login could not be set")
 because macOS has no background-items record of Tailscale's login helper;
-a manual Open at Login entry is the workaround
+an Open at Login entry is the workaround (`install.sh` adds it since
+2026-10-12)
 ([troubleshooting](guides/troubleshooting.md#mac-tailscale-start-on-login-could-not-be-set-popup)).
 Look into it later (not urgent): whether a newer Tailscale fixes it, check
 `sudo sfltool dumpbtm` for Tailscale's entries, and whether the Mac Studio

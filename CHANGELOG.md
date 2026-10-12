@@ -61,6 +61,7 @@ by a clean install; macOS support comes in later `1.x` releases.
 - Machine profile (`personal` or `work`), asked on the first run and kept in
   `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
 - macOS: tmux-ssh is installed too (`install.sh`).
+- macOS: Tailscale added to Login Items (its own checkbox can fail).
 - macOS: a HostName from the model (`mac-studio`, `macbook-pro`) when unset.
 - macOS: `~/.hushlogin` (no "Last login" line in new shells).
 - Syncthing on macOS starts at login (Homebrew service); vaults in

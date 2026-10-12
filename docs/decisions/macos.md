@@ -437,6 +437,12 @@ DNS must be off wherever the AWS VPN runs ([desktop.md](desktop.md#tailscale--th
   the app's GUI. Scripts use the full path.
 - **Exit node:** not set by `install.sh`; "None" is the default, and
   forcing it would undo a deliberate choice.
+- **Open at login** (2026-10-12): the app's "Launch at login" checkbox
+  fails on the work Mac ([troubleshooting](../guides/troubleshooting.md#mac-tailscale-start-on-login-could-not-be-set-popup)),
+  so `install.sh` adds the app to Login Items (Open at Login) with
+  AppleScript (System Events `make login item`, as `voxtype setup
+  app-bundle` does), when it isn't there. Tested on the work Mac: skipped
+  when present; removed, then re-added; works over SSH without a prompt.
 
 ## macOS settings (`defaults`)
 
@@ -573,4 +579,5 @@ LocalHostName (the `.local` name) and ComputerName (Finder, AirDrop, likely
 what IT's tools list) stay as macOS set them. Omarchy's prompt (starship)
 doesn't show the host, so the prompt doesn't change. Replaces the Mac
 Studio's manual step. Tested on the work Mac: set to `macbook-pro`, a
-re-run skips it.
+re-run skips it, and `hostname` stays `macbook-pro` with the AWS VPN
+connected.
