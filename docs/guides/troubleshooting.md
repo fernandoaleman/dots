@@ -746,6 +746,23 @@ Harmless Linux leftovers: `pause_media` uses `playerctl` (dots seeds it
 off on the Mac; an older seeded config may still have it on), and the
 on-screen display is a Linux helper. The menu bar icon shows the state.
 
+### Mac: Syncthing stops connecting after `brew upgrade` (firewall on)
+
+**Why:** the firewall allows apps by path, and Homebrew's Syncthing lives
+in a versioned folder (`/opt/homebrew/Cellar/syncthing/<version>/`), so
+the upgraded binary may be a new, unallowed app. Sync still works by the
+Mac dialing out to Omarchy; to accept incoming connections again, allow
+it in System Settings > Network > Firewall > Options (or `sudo
+/usr/libexec/ApplicationFirewall/socketfilterfw --add $(brew --prefix
+syncthing)/bin/syncthing`), then `brew services restart syncthing`.
+
+### Mac: Syncthing's device name is `ip-10-0-0-…compute.internal`
+
+**Why:** Syncthing names itself after the hostname; a Mac with no HostName
+gets one from reverse DNS, which the AWS VPN answers. **Fix:** rename the
+device in Syncthing's web UI (Actions > Settings), or set a HostName
+(`sudo scutil --set HostName <Name>`).
+
 ### Mac: `:checkhealth lazy` shows a luarocks ERROR
 
 **Why:** the Mac has no `luarocks`/Lua 5.1 (Omarchy installs both), so

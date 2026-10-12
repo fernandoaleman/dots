@@ -540,3 +540,22 @@ service. Decided 2026-10-11 for the Mac (Voxtype 0.7.5, checked with
   Hyprland; [TODO](../TODO.md)) were the alternatives.
 - Tested on the work Mac: transcription typed into TextEdit, from the menu
   bar and with fn+F9; Login Item present; re-runs change nothing.
+
+## Syncthing
+
+Omarchy: `install.sh` installs it, enables the systemd user service and
+opens its ports in ufw to private LANs and Tailscale only
+([packages.md](packages.md)). Decided 2026-10-11 for the Mac:
+
+- **Service:** `brew services start syncthing` (Homebrew's LaunchAgent runs
+  `syncthing --no-browser --no-restart`, kept alive, at login), skipped
+  when already running. Web UI on `localhost:8384`, as on Omarchy.
+- **No firewall step:** IT manages the work Mac's firewall (turned on
+  2026-10-11, before IT does). Its rules are per app, not per network, so
+  Omarchy's LAN/Tailscale-only rule can't be copied; Syncthing only talks
+  to paired devices. If the firewall blocks it, sync still works by the Mac
+  dialing out to Omarchy (the hub).
+- Tested on the work Mac with the firewall on: the service starts and
+  survives a re-run; 22000 is reachable over the LAN and Tailscale (the
+  firewall lists `syncthing` as allowed); the GUI listens on 127.0.0.1
+  only.
