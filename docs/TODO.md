@@ -140,13 +140,6 @@ Omarchy plugin catalog; in the plugin repo:
   "cannot create the lock file … --locked" error; its `prepare()` runs
   `cargo fetch --locked || cargo fetch`, so the fallback succeeds.
 
-### Mac phase: script the Mac checklist
-
-[docs/setup/macos.md](setup/macos.md) collects the Mac steps decided so far
-(Tailscale DNS off, AWS VPN client, Moonlight + its keyboard setting,
-Option as Alt, F-keys, `.hushlogin`, the Mac Studio's HostName). Automate
-what can be in the Mac `install.sh`.
-
 ### Mac phase: Mac Studio sync scripts
 
 `push-to-mac-studio` / `pull-from-mac-studio` were dropped on Omarchy
