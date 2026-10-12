@@ -65,7 +65,8 @@ Same security model (the code still comes from the MFA device in
 Tested against temporary AWS files: creates `[mfa]` when missing, updates
 it in place, a role profile assumes its role, the long-lived key is
 untouched, malformed codes are rejected. Nothing work-specific in the
-script. **Mac:** same script (`date -d` falls back to the raw expiry time).
+script. **Mac:** same script; the expiry time uses BSD `date -j -f` when GNU
+`date -d` isn't there (fixed 2026-10-11, it printed the raw timestamp).
 
 ## generate-ssh-config: `bin` package, runs after `aws-role-login` (daily use)
 
