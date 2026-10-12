@@ -476,6 +476,7 @@ restarts Dock/Finder when their settings changed, then runs
 | Autocorrect, capitalization, double-space period, smart quotes **and dashes** off | `NSAutomatic…Enabled false` (dashes added: the same switch) | the System Settings switches |
 | TextEdit plain text | `com.apple.TextEdit RichText false` (lands in its sandbox container) | Format menu shows "Make Rich Text" |
 | No `.DS_Store` on network shares | `com.apple.desktopservices DSDontWriteNetworkStores` | read-back + [Apple's support article](https://support.apple.com/en-us/HT208209) (no share to test; takes effect at next login) |
+| Moonlight: capture system keyboard shortcuts in fullscreen (2026-10-12) | `com.moonlight-stream.Moonlight capturesyskeys -int 1` (Moonlight's `SET_CAPTURESYSKEYS`; 0 off is its default) | read-back; Moonlight's settings show "in fullscreen"; still 1 after Moonlight saved its settings on quit. Written while Moonlight isn't running |
 
 **Skipped:** menu bar auto-hide (Omarchy's bar is always visible; the
 notch row gains little), always-on scroll bars (macOS's automatic ones
