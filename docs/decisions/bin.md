@@ -131,14 +131,16 @@ synchronization). The old setup downloaded `master` weekly
 (`.chezmoiexternal.toml`). Omarchy has nothing like it.
 
 **Kept** (2026-10-04): `install.sh` downloads it at a **pinned commit**
-(`TMUX_SSH_COMMIT`, with its `TMUX_SSH_SHA256`) to `~/.local/bin`, like
+(`commit`, with its `sha256`, in `install_tmux_ssh`) to `~/.local/bin`, like
 the tmux plugins: re-runs skip it when the hash matches, a download that
 doesn't match is refused. Bump both deliberately; pin a release tag once
 the project has them ([TODO](../TODO.md)). It runs plain `ssh <host>`, so
 the SSH key setup from the secrets section applies to every pane.
 
-**Mac:** same download (`sha256sum` from Homebrew coreutils, or
-`shasum -a 256`).
+**Mac:** same download (`install_tmux_ssh`, shared by both systems, tested
+2026-10-11). The pins now live in that function. macOS 27 has its own
+`sha256sum`, but without `--status`, and its `-c` rejects a correct line, so
+the file is hashed from stdin and compared (same output on both).
 
 ## backup-to-thumb-drive / import-from-thumb-drive: dropped
 
