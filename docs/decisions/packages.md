@@ -174,6 +174,23 @@ sharing folders is manual ([setup](../setup/omarchy.md)).
 macOS's case-insensitive file names conflict with Linux. Git (push/pull)
 syncs repos; Syncthing is for notes and documents.
 
+**Set up 2026-10-12** (pairing by hand, done over SSH with `syncthing cli`):
+
+- **Folders:** the same paths on every machine, `~/Obsidian/<vault>`
+  (not `~/Documents`: on the Macs that's iCloud's). `obsidian-work`
+  (`~/Obsidian/Work`, the former iCloud vault, renamed from "Cloud" by
+  copying it out of iCloud) on all three; `obsidian-personal`
+  (`~/Obsidian/Personal`, new) only on Omarchy and the Mac Studio.
+- **Omarchy is the hub:** each Mac pairs only with Omarchy, which relays
+  between them, so the work MacBook never connects to the Mac Studio and
+  can't be offered the personal vault. Device addresses: the Tailscale IP
+  plus `dynamic`.
+- **Ignored:** `.obsidian/workspace*.json` (`.stignore` in each vault, not
+  synced itself): Obsidian rewrites the window layout constantly, which
+  would make conflict copies; settings and plugins still sync.
+- Verified: the 262 vault files hash the same on all three machines; the
+  MacBook has only the work folder.
+
 ## Still to review
 
 - **Group A**: done. (`tmux-ssh` moves to the bin scripts

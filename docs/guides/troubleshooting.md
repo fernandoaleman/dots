@@ -756,6 +756,14 @@ it in System Settings > Network > Firewall > Options (or `sudo
 /usr/libexec/ApplicationFirewall/socketfilterfw --add $(brew --prefix
 syncthing)/bin/syncthing`), then `brew services restart syncthing`.
 
+### Syncthing: a machine was wiped or reinstalled
+
+**Why:** Syncthing's device ID comes from a key made on first start, so a
+reinstalled machine is a new device. **Fix:** check Omarchy (the hub) shows
+the vaults Up to Date **before** wiping; afterwards remove the old device
+on Omarchy, pair the new one and share the folders again (same IDs and
+`~/Obsidian/<vault>` paths, with the `.stignore` first), and it syncs back.
+
 ### Mac: Syncthing's device name is `ip-10-0-0-…compute.internal`
 
 **Why:** Syncthing names itself after the hostname; a Mac with no HostName
