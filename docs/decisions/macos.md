@@ -582,3 +582,16 @@ doesn't show the host, so the prompt doesn't change. Replaces the Mac
 Studio's manual step. Tested on the work Mac: set to `macbook-pro`, a
 re-run skips it, and `hostname` stays `macbook-pro` with the AWS VPN
 connected.
+
+## The Mac checklist: what got scripted
+
+Reviewed step by step on 2026-10-12 ([setup](../setup/macos.md)). Moved
+into `install.sh`: `~/.hushlogin` (stowed), the HostName, Tailscale in
+Login Items, Moonlight's keyboard capture (a `defaults` setting), and
+Syncthing's vaults and pairing with Omarchy. Stays manual, because macOS
+or the apps don't allow scripting it, or shouldn't: Remote Login (needs
+Full Disk Access), signing in to 1Password, Chrome, the web apps and
+Tailscale, Voxtype's privacy permissions, the firewall (IT's), importing
+the AWS VPN profile (the client has no import command; its internal files
+are undocumented), pairing Moonlight (PIN) and approving a new Mac in
+Syncthing on Omarchy.
