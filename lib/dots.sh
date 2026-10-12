@@ -77,6 +77,11 @@ DOCKER_DNS_DROPIN=/etc/systemd/resolved.conf.d/30-dots-docker-dns.conf
 COLIMA_CPUS=4
 COLIMA_MEMORY=8 # GiB
 
+# Syncthing: Omarchy is the hub every Mac pairs with (its device ID is safe
+# to publish: a device ID alone can't connect without approval on Omarchy)
+SYNCTHING_HUB_ID=ABEEUKJ-E7AVKNE-JGXRLYJ-AWLYYGR-IKGD542-F5BKZBB-H7JG2ZN-LFFEAQS
+SYNCTHING_HUB_ADDRESS=tcp://100.121.13.36:22000 # Omarchy's Tailscale IP
+
 # dots_include FILE LINE: append LINE to FILE if missing.
 # Prints "present", "added" or "no-file".
 dots_include() {

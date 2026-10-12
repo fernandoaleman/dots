@@ -153,26 +153,14 @@ upgrade.
 
 ## 10. Syncthing (Obsidian vaults)
 
-`install.sh` installs and starts Syncthing. Once per machine, in its web UI
-(`http://localhost:8384`):
+`install.sh` starts Syncthing, names the device after the Mac's model, adds
+Omarchy (the hub) and shares `~/Obsidian/Work` with it (personal Macs also
+`~/Obsidian/Personal`, with versioning;
+[packages.md](../decisions/packages.md#syncthing-obsidian-vaults-across-machines)).
+By hand:
 
-1. Check the **device name** (Actions > Settings > General): it defaults to
-   the hostname, which on a Mac without a HostName can be the AWS VPN's
-   `ip-…compute.internal`; rename it (e.g. `MacBook Pro`).
-2. Set a GUI username and password (Settings > GUI; store it in 1Password).
-3. **Pair with Omarchy only** (the hub; Actions > Show ID on each): add
-   Omarchy on a Mac, the Mac on Omarchy, with the address
-   `tcp://<Tailscale IP>:22000, dynamic` so they find each other anywhere.
-4. **Share folders**, same paths everywhere
-   ([packages.md](../decisions/packages.md#syncthing-obsidian-vaults-across-machines)):
-   `obsidian-work` at `~/Obsidian/Work` on all three machines;
-   `obsidian-personal` at `~/Obsidian/Personal` only between Omarchy and the
-   Mac Studio (never the work laptop). Create the folder with its
-   `.stignore` (`.obsidian/workspace*.json`) before accepting the share.
-   Never share `~/Work` or git repos.
-5. In Obsidian: Open folder as vault > `~/Obsidian/Work` (and `Personal`).
-6. **Omarchy and the Mac Studio only:** Edit each folder > File Versioning >
-   Staggered, Maximum Age 365 days (keeps old and deleted notes in
-   `.stversions`).
-
-The work Mac's GUI password goes in the work 1Password account.
+1. **On Omarchy**, approve the new Mac and its folders
+   ([omarchy.md](omarchy.md) step 7); the vaults then sync down.
+2. In the Mac's web UI (`http://localhost:8384`), Settings > GUI: set a
+   username and password (1Password; the work Mac's in the work account).
+3. In Obsidian: Open folder as vault > `~/Obsidian/Work` (and `Personal`).

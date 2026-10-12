@@ -87,24 +87,19 @@ Repeat steps 2-4 for each new client device.
 
 ## 7. Syncthing (Obsidian vaults)
 
-`install.sh` installs and starts Syncthing. Once per machine, in its web UI
-(`http://localhost:8384`):
+`install.sh` installs and starts Syncthing and sets up the vaults
+(`~/Obsidian/Work` and `Personal`, each with its `.stignore`, staggered
+versioning; [packages.md](../decisions/packages.md#syncthing-obsidian-vaults-across-machines)).
+By hand, in its web UI (`http://localhost:8384`):
 
-1. Set a GUI username and password (Settings > GUI; store it in 1Password).
-2. **Pair with Omarchy only** (the hub; Actions > Show ID on each): add
-   Omarchy on a Mac, the Mac on Omarchy, with the address
-   `tcp://<Tailscale IP>:22000, dynamic` so they find each other anywhere.
-3. **Share folders**, same paths everywhere
-   ([packages.md](../decisions/packages.md#syncthing-obsidian-vaults-across-machines)):
-   `obsidian-work` at `~/Obsidian/Work` on all three machines;
-   `obsidian-personal` at `~/Obsidian/Personal` only between Omarchy and the
-   Mac Studio (never the work laptop). Create the folder with its
-   `.stignore` (`.obsidian/workspace*.json`) before accepting the share.
-   Never share `~/Work` or git repos.
-4. In Obsidian: Open folder as vault > `~/Obsidian/Work` (and `Personal`).
-5. **Omarchy and the Mac Studio only:** Edit each folder > File Versioning >
-   Staggered, Maximum Age 365 days (keeps old and deleted notes in
-   `.stversions`).
+1. Settings > GUI: set a username and password (store it in 1Password).
+2. **When a Mac first runs `install.sh`**, Omarchy shows *"New device"*:
+   **Add Device** (address `tcp://<its Tailscale IP>:22000, dynamic`). Then
+   accept its folders: **Share** `obsidian-work` with every Mac, and
+   `obsidian-personal` only with the Mac Studio (never the work laptop).
+3. In Obsidian: Open folder as vault > `~/Obsidian/Work` (and `Personal`).
+
+Never share `~/Work` or git repos.
 
 ## 8. Working on dots (optional)
 
