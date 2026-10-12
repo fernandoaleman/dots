@@ -553,6 +553,19 @@ if [[ $DOTS_OS == macos ]]; then
     warn "Grant Voxtype Accessibility, Input Monitoring and Microphone (docs/setup/macos.md)"
   fi
 
+  # Syncthing (Obsidian vaults only; never git repos), from the Brewfile:
+  # Homebrew's service (syncthing --no-browser, starts at login) is the Mac's
+  # counterpart of the systemd user service on Omarchy. No firewall step:
+  # IT manages the Mac's; Syncthing still syncs by dialing out to Omarchy.
+  # Devices/folders are paired by hand (docs/setup/macos.md).
+  step "Syncthing (Obsidian vaults)"
+  if [[ $(brew services info syncthing --json | jq -r '.[0].running') == true ]]; then
+    ok "Syncthing already running (starts at login)"
+  else
+    brew services start syncthing
+    ok "Syncthing started; starts at login (web UI: http://localhost:8384)"
+  fi
+
   # mise as Omarchy sets it up (install/user/mise.sh, mise-work.sh): no pruning
   # of a running tool's old version on `mise up`, ~/Work with its .mise.toml
   # (a project's bin/ on PATH), global Node, and Omarchy's first-run launchers

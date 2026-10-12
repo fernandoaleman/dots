@@ -143,6 +143,8 @@ key** by hand.
 - **Mac Studio:** `sudo scutil --set HostName Fernandos-Mac-Studio`. With no
   HostName set, macOS names itself after a reverse DNS lookup, which shows
   up as `ip-10-0-0-30` while the AWS VPN is connected.
+- **Work Mac: firewall on** (System Settings > Network > Firewall); IT
+  manages it, so leave its options to IT.
 
 ## 9. Voxtype permissions
 
@@ -160,9 +162,12 @@ upgrade.
 `install.sh` installs and starts Syncthing. Once per machine, in its web UI
 (`http://localhost:8384`):
 
-1. Set a GUI username and password (Settings > GUI; store it in 1Password).
-2. **Add the other devices** by their Device ID (Actions > Show ID on each);
+1. Check the **device name** (Actions > Settings > General): it defaults to
+   the hostname, which on a Mac without a HostName can be the AWS VPN's
+   `ip-…compute.internal`; rename it (e.g. `MacBook Pro (work)`).
+2. Set a GUI username and password (Settings > GUI; store it in 1Password).
+3. **Add the other devices** by their Device ID (Actions > Show ID on each);
    Tailscale lets them find each other anywhere.
-3. **Share folders:** the **work** vault with all three machines; the
+4. **Share folders:** the **work** vault with all three machines; the
    **personal** vault only between Omarchy and the Mac Studio (never the
    work laptop). Never share `~/Work` or git repos.
