@@ -263,6 +263,31 @@ setup_syncthing_vaults() {
   ok "Vaults set up (pair new machines and set the GUI password by hand: docs/setup)"
 }
 
+# Todoist CLI (td, a mise tool) agent skills: claude-code -> ~/.claude/skills
+# (Claude Code, opencode), universal -> ~/.agents/skills (Codex, opencode).
+# `td skill install` exits 0 even when the skill exists, so ask `td skill
+# list`. Run through `mise exec`: mise's shims may not be on PATH yet.
+# Shared by both OSes.
+install_td_skills() {
+  step "Installing Todoist agent skills"
+  td() { mise exec -- td "$@"; }
+  td_skill_state() { # prints e.g. "[not installed]" for agent $1
+    td skill list 2>/dev/null | awk -v agent="$1" '
+      $1 == agent && NF == 1 { found = 1; next }
+      found && /\[/ { gsub(/^[[:space:]]+|[[:space:]]+$/, ""); print; found = 0 }'
+  }
+  local agent state
+  for agent in claude-code universal; do
+    state=$(td_skill_state "$agent")
+    if [[ $state == "[not installed]" ]]; then
+      td skill install "$agent" >/dev/null
+      ok "Todoist skill installed for $agent"
+    else
+      ok "Todoist skill for $agent: ${state:-unknown}"
+    fi
+  done
+}
+
 # ~/Work's projects into zoxide, so the sesh picker (tmux prefix k) lists them
 # on a fresh machine too (cache-sesh-dirs, bin package). Shared by both OSes.
 cache_work_dirs() {
@@ -683,6 +708,7 @@ if [[ $DOTS_OS == macos ]]; then
   ok "Launchers in ~/.local/bin: claude codex gh opencode (install on first run)"
   mise install --yes
   ok "mise tools installed"
+  install_td_skills
 
   # Docker on the Mac: Colima runs Docker Engine in a VM (docs/decisions/macos.md).
   # Colima takes a config file as is (unset keys become zero, not defaults),
@@ -1110,27 +1136,7 @@ step "Installing mise tools"
 mise install --yes
 ok "mise tools installed"
 
-# Todoist CLI (td, a mise tool) agent skills: claude-code -> ~/.claude/skills
-# (Claude Code, opencode), universal -> ~/.agents/skills (Codex, opencode).
-# `td skill install` exits 0 even when the skill exists, so ask `td skill
-# list`. Run through `mise exec`: mise's shims may not be on PATH yet.
-step "Installing Todoist agent skills"
-td() { mise exec -- td "$@"; }
-td_skill_state() { # prints e.g. "[not installed]" for agent $1
-  td skill list 2>/dev/null | awk -v agent="$1" '
-    $1 == agent && NF == 1 { found = 1; next }
-    found && /\[/ { gsub(/^[[:space:]]+|[[:space:]]+$/, ""); print; found = 0 }'
-}
-for agent in claude-code universal; do
-  state=$(td_skill_state "$agent")
-  if [[ $state == "[not installed]" ]]; then
-    td skill install "$agent" >/dev/null
-    ok "Todoist skill installed for $agent"
-  else
-    ok "Todoist skill for $agent: ${state:-unknown}"
-  fi
-done
-
+install_td_skills
 add_nvim_extras
 
 # Sudoless Docker (opt-in; Omarchy's default needs sudo): Omarchy's script adds

@@ -630,6 +630,12 @@ its default theme
 **Fix (optional):** pick a built-in theme in btop's menu (Esc > Options),
 or put a `.theme` file in `~/.config/btop/themes/current.theme`.
 
+### Claude Code on a Mac has no Todoist skill
+
+**Why:** before 2026-10-13, `install.sh` ran the Todoist skill step on
+Omarchy only. **Fix:** re-run `install.sh` (the step is shared now), or
+`td skill install claude-code` and `td skill install universal`.
+
 ### "Bad CPU type in executable" on a Mac
 
 **Why:** an Intel-only program (e.g. wkhtmltopdf) and no Rosetta 2.

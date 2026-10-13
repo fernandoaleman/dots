@@ -30,6 +30,11 @@ by a clean install; macOS support comes in later `1.x` releases.
 - `cache-sesh-dirs` adds `~/Work`'s projects to zoxide for the sesh picker;
   `install.sh` runs it.
 
+### Fixed
+
+- macOS: `install.sh` installs the Todoist CLI's agent skills on the Mac too
+  (the step ran on Omarchy only).
+
 ### Removed
 
 - macOS: `try` dropped from the Brewfile (unused; its Homebrew Ruby came
