@@ -167,6 +167,14 @@ takes the key for itself like Hyprland does on Omarchy: Voxtype ships
 (likely still fn+F9), Hammerspoon's own Accessibility permission, and
 whether Hammerspoon could also serve the window manager decision.
 
+### Git aliases: `ggpur` and `gftf`
+
+Still typed daily after all old git aliases were dropped
+([shell.md](decisions/shell.md)): `ggpur` = `git pull --rebase origin
+<current branch>` and `gftf` = `git fetch --tags --force` (old zsh
+`50-aliases`). Decide shell alias (`~/.config/bash/aliases`) vs git alias
+(`config.dots`), names, and whether one command should do both.
+
 ### Retire the old repos (Mac phase)
 
 Archive `fernandoaleman/nvim` once the Mac uses dots.
