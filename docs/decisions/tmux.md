@@ -56,10 +56,13 @@ v2.32.0):
   session is closed while `detach-on-destroy off` is set, and Omarchy sets
   it (sesh's README recommends both; Omarchy also has its other
   recommendation, `x` = kill pane without asking).
-- **`sesh.toml`: the preview pane only** (2026-10-13, `sesh` package):
+- **`sesh.toml`: the preview pane** (2026-10-13, `sesh` package):
   `[tui] preview = true`, `preview_width = 55`, the old fzf binding's
-  `right:55%`: live panes for tmux sessions, `ls` for directories (the old
-  setup's default too); `ctrl+o` toggles it. The popup went from 50%x90% to
+  `right:55%`: live panes for tmux sessions; directories as Omarchy's `ls`
+  alias lists them (`[default_session] preview_command`: `eza -lh
+  --group-directories-first` with `--icons=always --color=always`, since
+  the preview isn't a terminal and `auto` would turn both off; sesh's
+  default is plain `ls`); `ctrl+o` toggles it. The popup went from 50%x90% to
   the old binding's 80%x70%: sesh hides the pane when the picker is
   narrower than `preview_min_width` (100 columns). No named sessions and no
   `[[wildcard]]`: a wildcard only adds settings such as a startup command
