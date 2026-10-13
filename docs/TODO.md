@@ -167,6 +167,35 @@ takes the key for itself like Hyprland does on Omarchy: Voxtype ships
 (likely still fn+F9), Hammerspoon's own Accessibility permission, and
 whether Hammerspoon could also serve the window manager decision.
 
+### Claude Code: my own skills in a repo or plugin marketplace
+
+Personal Claude Code skills live only in each machine's `~/.claude/skills`
+(copied by hand from the Mac Studio to the work Mac, 2026-10-13). Keep them
+in a private repo, or a private plugin marketplace like the company's, so
+every machine installs the same versions; keep any work-only skills off
+this public repo.
+
+### Claude Code: memory and sessions across machines
+
+Wanted: memories and sessions available on Omarchy and both Macs. Facts
+(Claude Code docs, *Manage sessions* and *How Claude remembers your
+project*): transcripts are `~/.claude/projects/<path>/<id>.jsonl` and auto
+memory `~/.claude/projects/<repo path>/memory/`, both "machine-local", named
+after the absolute path (`-Users-faleman-Work-x` on a Mac,
+`-home-faleman-Work-x` on Omarchy); `claude --resume <id>` and the picker's
+`Ctrl+A` find sessions in any project folder; transcripts are deleted after
+`cleanupPeriodDays` (30); one session written from two places interleaves.
+To decide: what to sync (instructions and skills via git; memory and
+sessions via Syncthing?), how to map the Mac and Omarchy paths, conflicts,
+keeping personal projects and secrets in transcripts off the work Mac.
+
+### herdr: try it later
+
+Omarchy installs herdr (a terminal multiplexer for coding agents); used a
+little on the Mac Studio, not on the work Mac. Revisit whether to use it;
+the Studio's Claude Code SessionStart hook (`herdr-agent-state.sh`) and
+`herdr` skill come with it.
+
 ### Git aliases: `ggpur` and `gftf`
 
 Still typed daily after all old git aliases were dropped
