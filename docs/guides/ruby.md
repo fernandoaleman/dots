@@ -52,9 +52,29 @@ Documented trade-offs:
 - mise's **precompiled** Rubies (`jdx/ruby`) have **no 2.7.x builds**, so
   2.7.8 is **compiled from source** (ruby-build). Don't set
   `ruby.compile = false`, which would make the install fail.
-- **To verify:** Ruby 2.7 predates OpenSSL 3, which Arch ships, so the
-  source build may need extra steps (e.g. an OpenSSL 1.1 build). Check when
-  first installing and record what worked here.
+- **OpenSSL:** Ruby 2.7 can't use OpenSSL 3, so ruby-build downloads and
+  builds **OpenSSL 1.1.1w** into the Ruby itself
+  (`~/.local/share/mise/installs/ruby/2.7.8/openssl/`); the system's
+  OpenSSL doesn't matter.
+- **macOS (verified 2026-10-13, macOS 27.0.1, Apple clang 21):** built in
+  about 2 minutes from the project folder with the old Mac setup's flags
+  (they turn newer clang errors back into warnings):
+
+  ```sh
+  export DLDFLAGS="-Wl,-undefined,dynamic_lookup"
+  export OPENSSL_CFLAGS="-Wno-error=implicit-function-declaration"
+  export CFLAGS="-Wno-error=implicit-function-declaration"
+  mise install ruby@2.7.8
+  ```
+
+  The work app's `bundle install` (Bundler 2.4.22, 562 gems: pg, mysql2,
+  nokogiri, oj) then worked with its own `.bundle/config` build flags.
+- **Omarchy (Arch):** not yet tried; check when first installing and
+  record what worked here.
+- **Scripts and SSH:** mise's shims come after the system paths outside an
+  interactive shell (as Omarchy's PATH order), so `ruby` there is the
+  system one (Arch's 3.4, Apple's 2.6). Use an interactive shell, or put
+  `~/.local/share/mise/installs/ruby/2.7.8/bin` first in PATH.
 
 ### Setup (to be verified)
 

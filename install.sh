@@ -595,6 +595,17 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Set to $name"
   fi
 
+  # Rosetta 2 runs Intel-only programs (e.g. wkhtmltopdf, a work app's PDF
+  # renderer); macOS only offers it when an Intel app is opened from Finder,
+  # so command-line tools fail with "Bad CPU type". No sudo needed (tested).
+  step "Rosetta 2"
+  if pkgutil --pkg-info=com.apple.pkg.RosettaUpdateAuto >/dev/null 2>&1; then
+    ok "Already installed"
+  else
+    softwareupdate --install-rosetta --agree-to-license
+    ok "Installed"
+  fi
+
   step "Installing packages and apps (Brewfile)"
   brew bundle --file="$DOTS_DIR/Brewfile" --no-upgrade
   ok "Brewfile installed"
