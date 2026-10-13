@@ -1,0 +1,10 @@
+# sesh (tmux sessions; prefix k opens its picker, see tmux.dots.conf).
+# Not an Omarchy file: Omarchy doesn't ship sesh. sesh's `import` only merges
+# sessions/windows/wildcards and fails on a missing file, so there's no
+# .local include; for machine-only sessions run sesh with --config.
+
+[tui]
+# The highlighted session beside the list, as the old fzf picker had it:
+# live panes for tmux sessions, `ls` for directories (ctrl+o toggles it)
+preview = true
+preview_width = 55

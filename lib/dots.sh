@@ -7,7 +7,7 @@
 DOTS_DIR="${DOTS_DIR:-$HOME/Work/dots}"
 
 # Stow packages (top-level directories mirroring $HOME)
-PACKAGES=(bash git nvim tmux mise omarchy hypr bin ssh ruby)
+PACKAGES=(bash git nvim tmux sesh mise omarchy hypr bin ssh ruby)
 
 # "Omarchy file|line that loads our .dots file" (appended when missing)
 INCLUDES=(
@@ -56,7 +56,7 @@ LAZYVIM_STARTER_REF=803bc181d7c0d6d5eeba9274d9be49b287294d99
 # macOS stows and hooks only what's been built for the Mac so far (dots 1.x).
 # There, Omarchy's files are the templates seeded by install.sh.
 if [[ $(uname -s) == Darwin ]]; then
-  PACKAGES=(bash git nvim tmux mise bin ssh macos)
+  PACKAGES=(bash git nvim tmux sesh mise bin ssh macos)
   INCLUDES=(
     "$HOME/.bashrc|[[ -r ~/.bashrc.dots ]] && source ~/.bashrc.dots"
     "$HOME/.config/git/config|[include] path = ~/.config/git/config.dots"

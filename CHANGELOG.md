@@ -19,6 +19,9 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
+- sesh's picker shows a preview of the highlighted session beside the list
+  (new `sesh` package with `sesh.toml`); the `prefix k` popup is wider
+  (80%x70%) to make room.
 - `cache-sesh-dirs` adds `~/Work`'s projects to zoxide for the sesh picker;
   `install.sh` runs it.
 
