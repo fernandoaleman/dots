@@ -872,6 +872,10 @@ if [[ $DOTS_OS == macos ]]; then
     # fullscreen, 2 always), so Cmd reaches Omarchy as Super; written while
     # Moonlight isn't running (it saves its settings on quit)
     "com.moonlight-stream.Moonlight|capturesyskeys|int|1"
+    # Chrome: no "Save password?" (1Password saves them). Chrome's
+    # PasswordManagerEnabled policy, at the recommended level on a Mac without
+    # MDM: the default, which a choice made in Chrome's settings overrides
+    "com.google.Chrome|PasswordManagerEnabled|bool|false"
   )
   step "macOS settings"
   changed_domains=()

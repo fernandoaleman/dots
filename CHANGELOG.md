@@ -27,6 +27,8 @@ by a clean install; macOS support comes in later `1.x` releases.
   wkhtmltopdf).
 - `NEW_RELIC_API_KEY` from 1Password (`dots/token`) for New Relic's API
   (NerdGraph), next to the New Relic MCP's browser sign-in.
+- macOS: Chrome stops offering to save passwords (`PasswordManagerEnabled`
+  policy, recommended level); 1Password saves them.
 - `cache-sesh-dirs` adds `~/Work`'s projects to zoxide for the sesh picker;
   `install.sh` runs it.
 
