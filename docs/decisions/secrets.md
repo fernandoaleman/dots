@@ -186,6 +186,7 @@ repo) that bash loads. A new token is a 1Password-only change.
 |---|---|
 | `JIRA_API_TOKEN` (was field `token`), `CONFLUENCE_API_TOKEN` (added, was missing), `CONFLUENCE_DOMAIN`, `CONFLUENCE_EMAIL` | Atlassian (1000Bulbs) |
 | `CLOUDFLARE_API_TOKEN` (was field `Claude`) | Cloudflare (1000Bulbs) |
+| `NEW_RELIC_API_KEY` (added 2026-10-13, a user key `NRAK-…`; moved from `Private`) | New Relic (1000Bulbs) |
 | `PAGERTREE_API_TOKEN` (was field `API Token - Claude`) | PagerTree (1000Bulbs), moved from `Private` |
 | `TODOIST_API_TOKEN` (added; `td` reads it, so no browser login) | Todoist (Personal), `Private` |
 
