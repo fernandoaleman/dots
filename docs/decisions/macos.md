@@ -172,8 +172,8 @@ Decided 2026-10-10, from the Mac Studio's remaining formulae:
   `curl` (macOS's is fine), `switchaudio-osx`, `zlib` (a dependency), `nss`
   (Firefox only on the Mac), `mas` (no App Store apps left).
 - Already decided elsewhere: dropped on Omarchy (`act`, `bottom`, `htop`,
-  `colordiff`, `markdownlint-cli2`, `ncdu`, `thefuck`, `gitmux`, `sesh`,
-  `hunk`); the old setup (`chezmoi`, `age`, `zsh` + plugins,
+  `colordiff`, `markdownlint-cli2`, `ncdu`, `thefuck`, `gitmux`,
+  `hunk`; `sesh` is back via mise); the old setup (`chezmoi`, `age`, `zsh` + plugins,
   `reattach-to-user-namespace`); via mise (`yarn`, `todoist-cli`, `gh`,
   `opencode`); `tailscale` (the app), `aws-vpn-cli`.
 

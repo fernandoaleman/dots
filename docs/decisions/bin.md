@@ -5,8 +5,8 @@ Done 2026-10-04. Old source: `dotfiles/dot_local/bin/`
 `.chezmoiexternal.toml`). Omarchy puts `~/.local/bin` on `PATH`
 (`default/bash/envs`).
 
-Already decided elsewhere: `cache-sesh-dirs` (dropped with sesh,
-[tmux.md](tmux.md)); `open-herdr.sh` and the `hdl`/`hdlm`/`hds`/`hsl`
+Already decided elsewhere: `cache-sesh-dirs` (dropped with sesh, back
+with it on 2026-10-12: [tmux.md](tmux.md#sesh-back-2026-10-12)); `open-herdr.sh` and the `hdl`/`hdlm`/`hds`/`hsl`
 links (Mac phase, [packages.md](packages.md)).
 
 ## colortest: dropped

@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+#
+# cache-sesh-dirs: add every project folder in ~/Work to zoxide, so the
+# sesh picker (tmux prefix k) lists them even before you've visited them.
+# Top level only; skips hidden folders and ~/Work/tries (try's scratch
+# folders). Safe to re-run: each run only nudges their zoxide ranking.
+set -euo pipefail
+
+WORK=${DOTS_WORK_DIR:-$HOME/Work}
+
+case ${1:-} in
+-h | --help) sed -n '3,7p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+esac
+
+command -v zoxide >/dev/null || { echo "cache-sesh-dirs: zoxide not found" >&2; exit 1; }
+[[ -d $WORK ]] || { echo "cache-sesh-dirs: no $WORK" >&2; exit 1; }
+
+count=0
+for dir in "$WORK"/*/; do
+  dir=${dir%/}
+  case ${dir##*/} in
+  tries | __pycache__) continue ;;
+  esac
+  zoxide add "$dir"
+  count=$((count + 1))
+done
+echo "cache-sesh-dirs: added $count folder$( ((count == 1)) || echo s) from ${WORK/#$HOME/\~} to zoxide"

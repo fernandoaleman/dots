@@ -77,7 +77,7 @@ them. `install.sh` runs the same commands, each guarded:
 | `git-delta` | Dropped, not installed |
 | `neovim` | Omarchy's LazyVim plus `.dots` plugin files and Extras (see [nvim.md](nvim.md)); the separate `fernandoaleman/nvim` repo is retired (archived later, in the Mac phase) |
 | `tmux` | Omarchy's config plus `tmux.dots.conf` (see [tmux.md](tmux.md)) |
-| `sesh` | Dropped, replaced by the `prefix k` picker |
+| `sesh` | Dropped 2026-10-03, back 2026-10-12 via mise ([tmux.md](tmux.md#sesh-back-2026-10-12)) |
 | TPM | Dropped: resurrect + continuum are pinned clones |
 | `gitmux` | Dropped: it was never used in the status bar |
 | `btop` | **Omarchy's `btop.conf` kept as is**. Only 3 real differences from the old file (the rest was `True`/`true` casing and newer btop 1.4.7 options): `color_theme` `"Default"` → Omarchy's `"current"` (follows the Omarchy theme; `omarchy-theme-set` restarts btop), `theme_background` false → true, `vim_keys` false → **true**. btop has no include mechanism and rewrites its config on exit (`save_config_on_exit`), so nothing is stowed; tweak it through btop's options menu (`o`) |

@@ -28,57 +28,48 @@ in the chezmoi repo (`tmux.conf.tmpl`, `gitmux.yml`) plus TPM plugins.
 | General options | All shared basics already match Omarchy (`tmux-256color`, RGB, focus-events, mouse, base-index 1, renumber, detach-on-destroy off, set-clipboard, vi copy mode, status on top). **Added** `terminal-features ',*:usstyle'` (undercurls, e.g. catppuccin's `SpellBad`; Omarchy lacks it). Kept Omarchy's `escape-time 10`, `history-limit 50000`, `status-interval 5`. Dropped `default-shell zsh` |
 | Session persistence | **tmux-resurrect + tmux-continuum, no TPM**: `install.sh` clones them into `~/.local/share/tmux/plugins/` at **pinned commits** (resurrect `cff343c`, continuum `0698e8f`: the masters TPM used to install; both repos have commits after their last tags `v4.0.0`/`v3.1.0`), and `tmux.dots.conf` loads them with `run-shell -b` **last**, because continuum prepends its auto-save to `status-right` at load time (the old catppuccin ordering bug). Continuum also skips auto-saving while another tmux server runs. Defaults kept (manual restore `prefix Ctrl+r`). TPM itself is no longer needed. Compared with herdr (also in Omarchy): both restore layouts after a reboot but not processes; herdr adds AI-agent awareness. Staying on tmux |
 | Theme / status bar | **Omarchy's** (named colors follow the Omarchy theme; status shows session, `#I:#W` windows auto-named by directory, COPY/PREFIX/ZOOM + host). catppuccin-tmux (Macchiato) dropped: it would pin tmux to one flavor while nvim and the terminal follow Omarchy, and Omarchy's top bar already shows the time |
-| Sessions (sesh) | **sesh dropped**; Omarchy's keys kept: `prefix s` session tree (tmux), `prefix L` last session (tmux), `Alt+Up`/`Alt+Down` or `prefix P`/`N`, `prefix C` new session in current dir, `prefix R`/`K` rename/kill. **Added `prefix k` = session picker** (`~/.config/tmux/session-picker`, in a `display-popup`): running sessions first, then zoxide directories; picking a directory creates or switches to the session named after it. Built only from what Omarchy ships (tmux, fzf, zoxide). It **overrides Omarchy's `prefix k`** (kill window, no confirmation), which collided with sesh muscle memory; `prefix &` (tmux default) still kills a window after asking. Minimal for now (no `Ctrl+d` kill, no preview) |
+| Sessions (sesh) | **sesh back** (2026-10-12, see below; dropped 2026-10-03). Omarchy's keys kept: `prefix s` session tree, `Alt+Up`/`Alt+Down` or `prefix P`/`N`, `prefix C` new session in current dir, `prefix R`/`K` rename/kill. **`prefix k` = sesh's built-in picker** (`sesh picker -i` in a `display-popup`), **`prefix L` = `sesh last`**. `prefix k` **overrides Omarchy's** (kill window, no confirmation); `prefix &` (tmux default) still kills a window after asking |
 | gitmux | Dropped: installed but never referenced in the old status bar |
 | tmux-ssh | Moved to the bin scripts / secrets sections (used by `generate-ssh-config`) |
 
-## sesh: why it was dropped, and how to go back
+## sesh: back (2026-10-12)
 
-**What sesh did (old setup):** `prefix k` opened a `fzf-tmux` popup listing
-running tmux sessions, configured sessions (`sesh.toml`) and zoxide
-directories, with filters (`Ctrl+a` all, `Ctrl+t` tmux, `Ctrl+g` configs,
-`Ctrl+x` zoxide, `Ctrl+f` find dirs), `Ctrl+d` to kill a session, and a
-preview. Picking an entry switched to or created the session.
+**History:** dropped on 2026-10-03 for a small custom picker
+(`~/.config/tmux/session-picker`: tmux sessions then zoxide directories, in
+an fzf popup), for three reasons: Omarchy's own keys cover switching
+sessions, sesh is AUR-only on Arch, and the old `sesh.toml` held stale
+hand-kept project paths. Brought back on 2026-10-12 because the user is used
+to it, and sesh has moved on (checked against its README and releases at
+v2.32.0):
 
-**Why it was dropped (2026-10-03):**
-
-- **Omarchy way first.** Omarchy already covers switching (`prefix s`
-  tree, `prefix L` last, `Alt+Up/Down`) and creating (`prefix C`) sessions.
-  The only missing piece was "pick a directory → land in its session", and
-  that takes a few lines of bash using tools Omarchy already ships (tmux
-  `display-popup`, fzf, zoxide).
-- **One less package.** sesh isn't in the Arch repos (AUR `sesh-bin`), and
-  it needs its own config file (`sesh.toml`) with hand-maintained project
-  paths. Those were stale: `~/code/...` (now `~/Work`) and old projects.
-  zoxide already knows every directory you use.
-- **Key collision.** Omarchy binds `prefix k` to *kill window with no
-  confirmation*, which is dangerous with sesh muscle memory. The picker
-  takes `prefix k` back.
-
-**What replaced it:** `~/.config/tmux/session-picker`, bound to `prefix k`
-in `tmux.dots.conf`. It lists running sessions (`●`) then zoxide
-directories; a session switches; a directory switches to the session named
-after the folder (`.`/`:` become `_`), creating it there if needed.
-Not reproduced (yet): the filters, `Ctrl+d` kill, preview.
-
-**Where the old config is:** the archived chezmoi repo
-`~/Work/dotfiles` (`fernandoaleman/dotfiles`):
-
-- `dotfiles/dot_config/sesh/sesh.toml.tmpl`: three work project sessions under `{{ .code_dir }}` (`~/code`)
-- `dotfiles/dot_config/tmux/tmux.conf.tmpl`: the `bind-key "k" run-shell
-  "sesh connect …"` popup with all the fzf bindings
-- `dotfiles/dot_local/bin/executable_cache-sesh-dirs.tmpl`: adds every
-  `~/code/*` project to zoxide
-
-**To go back:**
-
-1. `omarchy-pkg-aur-add sesh-bin` (add it to `install.sh` to make it stick).
-2. Optional `~/.config/sesh/sesh.toml` (stowed in the `tmux` package or its
-   own) with `[[session]]` entries, paths under `~/Work`.
-3. In `tmux.dots.conf`, replace the picker's `bind … k display-popup …` line
-   with the old `bind-key "k" run-shell "sesh connect …"` block (copied from
-   the old `tmux.conf.tmpl`). It uses `fzf-tmux`, which ships with fzf.
-4. Optionally delete `~/.config/tmux/session-picker`.
+- **Install:** mise, `"aqua:joshmedeski/sesh"` in `config-dots.toml`: the
+  same version on Omarchy and the Macs, no AUR package (Homebrew has it too,
+  but mise keeps both systems alike). mise holds a release back for a few
+  days after it's published.
+- **`prefix k`: sesh's built-in picker** (`sesh picker -i`, icons; since
+  v2.28, which its author now uses instead of fzf bindings: preview,
+  number jumps, aliases, removing a row). Not the old `fzf-tmux` binding,
+  which still works (it's the README's "tmux + fzf" example) if wanted.
+  The custom picker is removed.
+- **`prefix L`: `sesh last`.** tmux's own last-session loses track after a
+  session is closed while `detach-on-destroy off` is set, and Omarchy sets
+  it (sesh's README recommends both; Omarchy also has its other
+  recommendation, `x` = kill pane without asking).
+- **No `sesh.toml`** for now (no named sessions, no `[[wildcard]]`): a
+  wildcard only adds settings such as a startup command when connecting; it
+  doesn't list folders. The list comes from tmux, zoxide and configured
+  sessions. sesh.toml has no include, so if one is added it's a plain
+  stowed file (the README's `--config` flag covers separate configs).
+- **`cache-sesh-dirs`** (bin package, back from the old setup) adds every
+  `~/Work/*` project to zoxide (top level; skips hidden folders and
+  `~/Work/tries`), so the picker lists them on a fresh machine;
+  `install.sh` runs it on both systems, and by hand after cloning.
+- Tested on Omarchy and the work Mac: sesh 2.32.0 on PATH (mise shims,
+  also in tmux's PATH), the bindings loaded, `cache-sesh-dirs` added
+  `~/Work`'s projects.
+- **Old config** (archived chezmoi repo `~/Work/dotfiles`): the fzf binding
+  in `dotfiles/dot_config/tmux/tmux.conf.tmpl`, `sesh.toml.tmpl`, and
+  `dot_local/bin/executable_cache-sesh-dirs.tmpl`.
 
 ## Mac notes
 
