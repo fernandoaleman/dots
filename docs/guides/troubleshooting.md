@@ -220,6 +220,16 @@ with `k` as the key.
 haven't visited isn't in zoxide yet. **Fix:** `cache-sesh-dirs` (adds every
 `~/Work/*` folder; `install.sh` runs it), or `cd` into it once.
 
+### sesh picker has no preview on the right
+
+**Why:** sesh drops the preview pane when the picker is narrower than
+`preview_min_width` (100 columns), e.g. in a half-screen terminal (the
+popup is 80% of it), and `ctrl+o` toggles the pane off and on. **Fix:**
+press `ctrl+o`, widen the terminal, or lower it in
+`~/.config/sesh/sesh.toml` (`[tui] preview_min_width = 80`). If the pane is
+missing everywhere, check `~/.config/sesh` is linked (`install.sh` stows the
+`sesh` package).
+
 ### A dots file was removed, but its link is still in `$HOME`
 
 **Why:** stow only links what's in the package; when a file is deleted

@@ -56,11 +56,18 @@ v2.32.0):
   session is closed while `detach-on-destroy off` is set, and Omarchy sets
   it (sesh's README recommends both; Omarchy also has its other
   recommendation, `x` = kill pane without asking).
-- **No `sesh.toml`** for now (no named sessions, no `[[wildcard]]`): a
-  wildcard only adds settings such as a startup command when connecting; it
-  doesn't list folders. The list comes from tmux, zoxide and configured
-  sessions. sesh.toml has no include, so if one is added it's a plain
-  stowed file (the README's `--config` flag covers separate configs).
+- **`sesh.toml`: the preview pane only** (2026-10-13, `sesh` package):
+  `[tui] preview = true`, `preview_width = 55`, the old fzf binding's
+  `right:55%`: live panes for tmux sessions, `ls` for directories (the old
+  setup's default too); `ctrl+o` toggles it. The popup went from 50%x90% to
+  the old binding's 80%x70%: sesh hides the pane when the picker is
+  narrower than `preview_min_width` (100 columns). No named sessions and no
+  `[[wildcard]]`: a wildcard only adds settings such as a startup command
+  when connecting; it doesn't list folders. The list comes from tmux, zoxide
+  and configured sessions. No `.local` include: sesh's `import` merges only
+  sessions/windows/wildcards and fails on a missing file (configurator.go
+  at v2.32.0); its `--config` flag covers a separate config. Omarchy ships
+  no sesh config, so it's a plain stowed file.
 - **`cache-sesh-dirs`** (bin package, back from the old setup) adds every
   `~/Work/*` project to zoxide (top level; skips hidden folders and
   `~/Work/tries`), so the picker lists them on a fresh machine;
