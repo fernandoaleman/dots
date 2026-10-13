@@ -23,6 +23,8 @@ by a clean install; macOS support comes in later `1.x` releases.
   (new `sesh` package with `sesh.toml`; folders listed with eza, like
   Omarchy's `ls`); the `prefix k` popup is wider
   (80%x70%) to make room.
+- macOS: `install.sh` installs Rosetta 2 (Intel-only tools such as
+  wkhtmltopdf).
 - `cache-sesh-dirs` adds `~/Work`'s projects to zoxide for the sesh picker;
   `install.sh` runs it.
 

@@ -570,6 +570,17 @@ opens its ports in ufw to private LANs and Tailscale only
   firewall lists `syncthing` as allowed); the GUI listens on 127.0.0.1
   only.
 
+## Rosetta 2: `install.sh`
+
+Decided 2026-10-13. Some work tools only ship for Intel Macs (wkhtmltopdf,
+the work app's PDF renderer, kept for now), and macOS only offers Rosetta
+when an Intel app is opened from Finder, so a command-line tool just fails
+with "Bad CPU type in executable". `install.sh` installs it before the
+Brewfile, skipped when `pkgutil` lists `com.apple.pkg.RosettaUpdateAuto`,
+as the old setup did (`run_once_before_00-install-homebrew`).
+`softwareupdate --install-rosetta --agree-to-license` needs no sudo (tested
+on the work Mac). Omarchy: not applicable.
+
 ## HostName: from the model (`mac-studio`, `macbook-pro`)
 
 Omarchy's hostname (`omarchy`) is set once at install. A Mac with no

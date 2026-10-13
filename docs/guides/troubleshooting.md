@@ -630,6 +630,12 @@ its default theme
 **Fix (optional):** pick a built-in theme in btop's menu (Esc > Options),
 or put a `.theme` file in `~/.config/btop/themes/current.theme`.
 
+### "Bad CPU type in executable" on a Mac
+
+**Why:** an Intel-only program (e.g. wkhtmltopdf) and no Rosetta 2.
+**Fix:** re-run `install.sh` (it installs Rosetta), or
+`softwareupdate --install-rosetta --agree-to-license`.
+
 ### `try` isn't on the Mac
 
 **Why:** dropped from the Brewfile (2026-10-13,
