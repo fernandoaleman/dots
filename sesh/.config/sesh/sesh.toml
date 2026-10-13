@@ -5,6 +5,11 @@
 
 [tui]
 # The highlighted session beside the list, as the old fzf picker had it:
-# live panes for tmux sessions, `ls` for directories (ctrl+o toggles it)
+# live panes for tmux sessions, eza for directories (ctrl+o toggles it)
 preview = true
 preview_width = 55
+
+[default_session]
+# Directories in the preview as Omarchy's `ls` alias lists them (eza), with
+# icons and colors forced on: the preview isn't a terminal, so `auto` is off
+preview_command = "eza -lh --group-directories-first --icons=always --color=always {}"
