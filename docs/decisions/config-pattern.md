@@ -142,7 +142,7 @@ outnumbering "include", revisit switching everything to pattern A.**
 | bash | `~/.bashrc` | `~/.bashrc.dots` (loads `~/.config/bash/aliases`, `completions`, `inputrc`) | yes: `source` | `~/.bashrc.local`, guarded with `[[ -r … ]]` | C |
 | git | `~/.config/git/config` | `~/.config/git/config.dots` | yes: `[include] path = …` (one line) | `~/.config/git/config.local`; git skips missing includes (tested) | C |
 | nvim plugins | `~/.config/nvim/lua/plugins/` (dir) | `lua/plugins/<name>.dots.lua` | yes: lazy.nvim loads every file in the dir | n/a (add a `<name>.local.lua` file; gitignored) | C |
-| tmux | `~/.config/tmux/tmux.conf` | `~/.config/tmux/tmux.dots.conf` (+ `session-picker`) | yes: `source-file -q` | `~/.config/tmux/tmux.local.conf` (`-q` skips if missing) | C |
+| tmux | `~/.config/tmux/tmux.conf` | `~/.config/tmux/tmux.dots.conf` | yes: `source-file -q` | `~/.config/tmux/tmux.local.conf` (`-q` skips if missing) | C |
 | mise | `~/.config/mise/config.toml` (Omarchy, and `mise use -g` writes it) | `~/.config/mise/conf.d/config-dots.toml` (hyphen: naming exception) | yes: mise loads `conf.d/*.toml` automatically (no line needed). ⚠️ Omarchy's `config.toml` takes **precedence** over conf.d (tested), so ours can add but not override | `conf.d/config-local.toml` (alphabetically later, wins over `config-dots.toml`; tested) | C |
 | Hyprland monitors | `~/.config/hypr/monitors.lua` | `~/.config/hypr/monitors.dots.lua` | yes: appended Lua line, `dofile` by path if the file exists | `~/.config/hypr/monitors.local.lua` (same check; tested) | C |
 | Hyprland (rules, bindings) | `~/.config/hypr/hyprland.lua` | `~/.config/hypr/hyprland.dots.lua` | yes: appended Lua line, `dofile` by path if the file exists | `~/.config/hypr/hyprland.local.lua` | C |

@@ -25,3 +25,4 @@ yarn = "latest"
 "github:ankitpokhrel/jira-cli" = { version = "latest", exe = "jira" }
 "npm:@doist/todoist-cli" = "latest"   # td
 just = "latest"       # project task runner (`just <recipe>`)
+"aqua:joshmedeski/sesh" = "latest"   # tmux sessions (prefix k / prefix L)

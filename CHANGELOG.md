@@ -9,6 +9,17 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ## [Unreleased]
 
+### Changed
+
+- tmux sessions: sesh is back (mise tool, both systems): `prefix k` opens its
+  built-in picker, `prefix L` is `sesh last`; the custom session picker is
+  removed.
+
+### Added
+
+- `cache-sesh-dirs` adds `~/Work`'s projects to zoxide for the sesh picker;
+  `install.sh` runs it.
+
 ## [1.2.0] - 2026-10-12
 
 macOS: the same `install.sh` sets up a Mac, work or personal, to match

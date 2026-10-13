@@ -194,18 +194,32 @@ in `~/.local/share/tmux/resurrect/`. Auto-restore on tmux start is off
 
 ### `prefix k` opens a picker instead of killing the window
 
-**Why:** `tmux.dots.conf` rebinds `prefix k` to the session picker
-(replacing sesh). Omarchy's `prefix k` killed the window without asking.
+**Why:** `tmux.dots.conf` rebinds `prefix k` to sesh's picker. Omarchy's
+`prefix k` killed the window without asking.
 **Kill a window:** `prefix &` (asks first). Restore Omarchy's binding in
 `tmux.local.conf`: `bind k kill-window`.
 
-### No sesh / sesh's filters (`Ctrl+a/t/g/x/f`), `Ctrl+d` kill or preview
+### sesh's old fzf popup (`Ctrl+a/t/g/x/f` filters, `Ctrl+d` kill)
 
-**Why:** sesh was replaced by the minimal `prefix k` picker
-(`~/.config/tmux/session-picker`: sessions + zoxide directories). Ideas to
-add later: `fzf --bind 'ctrl-d:…'` to kill a session, `--preview` for a
-preview pane. Or go back to sesh: see "sesh: why it was dropped, and how to go back"
-in [tmux.md](../decisions/tmux.md).
+**Why:** `prefix k` uses sesh's built-in picker now, not the old
+`fzf-tmux` binding ([tmux.md](../decisions/tmux.md#sesh-back-2026-10-12)).
+To get the old popup back, put the "tmux + fzf" `bind-key` block from sesh's
+README (or the archived `tmux.conf.tmpl`) in `~/.config/tmux/tmux.local.conf`
+with `k` as the key.
+
+### sesh picker doesn't list a `~/Work` project
+
+**Why:** the picker lists tmux sessions and zoxide's folders; a project you
+haven't visited isn't in zoxide yet. **Fix:** `cache-sesh-dirs` (adds every
+`~/Work/*` folder; `install.sh` runs it), or `cd` into it once.
+
+### A dots file was removed, but its link is still in `$HOME`
+
+**Why:** stow only links what's in the package; when a file is deleted
+from dots, re-stowing doesn't remove its old link, which now points at
+nothing (seen with `~/.config/tmux/session-picker`). `make doctor` reports
+it while the file is still tracked. **Fix:** delete the broken link
+(`find ~/.config ~/.local/bin -xtype l` lists broken links).
 
 ### Ctrl+b doesn't act as a tmux prefix
 

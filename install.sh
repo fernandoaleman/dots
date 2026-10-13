@@ -263,6 +263,17 @@ setup_syncthing_vaults() {
   ok "Vaults set up (pair new machines and set the GUI password by hand: docs/setup)"
 }
 
+# ~/Work's projects into zoxide, so the sesh picker (tmux prefix k) lists them
+# on a fresh machine too (cache-sesh-dirs, bin package). Shared by both OSes.
+cache_work_dirs() {
+  step "zoxide: ~/Work projects for sesh"
+  if [[ -d $HOME/Work ]] && command -v zoxide >/dev/null; then
+    ok "$("$HOME/.local/bin/cache-sesh-dirs")"
+  else
+    warn "No ~/Work or zoxide; skipping"
+  fi
+}
+
 # LazyVim Extras live in Omarchy's ~/.config/nvim/lazyvim.json, which LazyVim
 # itself rewrites (:LazyExtras), so it can't be stowed. Add ours to its list;
 # nothing is removed, so extras toggled locally are kept. Shared by both OSes.
@@ -868,6 +879,8 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Login shell changed (new terminal windows use it)"
   fi
 
+  cache_work_dirs
+
   step "Checking dots"
   dots_doctor || true
 
@@ -1203,6 +1216,8 @@ if [[ -f $xcompose ]]; then
 else
   warn "No ~/.XCompose found; skipping"
 fi
+
+cache_work_dirs
 
 step "Checking dots"
 dots_doctor || true
