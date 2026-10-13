@@ -14,6 +14,8 @@ by a clean install; macOS support comes in later `1.x` releases.
 - tmux sessions: sesh is back (mise tool, both systems): `prefix k` opens its
   built-in picker, `prefix L` is `sesh last`; the custom session picker is
   removed.
+- tmux popups use the terminal's colors on tmux 3.8 too (the Mac's
+  Homebrew tmux drew them as a grey box).
 
 ### Added
 

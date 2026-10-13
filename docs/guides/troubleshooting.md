@@ -199,6 +199,13 @@ in `~/.local/share/tmux/resurrect/`. Auto-restore on tmux start is off
 **Kill a window:** `prefix &` (asks first). Restore Omarchy's binding in
 `tmux.local.conf`: `bind k kill-window`.
 
+### tmux popups are a grey box with a light border (tmux 3.8)
+
+**Why:** tmux 3.8 (Homebrew; Arch still has 3.7c) themes popups with
+`popup-style bg=themedarkgrey,fg=themewhite`. **Fixed:** `tmux.dots.conf`
+sets `popup-style` and `popup-border-style` to `default` (the terminal's
+colors, as in 3.7). A running tmux picks it up with `prefix q`.
+
 ### sesh's old fzf popup (`Ctrl+a/t/g/x/f` filters, `Ctrl+d` kill)
 
 **Why:** `prefix k` uses sesh's built-in picker now, not the old
