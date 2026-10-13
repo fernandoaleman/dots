@@ -189,6 +189,15 @@ To decide: what to sync (instructions and skills via git; memory and
 sessions via Syncthing?), how to map the Mac and Omarchy paths, conflicts,
 keeping personal projects and secrets in transcripts off the work Mac.
 
+### Work notes repo: how to use it across machines
+
+The private notes repo (work log, `outstanding-work.md`, ticket drafts) is
+used on the Mac Studio, and the global Claude `CLAUDE.md` points at it.
+Not on the work Mac for now (2026-10-13): the work Mac's GitHub token can't
+reach personal repos, and git repos don't go in Syncthing; remote into the
+Mac Studio from the office instead. To rethink: where it lives (Omarchy
+long term), and how the work Mac reads or adds to it.
+
 ### herdr: try it later
 
 Omarchy installs herdr (a terminal multiplexer for coding agents); used a
