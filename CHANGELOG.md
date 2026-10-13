@@ -9,6 +9,12 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-12
+
+macOS: the same `install.sh` sets up a Mac, work or personal, to match
+Omarchy (bash, Neovim, tmux, mise, Docker, secrets, settings); GitHub over
+HTTPS everywhere; Obsidian vaults synced with Syncthing.
+
 ### Added
 
 - `pandoc`, `mkcert` (Omarchy packages) and `just` (mise tool).
@@ -17,6 +23,22 @@ by a clean install; macOS support comes in later `1.x` releases.
 - Todoist web app on Omarchy.
 - Syncthing on Omarchy (Obsidian vaults; ports open to the LAN and Tailscale
   only).
+- Machine profile (`personal` or `work`), asked on the first run and kept in
+  `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
+- Secrets on macOS, and 1Password per machine profile: work items live in
+  the work account; the personal profile reads both accounts, the work
+  profile only the work account.
+- GitHub over HTTPS on every machine: `gh-role-login` signs `gh` in as the
+  profile allows (work: a company-only fine-grained token from 1Password;
+  personal: the browser), and SSH GitHub URLs are rewritten to HTTPS.
+- SSH keys split: a new personal `id_ed25519` for your own machines; the
+  old one kept only as a work key; no SSH key on GitHub.
+- Git identity: asked once if missing (now on macOS too), with dots' name
+  and email pre-filled, and used as is without a terminal.
+- Syncthing on macOS starts at login (Homebrew service); vaults in
+  `~/Obsidian`, Omarchy as the hub, versioning on Omarchy and the Mac
+  Studio. `install.sh` sets up the vault folders on both systems, and on a
+  Mac also its name and the pairing with Omarchy.
 - macOS, first stage: the same `install.sh` one-liner bootstraps a fresh Mac
   (Homebrew, bash 5, git, gum, stow, jq, then dots) and installs the
   `Brewfile` (packages and apps; personal-only entries by profile), with
@@ -40,48 +62,32 @@ by a clean install; macOS support comes in later `1.x` releases.
 - Docker on macOS: Colima (4 CPUs, 8 GiB, starts at login) with Omarchy's
   log rotation and dots' networks off 172.17, and `docker compose`/`buildx`
   found by Docker.
-- Git identity: asked once if missing (now on macOS too), with dots' name
-  and email pre-filled, and used as is without a terminal.
+- SSH on macOS: dots' `~/.ssh/config` and Omarchy's keepalive settings
+  (its own script); Colima no longer edits `~/.ssh/config`.
+- macOS: tmux-ssh is installed too (`install.sh`).
 - Tailscale on macOS: `install.sh` turns Use Tailscale DNS off (it breaks
   the AWS VPN's DNS there), and a `tailscale` command (alias).
+- macOS: Tailscale added to Login Items (its own checkbox can fail).
 - macOS settings: Dock auto-hide, Finder (extensions, path bar, home
   folder), expanded Save dialogs, fast key repeat, text substitutions off,
   TextEdit plain text and no `.DS_Store` on network shares, each verified
   on macOS 27.
-- Secrets on macOS, and 1Password per machine profile: work items live in
-  the work account; the personal profile reads both accounts, the work
-  profile only the work account.
-- GitHub over HTTPS on every machine: `gh-role-login` signs `gh` in as the
-  profile allows (work: a company-only fine-grained token from 1Password;
-  personal: the browser), and SSH GitHub URLs are rewritten to HTTPS.
-- SSH keys split: a new personal `id_ed25519` for your own machines; the
-  old one kept only as a work key; no SSH key on GitHub.
-- SSH on macOS: dots' `~/.ssh/config` and Omarchy's keepalive settings
-  (its own script); Colima no longer edits `~/.ssh/config`.
-- Machine profile (`personal` or `work`), asked on the first run and kept in
-  `~/.config/dots/profile`; `DOTS_PROFILE` overrides.
-- macOS: tmux-ssh is installed too (`install.sh`).
 - macOS: Moonlight captures system keyboard shortcuts in fullscreen.
-- macOS: Tailscale added to Login Items (its own checkbox can fail).
-- macOS: a HostName from the model (`mac-studio`, `macbook-pro`) when unset.
-- macOS: `~/.hushlogin` (no "Last login" line in new shells).
-- Syncthing on macOS starts at login (Homebrew service); vaults in
-  `~/Obsidian`, Omarchy as the hub, versioning on Omarchy and the Mac
-  Studio. `install.sh` sets up the vault folders on both systems, and on a
-  Mac also its name and the pairing with Omarchy.
 - Voxtype on macOS: Omarchy's config, the `base.en` model and Voxtype.app
   in Login Items; record from its menu bar.
+- macOS: a HostName from the model (`mac-studio`, `macbook-pro`) when unset.
+- macOS: `~/.hushlogin` (no "Last login" line in new shells).
 - macOS: `install.sh` ends with the dots check (`dots_doctor`), which also
   checks Colima's Docker networks.
 
 ### Fixed
 
-- `aws-role-login` on macOS shows the session's expiry as a local time.
-- `make doctor` on macOS no longer reports every file as unlinked.
 - `aws-role-login` finds the MFA item when the 1Password app has more than
   one account.
+- `aws-role-login` on macOS shows the session's expiry as a local time.
 - `install.sh` no longer stops at the git identity prompt when run without
   a terminal (e.g. over `ssh host …`).
+- `make doctor` on macOS no longer reports every file as unlinked.
 - macOS checklist: the AWS VPN signs in with the AWS SSO login (now in the
   work account), not AWS Role Switch.
 
@@ -265,7 +271,8 @@ bin scripts and secrets come in later releases.
 - prek hooks (whitespace, toml/yaml, typos, committed, shellcheck),
   `make setup`, `make lint`, `make doctor`.
 
-[Unreleased]: https://github.com/fernandoaleman/dots/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/fernandoaleman/dots/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/fernandoaleman/dots/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/fernandoaleman/dots/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/fernandoaleman/dots/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/fernandoaleman/dots/compare/v0.1.0...v0.2.0
