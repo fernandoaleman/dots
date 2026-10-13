@@ -25,6 +25,8 @@ by a clean install; macOS support comes in later `1.x` releases.
   (80%x70%) to make room.
 - macOS: `install.sh` installs Rosetta 2 (Intel-only tools such as
   wkhtmltopdf).
+- `NEW_RELIC_API_KEY` from 1Password (`dots/token`) for New Relic's API
+  (NerdGraph), next to the New Relic MCP's browser sign-in.
 - `cache-sesh-dirs` adds `~/Work`'s projects to zoxide for the sesh picker;
   `install.sh` runs it.
 
