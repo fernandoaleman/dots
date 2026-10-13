@@ -642,6 +642,15 @@ Omarchy only. **Fix:** re-run `install.sh` (the step is shared now), or
 **Fix:** re-run `install.sh` (it installs Rosetta), or
 `softwareupdate --install-rosetta --agree-to-license`.
 
+### Chrome on the Mac still offers to save passwords
+
+**Why:** `install.sh` sets Chrome's `PasswordManagerEnabled` policy to false
+at the *recommended* level (no MDM), which a choice made in Chrome's
+settings overrides. **Fix:** Chrome Settings → Password Manager → gear →
+turn off **Offer to save passwords**; check `chrome://policy` lists
+`PasswordManagerEnabled` (Reload policies). Turning on 1Password's "default
+password manager" setting alone didn't stop it (2026-10-13).
+
 ### `try` isn't on the Mac
 
 **Why:** dropped from the Brewfile (2026-10-13,

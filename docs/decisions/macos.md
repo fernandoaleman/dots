@@ -480,6 +480,7 @@ restarts Dock/Finder when their settings changed, then runs
 | TextEdit plain text | `com.apple.TextEdit RichText false` (lands in its sandbox container) | Format menu shows "Make Rich Text" |
 | No `.DS_Store` on network shares | `com.apple.desktopservices DSDontWriteNetworkStores` | read-back + [Apple's support article](https://support.apple.com/en-us/HT208209) (no share to test; takes effect at next login) |
 | Moonlight: capture system keyboard shortcuts in fullscreen (2026-10-12) | `com.moonlight-stream.Moonlight capturesyskeys -int 1` (Moonlight's `SET_CAPTURESYSKEYS`; 0 off is its default) | read-back; Moonlight's settings show "in fullscreen"; still 1 after Moonlight saved its settings on quit. Written while Moonlight isn't running |
+| Chrome: no offers to save passwords, 1Password only (2026-10-13) | `com.google.Chrome PasswordManagerEnabled false`: Chrome's policy, **recommended** level without MDM ([Chromium's Mac quick start](https://www.chromium.org/administrators/mac-quick-start/); the policy `can_be_recommended`); a choice made in Chrome's settings wins, and an MDM's policy wins over both. 1Password's "default password manager" setting was on and Chrome still offered | `chrome://policy`: `PasswordManagerEnabled` false, Recommended, OK; profile has no own `credentials_enable_service`. Omarchy leaves Chromium's on (its policies only set the theme color) |
 
 **Skipped:** menu bar auto-hide (Omarchy's bar is always visible; the
 notch row gains little), always-on scroll bars (macOS's automatic ones
