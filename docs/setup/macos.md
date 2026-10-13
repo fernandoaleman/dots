@@ -77,9 +77,10 @@ personal Mac with the browser. No SSH key for GitHub on any machine.
 In Chrome (the profile for this machine), for each of
 `https://teams.cloud.microsoft` and `https://outlook.office.com`: open it,
 sign in, then **⋮ > Cast, save and share > Install page as app** (or the
-install icon in the address bar). Chrome adds them to
-`~/Applications/Chrome Apps/`, so Spotlight finds "Teams" and "Outlook".
-Allow notifications when asked.
+install icon in the address bar). Chrome may only offer them as **PWAs**
+(progressive web apps): that's the same thing. Chrome adds them to
+`~/Applications/Chrome Apps.localized/` as "Microsoft Teams (PWA)" and
+"Outlook (PWA)", which Spotlight finds. Allow notifications when asked.
 
 **Personal Macs only** (never the work laptop): also `https://discord.com/app`
 as a web app, like Omarchy's built-in Discord web app.
