@@ -188,6 +188,11 @@ after the absolute path (`-Users-faleman-Work-x` on a Mac,
 To decide: what to sync (instructions and skills via git; memory and
 sessions via Syncthing?), how to map the Mac and Omarchy paths, conflicts,
 keeping personal projects and secrets in transcripts off the work Mac.
+The global `~/.claude/CLAUDE.md`, `team.md` and `personas.md` were copied
+by hand from the Mac Studio to the work Mac (2026-10-13; `CLAUDE.md` points
+at `~/Work/notes`, which isn't there); keep them in step (rsync or
+Syncthing) once the Mac Studio is rebuilt on dots and every machine uses
+`~/Work` paths.
 
 ### Work notes repo: how to use it across machines
 
