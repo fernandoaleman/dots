@@ -41,7 +41,6 @@ brew "starship"
 brew "tlrc" # tldr
 brew "tmux"
 brew "tree-sitter-cli"
-brew "try"
 brew "usage"
 brew "zoxide"
 

@@ -82,8 +82,10 @@ Decided 2026-10-10, same for both profiles:
   `fastfetch`, `fd`, `fzf`, `herdr`, `imagemagick`, `lazydocker`,
   `lazygit`, `libyaml`, `mise`, `neovim`, `ripgrep`, `starship`, `tlrc`
   (Homebrew's `tldr` is the outdated client; `tlrc` is the official one,
-  same `tldr` command), `tmux`, `tree-sitter-cli`, `try` (tobi/try, as
-  Omarchy's `tobi-try`), `usage`, `zoxide`.
+  same `tldr` command), `tmux`, `tree-sitter-cli`, `usage`, `zoxide`. **Not `try`** (tobi/try,
+  Omarchy's `tobi-try`; dropped on the Mac 2026-10-13): never used, and
+  its Homebrew Ruby (4.0) sat ahead of mise's Ruby in non-interactive
+  shells (SSH, scripts), so `bundle` ran on the wrong Ruby. Omarchy keeps it.
 - **Ours, as on Omarchy:** `wget`, `nmap`, `shellcheck`, `mysql-client` and
   `libpq` with `link: true` (both keg-only; `brew bundle` unlinks keg-only
   formulas otherwise), for `mysql`/`mysqldump`/`mysql_config` and
@@ -351,9 +353,10 @@ Differences kept:
   has no equivalent, so run Omarchy's `mup` alias now and then (re-running
   `install.sh` installs missing tools, it doesn't upgrade). A Mac update
   command may come with `dots doctor`.
-- **Ruby:** Arch's 3.4 on Omarchy; on the Mac, Homebrew's 4.0 (a
-  dependency of `try`). Projects pin theirs in `.ruby-version`, which mise
-  reads ([Ruby guide](../guides/ruby.md)).
+- **Ruby:** Arch's 3.4 on Omarchy (a dependency of `tobi-try`); on the
+  Mac, Apple's 2.6 (`/usr/bin/ruby`), since `try` and with it Homebrew's
+  Ruby were dropped. Projects pin theirs in `.ruby-version`, which mise
+  reads in interactive shells ([Ruby guide](../guides/ruby.md)).
 - **Python:** Apple's 3.9 (`/usr/bin/python3`); uv brings its own Python
   for ansible and yamllint.
 

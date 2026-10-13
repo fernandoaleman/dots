@@ -630,6 +630,17 @@ its default theme
 **Fix (optional):** pick a built-in theme in btop's menu (Esc > Options),
 or put a `.theme` file in `~/.config/btop/themes/current.theme`.
 
+### `try` isn't on the Mac
+
+**Why:** dropped from the Brewfile (2026-10-13,
+[macos.md](../decisions/macos.md#brewfile-section-1-command-line-tools)): unused, and it
+brought Homebrew's Ruby, which non-interactive shells found before mise's.
+Omarchy's bash init only defines `try` when the command exists, so nothing
+else breaks. **To bring back:** add `brew "try"` to the Brewfile's
+"Mirroring Omarchy's tools" list and re-run `install.sh` (Homebrew's Ruby
+comes back with it; use `mise exec` or an interactive shell for project
+Ruby in scripts).
+
 ### `sff` fails on a Mac ("find: -printf: unknown primary")
 
 **Why:** Omarchy's `sff` (pick a recent file, `scp` it) uses GNU `find
