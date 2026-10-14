@@ -610,7 +610,8 @@ Neovim, and no warm wallpaper showing through.
   `themes/moonlit-fisherman/tmux.conf` as plain options, no plugin: solid
   `#24273a` bar, session chip left (green, red while the prefix is held),
   folder and clock chips right, window chips with the number in blue (peach
-  for the current one). Other themes keep **Omarchy's bar** (named colors
+  for the current one), the number **left** of the name (the Studio has it
+  right, `@catppuccin_window_number_position "right"`; moved 2026-10-14). Other themes keep **Omarchy's bar** (named colors
   that follow the theme). How: `tmux.dots.conf` sources the active theme's
   `tmux.conf` (`~/.local/state/omarchy/current/theme/`) when present,
   **before** resurrect/continuum (continuum hooks its auto-save into
