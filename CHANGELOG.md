@@ -21,6 +21,10 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
+- Omarchy theme **One Dark** (`themes/one-dark`): onedark.nvim's "dark"
+  palette (as on the Mac) in `colors.toml`, onedark.nvim in Neovim, Yaru-blue
+  icons; `install.sh` links it and downloads its background (Unsplash).
+  Apply with `omarchy theme set "One Dark"`.
 - sesh's picker shows a preview of the highlighted session beside the list
   (new `sesh` package with `sesh.toml`; folders listed with eza, like
   Omarchy's `ls`); the `prefix k` popup is wider

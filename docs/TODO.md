@@ -56,15 +56,6 @@ plan) is Mac/Windows only. On Omarchy, in this order:
 
 Re-evaluate Plaud at renewal.
 
-### OneDark "dark" theme for Omarchy
-
-The Mac's Ghostty uses OneDark "dark" (generated from
-[onedark.nvim](https://github.com/navarasu/onedark.nvim)'s palette;
-[macos.md](decisions/macos.md)). Make it an Omarchy custom theme too
-(`~/.config/omarchy/themes/`: terminal colors, Neovim via onedark.nvim
-`style = "dark"`, Hyprland/shell colors, background), so both machines
-match; then the Mac could seed its Ghostty colors from that theme.
-
 ### Sunshine: back to Omarchy's installer when fixed
 
 `install.sh` replicates `omarchy-install-service-sunshine` with fixes
