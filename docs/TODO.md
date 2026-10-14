@@ -239,6 +239,26 @@ uses the CLI integration (Omarchy too). Find a fix that keeps the
 security: e.g. an Apple Watch, the session's password, or doing the
 `op` step on the local machine.
 
+### Omarchy issues to report (found 2026-10-14)
+
+Check upstream first (none found 2026-10-14); an issue before any PR.
+
+- **tmux reload duplicates entries:** Omarchy's `tmux.conf` appends with
+  `set -ag terminal-overrides ",*:RGB"`, `set -ag terminal-features
+  "xterm-kitty:extkeys"`, `set -as terminal-features ",*:clipboard"`, and
+  its own `prefix q` re-sources that file, so each reload adds another copy
+  (seen: 12 and 36 entries instead of 2 and 6). Harmless, low priority.
+  dots' theme-set hook resets them before reloading
+  ([desktop.md](decisions/desktop.md)).
+- **foot padding keeps the old theme's color after a switch:**
+  `omarchy-theme-set-tmux` sets tmux's `window-style` to the new theme's
+  background, so tmux paints every cell in it, but foot can't reload its
+  colors and draws its padding (`pad=14x14`) in the launch theme's
+  background: a visible band until the terminal is reopened. With foot
+  `alpha` below 1, explicitly colored cells also stay solid (default
+  `alpha-mode`), so only the padding is see-through
+  ([troubleshooting](guides/troubleshooting.md#a-band-around-the-inside-edge-of-the-terminal)).
+
 ### Retire the old repos (Mac phase)
 
 Archive `fernandoaleman/nvim` once the Mac uses dots.
