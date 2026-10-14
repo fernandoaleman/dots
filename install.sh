@@ -1143,24 +1143,28 @@ ok "mise tools installed"
 install_td_skills
 add_nvim_extras
 
-# One Dark theme (docs/decisions/desktop.md): its folder is linked, not
-# stowed: Omarchy copies a theme's files into a staging folder, where stow's
-# relative file links would break; a linked folder counts as the user's own
-# theme. Its background, an Unsplash photo (Unsplash License; Pawel
-# Czerwinski), goes in Omarchy's user backgrounds folder, outside the repo;
-# the SHA-256 skips the download on re-runs and rejects anything else.
-# Choosing the theme stays yours: `omarchy theme set "One Dark"`.
-step "Linking the One Dark theme"
-theme_link="$HOME/.config/omarchy/themes/one-dark"
-if [[ -L $theme_link && $(readlink "$theme_link") == "$DOTS_DIR/themes/one-dark" ]]; then
-  ok "One Dark theme already linked"
-elif [[ -e $theme_link ]]; then
-  warn "$theme_link exists and isn't dots' link; leaving it alone"
-else
-  mkdir -p "${theme_link%/*}"
-  ln -s "$DOTS_DIR/themes/one-dark" "$theme_link"
-  ok "One Dark theme linked"
-fi
+# Omarchy themes in themes/ (docs/decisions/desktop.md): each folder is
+# linked, not stowed: Omarchy copies a theme's files into a staging folder,
+# where stow's relative file links would break; a linked folder counts as
+# the user's own theme. One Dark's background, an Unsplash photo (Unsplash
+# License; Pawel Czerwinski), goes in Omarchy's user backgrounds folder,
+# outside the repo; the SHA-256 skips the download on re-runs and rejects
+# anything else. Catppuccin Studio's isn't redistributable: copied by hand
+# (docs/setup/omarchy.md). Choosing a theme stays yours (`omarchy theme set`).
+step "Linking Omarchy themes"
+for theme in "$DOTS_DIR"/themes/*/; do
+  theme=${theme%/}
+  theme_link="$HOME/.config/omarchy/themes/${theme##*/}"
+  if [[ -L $theme_link && $(readlink "$theme_link") == "$theme" ]]; then
+    ok "${theme##*/} theme already linked"
+  elif [[ -e $theme_link ]]; then
+    warn "$theme_link exists and isn't dots' link; leaving it alone"
+  else
+    mkdir -p "${theme_link%/*}"
+    ln -s "$theme" "$theme_link"
+    ok "${theme##*/} theme linked"
+  fi
+done
 bg="$HOME/.config/omarchy/backgrounds/one-dark/1-blue-swirls.jpg"
 bg_url="https://images.unsplash.com/photo-1597773150796-e5c14ebecbf5?fm=jpg&q=100"
 bg_sha=48fd9ed033ab7b507cfbd1258f1cfd40b3fd3352ccb990c4035f13facc82668c

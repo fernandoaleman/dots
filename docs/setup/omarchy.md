@@ -101,7 +101,17 @@ By hand, in its web UI (`http://localhost:8384`):
 
 Never share `~/Work` or git repos.
 
-## 8. Working on dots (optional)
+## 8. Catppuccin Studio wallpaper (optional)
+
+The Catppuccin Studio theme's wallpaper (the Mac Studio's, from an artist's
+wallpaper pack) can't go in this public repo or be downloaded by
+`install.sh`. Copy it from the Mac Studio
+(`~/Downloads/archdrawsalot_desktop_wallpapers (1)/711 lighthouse.jpg`, or
+the pack's zip there) to
+`~/.config/omarchy/backgrounds/catppuccin-studio/1-lighthouse.jpg`. Without
+it the theme has no background.
+
+## 9. Working on dots (optional)
 
 Only needed to commit changes to this repo. `make setup` installs prek
 (via mise) and shellcheck (via `omarchy-pkg-add`), then activates the git
