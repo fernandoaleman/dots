@@ -570,7 +570,7 @@ like One Dark (above). What the Studio uses (old `dotfiles` repo and its
 live configs): Ghostty `theme = Catppuccin Mocha` with
 `background-opacity = 0.9`; Neovim catppuccin **Macchiato** with
 `transparent_background = true`; tmux's catppuccin plugin in Macchiato
-(not carried over: dots' tmux uses Omarchy's look); a warm lighthouse
+; a warm lighthouse
 wallpaper. Omarchy's stock `catppuccin` is Mocha everywhere (same
 `#1e1e2e` background), so it looks more purple: Mocha's pinker accents in
 Neovim, and no warm wallpaper showing through.
@@ -593,6 +593,22 @@ Neovim, and no warm wallpaper showing through.
   copied by hand into `~/.config/omarchy/backgrounds/catppuccin-studio/`
   ([setup step 8](../setup/omarchy.md#8-catppuccin-studio-wallpaper-optional)).
 - **Window opacity:** Omarchy's default.
+- **tmux bar** (added the same day): the Studio's catppuccin-tmux
+  Macchiato bar, copied from its running tmux (`tmux show -gv`) into
+  `themes/catppuccin-studio/tmux.conf` as plain options, no plugin: solid
+  `#24273a` bar, session chip left (green, red while the prefix is held),
+  folder and clock chips right, window chips with the number in blue (peach
+  for the current one). Other themes keep **Omarchy's bar** (named colors
+  that follow the theme). How: `tmux.dots.conf` sources the active theme's
+  `tmux.conf` (`~/.local/state/omarchy/current/theme/`) when present,
+  **before** resurrect/continuum (continuum hooks its auto-save into
+  `status-right`), after resetting the two options it sets that Omarchy's
+  `tmux.conf` doesn't (`window-status-style`,
+  `window-status-activity-style`); the `omarchy` package's theme-set hook
+  (`hooks/theme-set.d/dots-tmux.hook`) reloads tmux's config on every
+  theme switch, which also puts Omarchy's bar back. Checked: switching to
+  One Dark and back restores each bar, continuum stays hooked in. **Mac:**
+  no Omarchy theme there, so the source line finds nothing.
 
 ## Homebrew and Rosetta: Mac phase
 
