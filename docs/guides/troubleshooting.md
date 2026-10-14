@@ -1032,6 +1032,20 @@ instead, as `install.sh` does for One Dark
 (`~/.config/omarchy/themes/one-dark` -> `~/Work/dots/themes/one-dark`;
 [desktop.md](../decisions/desktop.md#theme-one-dark-our-own-themesone-dark)).
 
+### A band around the inside edge of the terminal
+
+**Symptom:** a ~14 px frame inside foot's border (its padding, `pad=14x14`)
+looks more transparent, or a slightly different color, than the text area.
+**Cause:** on every theme switch Omarchy's `omarchy-theme-set-tmux` sets
+tmux's `window-style` to the theme's background, so tmux paints each cell
+in that exact color, while foot draws the padding itself. (1) With foot
+`alpha` below 1, foot keeps explicitly colored cells solid (`alpha-mode`
+default), so only the padding is see-through. (2) foot can't reload its
+colors, so after a theme switch the padding keeps the color of the theme
+active when the window opened. **Fix:** (1) `alpha-mode=matching` next to
+`alpha` (Catppuccin Studio's `foot.ini` has it); (2) reopen the terminal
+after switching themes.
+
 ### tmux bar doesn't change after switching themes
 
 **Symptom:** after `omarchy theme set`, tmux still shows the previous
