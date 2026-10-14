@@ -1167,7 +1167,7 @@ done
 # "theme slug|file|URL|SHA-256"
 THEME_BACKGROUNDS=(
   "one-dark|1-blue-swirls.jpg|https://images.unsplash.com/photo-1597773150796-e5c14ebecbf5?fm=jpg&q=100|48fd9ed033ab7b507cfbd1258f1cfd40b3fd3352ccb990c4035f13facc82668c"
-  "catppuccin-studio|1-moonlit-fisherman.png|https://images.unsplash.com/vector-1775137004926-0f215b748df5|2a8fd84e2434e89cf07ee8649282575aad3e0097fa45c699d135caee3416c385"
+  "moonlit-fisherman|1-moonlit-fisherman.png|https://images.unsplash.com/vector-1775137004926-0f215b748df5|2a8fd84e2434e89cf07ee8649282575aad3e0097fa45c699d135caee3416c385"
 )
 for entry in "${THEME_BACKGROUNDS[@]}"; do
   IFS='|' read -r theme file bg_url bg_sha <<<"$entry"
