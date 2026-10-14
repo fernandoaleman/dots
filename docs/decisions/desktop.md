@@ -555,7 +555,9 @@ Chromium, ...) from its `colors.toml` through
   (2026-10-14): a theme `hyprland.lua` with terminals at `0.95 0.9`
   (Omarchy's `terminal` tag plus the `^tmux$` class, which that tag
   misses); shipping it also means repeating the border colors, since it
-  replaces the generated one.
+  replaces the generated one. Also tried and reverted: a theme `foot.ini`
+  with `alpha=0.9` (background-only, like the Mac Studio's Ghostty
+  `background-opacity = 0.9`); no visible difference with this wallpaper.
 - **Not set by `install.sh`:** choosing the theme stays a user action
   (`omarchy theme set "One Dark"`), so a re-run never switches themes.
 - **Mac:** unchanged (Ghostty's `onedark-dark`, same palette). Later, the
