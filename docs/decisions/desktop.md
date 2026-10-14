@@ -618,7 +618,10 @@ Neovim, and no warm wallpaper showing through.
   `tmux.conf` doesn't (`window-status-style`,
   `window-status-activity-style`); the `omarchy` package's theme-set hook
   (`hooks/theme-set.d/dots-tmux.hook`) reloads tmux's config on every
-  theme switch, which also puts Omarchy's bar back. Checked: switching to
+  theme switch, which also puts Omarchy's bar back. It first resets
+  `terminal-overrides` and `terminal-features` to tmux's defaults: Omarchy's
+  `tmux.conf` (and `tmux.dots.conf`) append to them, so every reload added
+  the same entries again (seen: 12 and 36 entries instead of 2 and 6). Checked: switching to
   One Dark and back restores each bar, continuum stays hooked in. **Mac:**
   no Omarchy theme there, so the source line finds nothing.
 
