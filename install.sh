@@ -1146,10 +1146,10 @@ add_nvim_extras
 # One Dark theme (docs/decisions/desktop.md): its folder is linked, not
 # stowed: Omarchy copies a theme's files into a staging folder, where stow's
 # relative file links would break; a linked folder counts as the user's own
-# theme. Its background, an Unsplash photo (Unsplash License; Jeremy
-# Bishop), goes in Omarchy's user backgrounds folder, outside the repo; the
-# SHA-256 skips the download on re-runs and rejects anything else. Choosing
-# the theme stays yours: `omarchy theme set "One Dark"`.
+# theme. Its background, an Unsplash photo (Unsplash License; Pawel
+# Czerwinski), goes in Omarchy's user backgrounds folder, outside the repo;
+# the SHA-256 skips the download on re-runs and rejects anything else.
+# Choosing the theme stays yours: `omarchy theme set "One Dark"`.
 step "Linking the One Dark theme"
 theme_link="$HOME/.config/omarchy/themes/one-dark"
 if [[ -L $theme_link && $(readlink "$theme_link") == "$DOTS_DIR/themes/one-dark" ]]; then
@@ -1161,9 +1161,9 @@ else
   ln -s "$DOTS_DIR/themes/one-dark" "$theme_link"
   ok "One Dark theme linked"
 fi
-bg="$HOME/.config/omarchy/backgrounds/one-dark/1-dark-water.jpg"
-bg_url="https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?fm=jpg&q=100"
-bg_sha=355dbdf31ae76d4ad1121318d66751a78da2ea5821b97e04dc37a52aeef40ff9
+bg="$HOME/.config/omarchy/backgrounds/one-dark/1-blue-swirls.jpg"
+bg_url="https://images.unsplash.com/photo-1597773150796-e5c14ebecbf5?fm=jpg&q=100"
+bg_sha=48fd9ed033ab7b507cfbd1258f1cfd40b3fd3352ccb990c4035f13facc82668c
 if [[ -f $bg ]] && [[ $(sha256sum <"$bg") == "$bg_sha "* ]]; then
   ok "One Dark background already downloaded"
 else
