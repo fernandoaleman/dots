@@ -1021,6 +1021,17 @@ or run `make doctor` in `~/Work/dots`:
 "illegal option -- m"), so every check failed. **Fixed** (2026-10-11): plain
 `realpath`, which works on both systems.
 
+### A custom Omarchy theme loses its colors (stowed theme files)
+
+**Symptom:** after `omarchy theme set`, a theme whose files are symlinks
+(e.g. stowed file by file) gets no colors or Neovim theme.
+**Cause:** `omarchy theme set` copies the theme with `cp -r` into
+`~/.local/state/omarchy/current/next-theme`; relative links are copied as
+links and point nowhere from there. **Fix:** link the whole theme folder
+instead, as `install.sh` does for One Dark
+(`~/.config/omarchy/themes/one-dark` -> `~/Work/dots/themes/one-dark`;
+[desktop.md](../decisions/desktop.md#theme-one-dark-our-own-themesone-dark)).
+
 ## Known Omarchy issues (not caused by dots)
 
 ### Lazy reports `monokai-pro.nvim` "fetch failed: Repository not found"

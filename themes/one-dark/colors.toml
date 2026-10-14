@@ -1,0 +1,35 @@
+# One Dark for Omarchy: onedark.nvim's "dark" style (MIT, (c) 2021 Navarasu),
+# palette.lua at commit df4792accde9db0043121f32628bcf8e645d9aea, the same
+# palette as the Mac's Ghostty onedark-dark theme. Keys onedark.nvim has no
+# color for reuse its nearest one (docs/decisions/desktop.md).
+mode = "dark"
+
+accent = "#61afef"
+selection = "#3b3f4c"
+muted = "#5c6370"
+
+background = "#282c34"
+dark_background = "#21252b"
+darker_background = "#181a1f"
+lighter_background = "#31353f"
+
+foreground = "#abb2bf"
+dark_foreground = "#848b98"
+light_foreground = "#abb2bf"
+bright_foreground = "#abb2bf"
+
+red = "#e86671"
+yellow = "#e5c07b"
+orange = "#d19a66"
+green = "#98c379"
+cyan = "#56b6c2"
+blue = "#61afef"
+magenta = "#c678dd"
+brown = "#93691d"
+
+bright_red = "#e86671"
+bright_yellow = "#e5c07b"
+bright_green = "#98c379"
+bright_cyan = "#56b6c2"
+bright_blue = "#61afef"
+bright_magenta = "#c678dd"

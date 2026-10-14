@@ -506,6 +506,53 @@ they're installed (otherwise ignore)"*) from a `PACKAGES_TO_REMOVE` list in
 `install.sh`. **Mac phase:** one-time cleanup of Homebrew packages the
 existing Mac still has but dots now gets from mise or dropped.
 
+## Theme: One Dark, our own (`themes/one-dark`)
+
+Decided 2026-10-14. Omarchy's way to make a theme (omarchy skill
+`theming.md`, Omarchy repo `docs/theming.md`): a folder in
+`~/.config/omarchy/themes/<name>/` modeled on the stock
+`/usr/share/omarchy/themes/catppuccin`, applied with `omarchy theme set`.
+Omarchy renders every app's colors (terminals, Hyprland, the shell, btop,
+Chromium, ...) from its `colors.toml` through
+`/usr/share/omarchy/default/themed/*.tpl`; files the theme ships win.
+
+- **Written from scratch**, not built on the gallery's One Dark
+  (joaopinto15/omarchy-one-dark-theme): that one uses Atom One Dark's
+  values (red `#e06c75`, selection `#3e4451`, its own brighter bright
+  colors) and no `neovim.lua`, so Omarchy's template would give Neovim
+  aether.nvim, not onedark.nvim.
+- **`colors.toml`**: onedark.nvim's "dark" palette (commit `df4792a`), the
+  same source as the Mac's Ghostty `onedark-dark`. Keys onedark.nvim has no
+  color for: `dark_background` bg_d, `darker_background` black,
+  `lighter_background` bg1, `selection` bg3, `muted` grey,
+  `dark_foreground` light_grey; `light_`/`bright_foreground` = fg (its
+  lightest; cursor and selected text use `bright_foreground`, as on the
+  Mac); bright colors = the normal ones (as onedark.nvim's terminal colors
+  and the Mac); `brown` = dark_yellow.
+- **Known difference from the Mac:** Omarchy's terminal templates use
+  `background` for color 0 (black); the Mac's Ghostty uses onedark.nvim's
+  `#181a1f`. Accepted; ship a `ghostty.conf` in the theme if it's ever
+  noticed.
+- **`neovim.lua`**: onedark.nvim `style = "dark"`, same as the Mac's
+  `theme.dots.lua`. **`icons.theme`**: `Yaru-blue`. No preview images or
+  `vscode.json` (optional).
+- **Linked, not stowed:** `omarchy theme set` copies the theme's files into
+  `~/.local/state/omarchy/current/next-theme` with `cp -r`, which copies
+  stow's relative file links as links that then point nowhere. So
+  `install.sh` links the whole folder (`~/.config/omarchy/themes/one-dark`
+  -> `themes/one-dark`); Omarchy's docs count "a symlink to a working copy"
+  as the user's own theme (nothing filtered).
+- **Background:** one photo, "a large body of water under a cloudy sky" by
+  Jeremy Bishop on Unsplash (`G9i_plbfDgk`, Unsplash License: free use, no
+  attribution required; credited here anyway). Not in the repo:
+  `install.sh` downloads it (pinned SHA-256) into Omarchy's user
+  backgrounds folder, `~/.config/omarchy/backgrounds/one-dark/`, which
+  `omarchy theme set` and the background switcher read with the theme's.
+- **Not set by `install.sh`:** choosing the theme stays a user action
+  (`omarchy theme set "One Dark"`), so a re-run never switches themes.
+- **Mac:** unchanged (Ghostty's `onedark-dark`, same palette). Later, the
+  Mac's Ghostty colors could be generated from this `colors.toml`.
+
 ## Homebrew and Rosetta: Mac phase
 
 The old `run_once_before_00-install-homebrew` (Mac only) installed Rosetta
