@@ -563,6 +563,37 @@ Chromium, ...) from its `colors.toml` through
 - **Mac:** unchanged (Ghostty's `onedark-dark`, same palette). Later, the
   Mac's Ghostty colors could be generated from this `colors.toml`.
 
+## Theme: Catppuccin Studio, the Mac Studio's look (`themes/catppuccin-studio`)
+
+Decided 2026-10-14: a second theme copying the Mac Studio, made and linked
+like One Dark (above). What the Studio uses (old `dotfiles` repo and its
+live configs): Ghostty `theme = Catppuccin Mocha` with
+`background-opacity = 0.9`; Neovim catppuccin **Macchiato** with
+`transparent_background = true`; tmux's catppuccin plugin in Macchiato
+(not carried over: dots' tmux uses Omarchy's look); a warm lighthouse
+wallpaper. Omarchy's stock `catppuccin` is Mocha everywhere (same
+`#1e1e2e` background), so it looks more purple: Mocha's pinker accents in
+Neovim, and no warm wallpaper showing through.
+
+- **`colors.toml`**: Ghostty's Catppuccin Mocha (from the app's
+  `themes/Catppuccin Mocha`: background, foreground, selection, the six
+  colors and their bright ones); keys it has no color for from Omarchy's
+  stock catppuccin.
+- **`foot.ini`**: shipped (it replaces the template's) for Ghostty's exact
+  16 colors and cursor (its black `#45475a`, white `#a6adc8`, rosewater
+  cursor differ from what the template derives) and `alpha=0.9`
+  (background-only translucency, as the Studio's Ghostty).
+- **`neovim.lua`**: catppuccin `flavour = "macchiato"`,
+  `transparent_background`, italic comments, colorscheme
+  `catppuccin-macchiato` (Neovim 0.12 bundles a Mocha-only
+  `colors/catppuccin.vim`); the Studio's integrations list left to
+  LazyVim's defaults. **`icons.theme`**: `Yaru-blue`.
+- **Background:** the Studio's own, "711 lighthouse" from archdrawsalot's
+  wallpaper pack: not freely licensed, so not in the repo nor downloaded;
+  copied by hand into `~/.config/omarchy/backgrounds/catppuccin-studio/`
+  ([setup step 8](../setup/omarchy.md#8-catppuccin-studio-wallpaper-optional)).
+- **Window opacity:** Omarchy's default.
+
 ## Homebrew and Rosetta: Mac phase
 
 The old `run_once_before_00-install-homebrew` (Mac only) installed Rosetta
