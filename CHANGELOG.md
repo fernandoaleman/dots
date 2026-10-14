@@ -48,6 +48,9 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Fixed
 
+- Switching Omarchy themes no longer piles up duplicate tmux
+  `terminal-overrides`/`terminal-features` entries (the theme-set hook resets
+  them before reloading).
 - Moonlit Fisherman: the whole terminal is see-through, not only foot's
   padding (`alpha-mode=matching`; Omarchy paints tmux's pane background in
   the theme color, which foot kept solid).
