@@ -551,6 +551,11 @@ Chromium, ...) from its `colors.toml` through
   Replaced the first pick (Jeremy Bishop's dark water, `G9i_plbfDgk`): so
   dark that Omarchy's default window opacity (`0.985 0.96`, every theme)
   showed nothing through the terminals; the swirls show a little.
+- **Terminal transparency: Omarchy's default.** Tried and reverted
+  (2026-10-14): a theme `hyprland.lua` with terminals at `0.95 0.9`
+  (Omarchy's `terminal` tag plus the `^tmux$` class, which that tag
+  misses); shipping it also means repeating the border colors, since it
+  replaces the generated one.
 - **Not set by `install.sh`:** choosing the theme stays a user action
   (`omarchy theme set "One Dark"`), so a re-run never switches themes.
 - **Mac:** unchanged (Ghostty's `onedark-dark`, same palette). Later, the
