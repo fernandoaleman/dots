@@ -1032,6 +1032,15 @@ instead, as `install.sh` does for One Dark
 (`~/.config/omarchy/themes/one-dark` -> `~/Work/dots/themes/one-dark`;
 [desktop.md](../decisions/desktop.md#theme-one-dark-our-own-themesone-dark)).
 
+### tmux bar doesn't change after switching themes
+
+**Symptom:** after `omarchy theme set`, tmux still shows the previous
+theme's bar (e.g. Catppuccin Studio's Macchiato bar under One Dark).
+**Cause:** tmux reads its config only when loaded; dots' theme-set hook
+(`~/.config/omarchy/hooks/theme-set.d/dots-tmux.hook`) reloads it on every
+switch. **Fix:** check the hook is linked (`make doctor`), or reload by
+hand with `prefix q`.
+
 ## Known Omarchy issues (not caused by dots)
 
 ### Lazy reports `monokai-pro.nvim` "fetch failed: Repository not found"
