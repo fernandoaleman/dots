@@ -582,7 +582,13 @@ Neovim, and no warm wallpaper showing through.
 - **`foot.ini`**: shipped (it replaces the template's) for Ghostty's exact
   16 colors and cursor (its black `#45475a`, white `#a6adc8`, rosewater
   cursor differ from what the template derives) and `alpha=0.9`
-  (background-only translucency, as the Studio's Ghostty).
+  (background-only translucency, as the Studio's Ghostty), with
+  **`alpha-mode=matching`**: Omarchy's `omarchy-theme-set-tmux` sets tmux's
+  `window-style` to the theme's background, so tmux paints every pane cell
+  in that exact color, which foot's default mode keeps solid; only the
+  padding was see-through (measured: padding 0.89, cells 0.985).
+  `matching` treats those cells as background too (measured after: 0.89
+  both).
 - **`neovim.lua`**: catppuccin `flavour = "macchiato"`,
   `transparent_background`, italic comments, colorscheme
   `catppuccin-macchiato` (Neovim 0.12 bundles a Mocha-only

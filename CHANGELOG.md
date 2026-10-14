@@ -47,6 +47,9 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Fixed
 
+- Catppuccin Studio: the whole terminal is see-through, not only foot's
+  padding (`alpha-mode=matching`; Omarchy paints tmux's pane background in
+  the theme color, which foot kept solid).
 - macOS: `install.sh` installs the Todoist CLI's agent skills on the Mac too
   (the step ran on Omarchy only).
 
