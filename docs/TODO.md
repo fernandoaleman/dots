@@ -218,6 +218,36 @@ Still typed daily after all old git aliases were dropped
 `50-aliases`). Decide shell alias (`~/.config/bash/aliases`) vs git alias
 (`config.dots`), names, and whether one command should do both.
 
+### Office: remote desktop slow, fuzzy, freezes when idle
+
+First office day (2026-10-14), work Mac to the Mac Studio (Screen Sharing)
+and to Omarchy (Moonlight): both slow (Moonlight a bit more), text a little
+fuzzy, and the window froze after a while untouched (close and reconnect).
+Office ~500 Mbps, home ~900. Next office day, check before changing
+anything: `tailscale status` / `tailscale ping <host>` from the office
+(direct or `via DERP`: a relay is likely if the office blocks UDP), with
+and without the AWS VPN; then Screen Sharing's quality mode, Moonlight's
+bitrate/resolution/codec, and what the idle freeze is (display sleep on
+the host, or the connection dropping).
+
+### Outlook PWA stops refreshing
+
+On the work Mac the Outlook PWA showed mail only up to 8 AM while Outlook
+on the web had mail through 1 PM; closing and reopening it fixed it (no
+sync button in Outlook on the web). Find the cause (Chrome freezing or
+discarding the app while in the background? the connection dropping after
+VPN or network changes?) and a fix, or try the Outlook app (cask).
+
+### 1Password: Touch ID prompt when remote
+
+Remoted into the Mac Studio, `aws-role-login` showed the 1Password
+authorization with Touch ID only, with no way to type the password
+(1Password community: a known gap with Touch ID on; workaround so far:
+turn Touch ID off). Same likely on any remote session to a machine that
+uses the CLI integration (Omarchy too). Find a fix that keeps the
+security: e.g. an Apple Watch, the session's password, or doing the
+`op` step on the local machine.
+
 ### Retire the old repos (Mac phase)
 
 Archive `fernandoaleman/nvim` once the Mac uses dots.
