@@ -16,6 +16,8 @@ by a clean install; macOS support comes in later `1.x` releases.
   removed.
 - tmux popups use the terminal's colors on tmux 3.8 too (the Mac's
   Homebrew tmux drew them as a grey box).
+- Mac setup: move work-used 1Password logins (e.g. GitHub) to the company
+  account before installing on the work laptop.
 
 ### Added
 

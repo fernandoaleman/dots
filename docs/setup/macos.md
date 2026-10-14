@@ -53,6 +53,9 @@ Macs: your personal account, and the company account too) and turn on
 **Settings > Developer > Integrate with 1Password CLI** (dots reads secrets
 with `op`). Re-run `install.sh`: it installs the SSH keys, AWS files and
 tokens, approving the 1Password prompt when asked.
+On the work laptop, move any login used for work too (e.g. GitHub, a
+personal account used for both) from the personal vault to the company
+account first: it only sees the company account.
 
 **GitHub:** run `gh-role-login` **in a local terminal** (not over SSH, so
 `gh` keeps the token in the Keychain). The work laptop signs in with the
