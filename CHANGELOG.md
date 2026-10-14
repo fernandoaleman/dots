@@ -23,13 +23,14 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 - Omarchy theme **Catppuccin Studio** (`themes/catppuccin-studio`): the Mac
   Studio's look (Ghostty's Catppuccin Mocha in foot, background at 0.9,
-  Neovim in Macchiato); its wallpaper is copied by hand (setup step 8).
+  Neovim in Macchiato); `install.sh` downloads its background (Unsplash,
+  Willian Reis).
 - Catppuccin Studio's tmux bar: the Mac Studio's Macchiato bar, only while
   that theme is active (other themes keep Omarchy's); a theme-set hook
   reloads tmux on every theme switch.
 - Omarchy theme **One Dark** (`themes/one-dark`): onedark.nvim's "dark"
   palette (as on the Mac) in `colors.toml`, onedark.nvim in Neovim, Yaru-blue
-  icons; `install.sh` links every theme in `themes/` and downloads One Dark's
+  icons; `install.sh` links every theme in `themes/` and downloads its
   background (Unsplash, Pawel Czerwinski).
   Apply with `omarchy theme set "One Dark"`.
 - sesh's picker shows a preview of the highlighted session beside the list

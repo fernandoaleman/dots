@@ -1146,11 +1146,10 @@ add_nvim_extras
 # Omarchy themes in themes/ (docs/decisions/desktop.md): each folder is
 # linked, not stowed: Omarchy copies a theme's files into a staging folder,
 # where stow's relative file links would break; a linked folder counts as
-# the user's own theme. One Dark's background, an Unsplash photo (Unsplash
-# License; Pawel Czerwinski), goes in Omarchy's user backgrounds folder,
+# the user's own theme. Their backgrounds, free Unsplash images (Unsplash
+# License; credited in desktop.md), go in Omarchy's user backgrounds folder,
 # outside the repo; the SHA-256 skips the download on re-runs and rejects
-# anything else. Catppuccin Studio's isn't redistributable: copied by hand
-# (docs/setup/omarchy.md). Choosing a theme stays yours (`omarchy theme set`).
+# anything else. Choosing a theme stays yours (`omarchy theme set`).
 step "Linking Omarchy themes"
 for theme in "$DOTS_DIR"/themes/*/; do
   theme=${theme%/}
@@ -1165,21 +1164,27 @@ for theme in "$DOTS_DIR"/themes/*/; do
     ok "${theme##*/} theme linked"
   fi
 done
-bg="$HOME/.config/omarchy/backgrounds/one-dark/1-blue-swirls.jpg"
-bg_url="https://images.unsplash.com/photo-1597773150796-e5c14ebecbf5?fm=jpg&q=100"
-bg_sha=48fd9ed033ab7b507cfbd1258f1cfd40b3fd3352ccb990c4035f13facc82668c
-if [[ -f $bg ]] && [[ $(sha256sum <"$bg") == "$bg_sha "* ]]; then
-  ok "One Dark background already downloaded"
-else
-  mkdir -p "${bg%/*}"
-  if curl -fsSL "$bg_url" -o "$bg.tmp" && [[ $(sha256sum <"$bg.tmp") == "$bg_sha "* ]]; then
-    mv "$bg.tmp" "$bg"
-    ok "One Dark background downloaded"
+# "theme slug|file|URL|SHA-256"
+THEME_BACKGROUNDS=(
+  "one-dark|1-blue-swirls.jpg|https://images.unsplash.com/photo-1597773150796-e5c14ebecbf5?fm=jpg&q=100|48fd9ed033ab7b507cfbd1258f1cfd40b3fd3352ccb990c4035f13facc82668c"
+  "catppuccin-studio|1-moonlit-fisherman.png|https://images.unsplash.com/vector-1775137004926-0f215b748df5|2a8fd84e2434e89cf07ee8649282575aad3e0097fa45c699d135caee3416c385"
+)
+for entry in "${THEME_BACKGROUNDS[@]}"; do
+  IFS='|' read -r theme file bg_url bg_sha <<<"$entry"
+  bg="$HOME/.config/omarchy/backgrounds/$theme/$file"
+  if [[ -f $bg ]] && [[ $(sha256sum <"$bg") == "$bg_sha "* ]]; then
+    ok "$theme background already downloaded"
   else
-    rm -f "$bg.tmp"
-    warn "Could not download the One Dark background (or its checksum changed)"
+    mkdir -p "${bg%/*}"
+    if curl -fsSL "$bg_url" -o "$bg.tmp" && [[ $(sha256sum <"$bg.tmp") == "$bg_sha "* ]]; then
+      mv "$bg.tmp" "$bg"
+      ok "$theme background downloaded"
+    else
+      rm -f "$bg.tmp"
+      warn "Could not download the $theme background (or its checksum changed)"
+    fi
   fi
-fi
+done
 
 # Sudoless Docker (opt-in; Omarchy's default needs sudo): Omarchy's script adds
 # the user to the docker group (root-equivalent) after its own warning and

@@ -569,9 +569,8 @@ Decided 2026-10-14: a second theme copying the Mac Studio, made and linked
 like One Dark (above). What the Studio uses (old `dotfiles` repo and its
 live configs): Ghostty `theme = Catppuccin Mocha` with
 `background-opacity = 0.9`; Neovim catppuccin **Macchiato** with
-`transparent_background = true`; tmux's catppuccin plugin in Macchiato
-; a warm lighthouse
-wallpaper. Omarchy's stock `catppuccin` is Mocha everywhere (same
+`transparent_background = true`; tmux's catppuccin plugin in Macchiato;
+a warm lighthouse wallpaper. Omarchy's stock `catppuccin` is Mocha everywhere (same
 `#1e1e2e` background), so it looks more purple: Mocha's pinker accents in
 Neovim, and no warm wallpaper showing through.
 
@@ -594,10 +593,13 @@ Neovim, and no warm wallpaper showing through.
   `catppuccin-macchiato` (Neovim 0.12 bundles a Mocha-only
   `colors/catppuccin.vim`); the Studio's integrations list left to
   LazyVim's defaults. **`icons.theme`**: `Yaru-blue`.
-- **Background:** the Studio's own, "711 lighthouse" from archdrawsalot's
-  wallpaper pack: not freely licensed, so not in the repo nor downloaded;
-  copied by hand into `~/.config/omarchy/backgrounds/catppuccin-studio/`
-  ([setup step 8](../setup/omarchy.md#8-catppuccin-studio-wallpaper-optional)).
+- **Background:** "fisherman in boat under full moon at night", an
+  illustration by Willian Reis on Unsplash (`FLxEGkr754I`, Unsplash
+  License; credited here), Unsplash's original PNG (6000x4000, lossless
+  for flat colors). `install.sh` downloads it (pinned SHA-256) into
+  `~/.config/omarchy/backgrounds/catppuccin-studio/`, like One Dark's.
+  Replaced the Studio's own wallpaper ("711 lighthouse", archdrawsalot's
+  pack), which isn't freely licensed and had to be copied by hand.
 - **Window opacity:** Omarchy's default.
 - **tmux bar** (added the same day): the Studio's catppuccin-tmux
   Macchiato bar, copied from its running tmux (`tmux show -gv`) into
