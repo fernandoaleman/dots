@@ -107,7 +107,7 @@ hypr/               stow package → $HOME (monitors)
 bin/                stow package → $HOME (~/.local/bin scripts)
 ssh/                stow package → $HOME (~/.ssh/config)
 ruby/               stow package → $HOME (~/.gemrc)
-themes/             Omarchy themes (One Dark, Moonlight), linked by install.sh (not stowed)
+themes/             Omarchy themes (One Dark), linked by install.sh (not stowed; Moonlight is its own repo)
 lib/dots.sh         shared: PACKAGES, INCLUDES, drift checks (dots_doctor)
 docs/decisions/     what we kept or dropped, and what Omarchy already does
 docs/setup/         step-by-step fresh-install checklists (omarchy.md, macos.md)

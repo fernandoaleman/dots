@@ -21,12 +21,12 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
-- Omarchy theme **Moonlight** (`themes/moonlight`): the Mac
-  Studio's look (Ghostty's Catppuccin Mocha in foot, background at 0.9,
-  Neovim in Macchiato); `install.sh` downloads its background (Unsplash,
-  Willian Reis).
-- Moonlight: five more backgrounds (Unsplash illustrations),
-  downloaded by `install.sh`; cycle them with the background switcher.
+- Omarchy theme **Moonlight**: the Mac Studio's look (Ghostty's Catppuccin
+  Mocha in foot, background at 0.9, Neovim in Macchiato) with six night-sky
+  backgrounds (Unsplash illustrations; cycle with the background switcher).
+  Published as its own repo,
+  [omarchy-moonlight-theme](https://github.com/fernandoaleman/omarchy-moonlight-theme);
+  `install.sh` clones it into `~/Work` and links it.
 - Moonlight's tmux bar: the Mac Studio's Macchiato bar, only while
   that theme is active (other themes keep Omarchy's), kept in the tmux
   package (`themes/moonlight.conf`) rather than the theme; a theme-set hook

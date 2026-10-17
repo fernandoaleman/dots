@@ -1032,6 +1032,19 @@ instead, as `install.sh` does for One Dark
 (`~/.config/omarchy/themes/one-dark` -> `~/Work/dots/themes/one-dark`;
 [desktop.md](../decisions/desktop.md#theme-one-dark-our-own-themesone-dark)).
 
+### Moonlight (or any theme) has no terminal transparency or its own Neovim colors
+
+**Symptom:** the theme's colors apply, but foot is solid and Neovim isn't
+Catppuccin Macchiato; `omarchy theme set` printed *"Ignored in ...:
+foot.ini neovim.lua"*. **Cause:** the theme folder is a real git clone
+(from `omarchy theme install`), which Omarchy treats as a stranger's theme
+and strips of files that can run programs. **Fix:** link it to a working
+copy instead, as `install.sh` does:
+`rm -rf ~/.config/omarchy/themes/moonlight`, re-run `install.sh` (or
+`ln -s ~/Work/omarchy-moonlight-theme ~/.config/omarchy/themes/moonlight`),
+then `omarchy theme set Moonlight` and open a new terminal
+([desktop.md](../decisions/desktop.md#theme-moonlight-the-mac-studios-catppuccin-look-its-own-repo)).
+
 ### A band around the inside edge of the terminal
 
 **Symptom:** a ~14 px frame inside foot's border (its padding, `pad=14x14`)

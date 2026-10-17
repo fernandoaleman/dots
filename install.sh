@@ -1143,36 +1143,52 @@ ok "mise tools installed"
 install_td_skills
 add_nvim_extras
 
-# Omarchy themes in themes/ (docs/decisions/desktop.md): each folder is
+# Omarchy themes (docs/decisions/desktop.md): dots' own in themes/, and
+# published ones in their own repos, cloned into ~/Work. Each folder is
 # linked, not stowed: Omarchy copies a theme's files into a staging folder,
 # where stow's relative file links would break; a linked folder counts as
-# the user's own theme. Their backgrounds, free Unsplash images (Unsplash
-# License; credited in desktop.md), go in Omarchy's user backgrounds folder,
-# outside the repo; the SHA-256 skips the download on re-runs and rejects
-# anything else. Choosing a theme stays yours (`omarchy theme set`).
-step "Linking Omarchy themes"
-for theme in "$DOTS_DIR"/themes/*/; do
-  theme=${theme%/}
-  theme_link="$HOME/.config/omarchy/themes/${theme##*/}"
+# the user's own theme, so Omarchy keeps the foot.ini and neovim.lua it
+# skips for `omarchy theme install`. Backgrounds of dots' themes, free
+# Unsplash images (Unsplash License; credited in desktop.md), go in
+# Omarchy's user backgrounds folder, outside the repo; the SHA-256 skips the
+# download on re-runs and rejects anything else (a theme repo ships its
+# own). Choosing a theme stays yours (`omarchy theme set`).
+link_theme() { # <theme folder> <theme slug>
+  local theme=$1 theme_link="$HOME/.config/omarchy/themes/$2"
   if [[ -L $theme_link && $(readlink "$theme_link") == "$theme" ]]; then
-    ok "${theme##*/} theme already linked"
+    ok "$2 theme already linked"
+  elif [[ -L $theme_link && ! -e $theme_link ]]; then
+    ln -sfn "$theme" "$theme_link"
+    ok "$2 theme relinked (its old target is gone)"
   elif [[ -e $theme_link ]]; then
     warn "$theme_link exists and isn't dots' link; leaving it alone"
   else
     mkdir -p "${theme_link%/*}"
     ln -s "$theme" "$theme_link"
-    ok "${theme##*/} theme linked"
+    ok "$2 theme linked"
   fi
+}
+step "Linking Omarchy themes"
+for theme in "$DOTS_DIR"/themes/*/; do
+  theme=${theme%/}
+  link_theme "$theme" "${theme##*/}"
+done
+# "theme slug|repo URL" (public; HTTPS like the rest of GitHub here)
+THEME_REPOS=(
+  "moonlight|https://github.com/fernandoaleman/omarchy-moonlight-theme"
+)
+for entry in "${THEME_REPOS[@]}"; do
+  IFS='|' read -r slug repo_url <<<"$entry"
+  repo_dir="$HOME/Work/${repo_url##*/}"
+  if [[ ! -d $repo_dir/.git ]] && ! git clone --quiet "$repo_url" "$repo_dir"; then
+    warn "Could not clone the $slug theme ($repo_url)"
+    continue
+  fi
+  link_theme "$repo_dir" "$slug"
 done
 # "theme slug|file|URL|SHA-256"
 THEME_BACKGROUNDS=(
   "one-dark|1-blue-swirls.jpg|https://images.unsplash.com/photo-1597773150796-e5c14ebecbf5?fm=jpg&q=100|48fd9ed033ab7b507cfbd1258f1cfd40b3fd3352ccb990c4035f13facc82668c"
-  "moonlight|1-moonlit-fisherman.png|https://images.unsplash.com/vector-1775137004926-0f215b748df5|2a8fd84e2434e89cf07ee8649282575aad3e0097fa45c699d135caee3416c385"
-  "moonlight|2-house-under-the-moon.png|https://images.unsplash.com/vector-1752645263991-76793504fc3a?fm=png&w=3840|951c3ddf6b27059de82172678f734d1598d92a59a273868438d42a0ee11a3ba7"
-  "moonlight|3-runner-under-the-stars.png|https://images.unsplash.com/vector-1749575997215-0fb81fcfe921|ed0216a9ecfd4cc62cad16af21f403ba4a9fae3dc913c4c75922ce85e4307f81"
-  "moonlight|4-woman-and-the-moon.png|https://images.unsplash.com/vector-1748198892088-9f34b0d5475a|15f9a0f8a2139d8e0bea775ed221d0b7a0819d831d71fde88577829bfa7224c6"
-  "moonlight|5-two-figures-at-the-lake.png|https://images.unsplash.com/vector-1768488649615-0819c9f3abf2|2167db1efd4b53e441ae8f0aa4d7c051e3deb7d37506589299bce556d70fddbf"
-  "moonlight|6-pine-lake.png|https://images.unsplash.com/vector-1787391147762-a89aa95c268e?fm=png&w=3840|91455c21c5cd238dc8d145249204660c5c9c4d4239a2bde41425434431df057d"
 )
 for entry in "${THEME_BACKGROUNDS[@]}"; do
   IFS='|' read -r theme file bg_url bg_sha <<<"$entry"
