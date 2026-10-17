@@ -1069,6 +1069,12 @@ fi
 # chrome-flags.conf does for Chrome).
 if omarchy-pkg-missing todoist-appimage; then
   omarchy-pkg-aur-add todoist-appimage
+  # Building appimagelauncher leaves build-only packages behind; drop the ones
+  # nothing else needs (unused dependencies only, so a boost you use stays)
+  mapfile -t todoist_build_leftovers < <(pacman -Qdtq | grep -xE 'appimagelauncher-debug|argagg|boost|doxygen|qt5-tools')
+  if ((${#todoist_build_leftovers[@]})); then
+    omarchy-pkg-drop "${todoist_build_leftovers[@]}"
+  fi
 else
   ok "Todoist already installed"
 fi
