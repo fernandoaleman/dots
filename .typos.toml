@@ -11,4 +11,4 @@ OuOfMgd9ueY = "OuOfMgd9ueY"
 
 [default.extend-words]
 # plural of PNG (typos would "fix" it to ONGs)
-PNGs = "PNGs"
+pngs = "pngs"
