@@ -12,7 +12,7 @@ o.bind("SUPER + ALT + RETURN", "Tmux", 'omarchy-launch-terminal --app-id=tmux ba
 -- a window can be moved anywhere (Super+Shift+N) and stays there.
 o.window({ initial_class = "^google-chrome$" }, { workspace = "1" })
 o.window({ initial_class = "^tmux$" }, { workspace = "4" })
-o.window({ initial_class = "^chrome-work\\.slack\\.com__-Default$" }, { workspace = "7" })
+o.window({ initial_class = "^slack$" }, { workspace = "7" })
 o.window({ initial_class = "^chrome-teams\\.cloud\\.microsoft__-Default$" }, { workspace = "7" })
 o.window({ initial_class = "^chrome-outlook\\.office\\.com__-Default$" }, { workspace = "8" })
 o.window({ initial_class = "^Spotify$" }, { workspace = "9" })

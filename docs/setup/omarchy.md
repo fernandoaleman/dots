@@ -26,14 +26,16 @@ included, so `td` needs no login) and
 incoming SSH (sshd), and switches this repo's remote to SSH. Then open a new terminal. See the [README](../../README.md#usage) for
 what `install.sh` does.
 
-## 2. Slack (and Teams/Outlook) web apps
+## 2. Slack, Teams and Outlook
 
-`install.sh` creates the Slack, Teams and Outlook web apps. Once:
+`install.sh` installs the Slack desktop app and creates the Teams and
+Outlook web apps. Once:
 
-- Open **Slack** and sign in; allow notifications when Slack asks (or via
-  the site's permission icon in the app window).
-- Keep the Slack window **open, parked on a workspace**: a closed web app
-  sends no notifications.
+- Open **Slack** and sign in (the browser hands the sign-in back to the
+  app); allow notifications in Slack's preferences if it asks. Closing its
+  window keeps it running in the tray, so notifications continue.
+- Sign in to **Teams** and **Outlook**; allow notifications when asked (or
+  via the site's permission icon in the app window).
 
 ## 3. Chrome: AWS Extend Switch Roles
 
