@@ -1058,13 +1058,13 @@ hand with `prefix q`. A theme's bar lives in
 (`cat ~/.local/state/omarchy/current/theme.name`); a renamed theme needs its
 bar file renamed too.
 
-### `make lint` changes a word you wrote (e.g. "ONGs" to "ONGs")
+### `make lint` changes a word you wrote (e.g. the plural of PNG)
 
 **Symptom:** the typos hook fails and the word in the file has changed.
 **Cause:** the hook runs with `--write-changes`, so it applies its own
-correction; "ONGs" is read as a misspelling. Adding the word to
-`.typos.toml` didn't stop it. **Fix:** check `git diff` after a typos
-failure; reword (e.g. "PNG files"), or for an ID add it under
+correction; the plural of PNG is read as a misspelling and rewritten to
+"ONGs". Adding the word to `.typos.toml` didn't stop it (tried
+2026-10-17). **Fix:** check `git diff` after a typos failure; reword (e.g. "PNG files"), or for an ID add it under
 `[default.extend-identifiers]` in `.typos.toml`.
 
 ## Known Omarchy issues (not caused by dots)
