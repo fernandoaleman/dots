@@ -619,13 +619,16 @@ Neovim, and no warm wallpaper showing through.
 - **Window opacity:** Omarchy's default.
 - **tmux bar** (added the same day): the Studio's catppuccin-tmux
   Macchiato bar, copied from its running tmux (`tmux show -gv`) into
-  `themes/moonlight/tmux.conf` as plain options, no plugin: solid
+  `tmux/.config/tmux/themes/moonlight.conf` as plain options, no plugin: solid
   `#24273a` bar, session chip left (green, red while the prefix is held),
   folder and clock chips right, window chips with the number in blue (peach
   for the current one), the number **left** of the name (the Studio has it
   right, `@catppuccin_window_number_position "right"`; moved 2026-10-14). Other themes keep **Omarchy's bar** (named colors
-  that follow the theme). How: `tmux.dots.conf` sources the active theme's
-  `tmux.conf` (`~/.local/state/omarchy/current/theme/`) when present,
+  that follow the theme). **Kept in dots' tmux package, not in the theme**
+  (moved 2026-10-17), so the theme can be shared without a tmux setup
+  (only dots' config would load it anyway). How: `tmux.dots.conf` loads
+  `~/.config/tmux/themes/<slug>.conf` for the active theme's slug
+  (`~/.local/state/omarchy/current/theme.name`) when it exists,
   **before** resurrect/continuum (continuum hooks its auto-save into
   `status-right`), after resetting the two options it sets that Omarchy's
   `tmux.conf` doesn't (`window-status-style`,
@@ -636,7 +639,7 @@ Neovim, and no warm wallpaper showing through.
   `tmux.conf` (and `tmux.dots.conf`) append to them, so every reload added
   the same entries again (seen: 12 and 36 entries instead of 2 and 6). Checked: switching to
   One Dark and back restores each bar, continuum stays hooked in. **Mac:**
-  no Omarchy theme there, so the source line finds nothing.
+  no Omarchy theme there, so nothing is loaded.
 
 ## Homebrew and Rosetta: Mac phase
 

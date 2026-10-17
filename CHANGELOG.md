@@ -28,7 +28,8 @@ by a clean install; macOS support comes in later `1.x` releases.
 - Moonlight: five more backgrounds (Unsplash illustrations),
   downloaded by `install.sh`; cycle them with the background switcher.
 - Moonlight's tmux bar: the Mac Studio's Macchiato bar, only while
-  that theme is active (other themes keep Omarchy's); a theme-set hook
+  that theme is active (other themes keep Omarchy's), kept in the tmux
+  package (`themes/moonlight.conf`) rather than the theme; a theme-set hook
   reloads tmux on every theme switch.
 - Omarchy theme **One Dark** (`themes/one-dark`): onedark.nvim's "dark"
   palette (as on the Mac) in `colors.toml`, onedark.nvim in Neovim, Yaru-blue

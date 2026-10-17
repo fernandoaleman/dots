@@ -1053,7 +1053,10 @@ theme's bar (e.g. Moonlight's Macchiato bar under One Dark).
 **Cause:** tmux reads its config only when loaded; dots' theme-set hook
 (`~/.config/omarchy/hooks/theme-set.d/dots-tmux.hook`) reloads it on every
 switch. **Fix:** check the hook is linked (`make doctor`), or reload by
-hand with `prefix q`.
+hand with `prefix q`. A theme's bar lives in
+`~/.config/tmux/themes/<slug>.conf`, named after the theme's folder
+(`cat ~/.local/state/omarchy/current/theme.name`); a renamed theme needs its
+bar file renamed too.
 
 ## Known Omarchy issues (not caused by dots)
 
