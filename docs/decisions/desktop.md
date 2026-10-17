@@ -615,7 +615,7 @@ Neovim, and no warm wallpaper showing through.
   `6-pine-lake.png` (saatvik 5554, `bNt9ObIingY`). The house and pine
   lake originals are small (1408x768 and 262x169), so those two use
   Unsplash's 3840 px wide render (`?fm=png&w=3840`, byte-stable like the
-  originals); the rest are the original ONGs.
+  originals); the rest are the original PNG files.
 - **Window opacity:** Omarchy's default.
 - **tmux bar** (added the same day): the Studio's catppuccin-tmux
   Macchiato bar, copied from its running tmux (`tmux show -gv`) into
