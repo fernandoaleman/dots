@@ -563,12 +563,31 @@ Chromium, ...) from its `colors.toml` through
 - **Mac:** unchanged (Ghostty's `onedark-dark`, same palette). Later, the
   Mac's Ghostty colors could be generated from this `colors.toml`.
 
-## Theme: Moonlight, the Mac Studio's Catppuccin look (`themes/moonlight`)
+## Theme: Moonlight, the Mac Studio's Catppuccin look (its own repo)
 
 Made as "Catppuccin Studio", renamed "Moonlit Fisherman" the same day
 (2026-10-14) after its background, then **Moonlight** (2026-10-17) once
 it had several moonlit backgrounds. Its
 colors are Catppuccin (Mocha, Neovim and tmux in Macchiato).
+
+**Published 2026-10-17** for other Omarchy users as its own public repo,
+[fernandoaleman/omarchy-moonlight-theme](https://github.com/fernandoaleman/omarchy-moonlight-theme)
+(MIT; the backgrounds stay under the Unsplash License), installed with
+`omarchy theme install <url>`. It moved out of dots' `themes/`; the repo is
+the only copy. `install.sh` clones it to `~/Work/omarchy-moonlight-theme`
+(`THEME_REPOS`) and links `~/.config/omarchy/themes/moonlight` to it, like
+dots' own themes: Omarchy treats a linked working copy as the user's own
+(`theme_came_from_a_repo` in `omarchy-theme-set`: a `.git` folder counts
+only when the theme folder isn't a link), so this machine keeps the
+`foot.ini` and `neovim.lua` below. A theme installed with `omarchy theme
+install` drops them (they can run programs) and builds both from
+`colors.toml`: same colors, no terminal transparency, Omarchy's aether.nvim
+in Neovim (checked by installing it that way; the repo's README says so).
+The repo ships `backgrounds/` and a `preview.png` (1800x1012, Omarchy's
+stock size: the out-of-the-box look on a clean workspace). The tmux bar
+stays in dots (below), so the theme carries no tmux setup. Name clash: an
+unlisted Swarnim114/omarchy-moonlight-theme (2025-08) also installs as
+`moonlight`; kept the name anyway.
 
 Decided 2026-10-14: a second theme copying the Mac Studio, made and linked
 like One Dark (above). What the Studio uses (old `dotfiles` repo and its
@@ -601,13 +620,13 @@ Neovim, and no warm wallpaper showing through.
 - **Background:** "fisherman in boat under full moon at night", an
   illustration by Willian Reis on Unsplash (`FLxEGkr754I`, Unsplash
   License; credited here), Unsplash's original PNG (6000x4000, lossless
-  for flat colors). `install.sh` downloads it (pinned SHA-256) into
-  `~/.config/omarchy/backgrounds/moonlight/`, like One Dark's.
+  for flat colors). In the repo's `backgrounds/` (until 2026-10-17
+  `install.sh` downloaded it into `~/.config/omarchy/backgrounds/moonlight/`).
   Replaced the Studio's own wallpaper ("711 lighthouse", archdrawsalot's
   pack), which isn't freely licensed and had to be copied by hand.
 - **More backgrounds** (added 2026-10-17; cycle with Omarchy's background
   switcher, `Super+Ctrl+Space`), all Unsplash illustrations under the
-  Unsplash License, downloaded the same way:
+  Unsplash License, in the repo the same way:
   `2-house-under-the-moon.png` (karem adem, `nCk7iiQCn8Y`),
   `3-runner-under-the-stars.png` (Mila Okta Safitri, `H745_8JC58g`),
   `4-woman-and-the-moon.png` (karem adem, `OuOfMgd9ueY`),
