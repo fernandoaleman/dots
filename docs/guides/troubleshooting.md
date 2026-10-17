@@ -1043,13 +1043,13 @@ in that exact color, while foot draws the padding itself. (1) With foot
 default), so only the padding is see-through. (2) foot can't reload its
 colors, so after a theme switch the padding keeps the color of the theme
 active when the window opened. **Fix:** (1) `alpha-mode=matching` next to
-`alpha` (Moonlit Fisherman's `foot.ini` has it); (2) reopen the terminal
+`alpha` (Moonlight's `foot.ini` has it); (2) reopen the terminal
 after switching themes.
 
 ### tmux bar doesn't change after switching themes
 
 **Symptom:** after `omarchy theme set`, tmux still shows the previous
-theme's bar (e.g. Moonlit Fisherman's Macchiato bar under One Dark).
+theme's bar (e.g. Moonlight's Macchiato bar under One Dark).
 **Cause:** tmux reads its config only when loaded; dots' theme-set hook
 (`~/.config/omarchy/hooks/theme-set.d/dots-tmux.hook`) reloads it on every
 switch. **Fix:** check the hook is linked (`make doctor`), or reload by

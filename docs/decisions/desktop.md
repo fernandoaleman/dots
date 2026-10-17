@@ -563,10 +563,11 @@ Chromium, ...) from its `colors.toml` through
 - **Mac:** unchanged (Ghostty's `onedark-dark`, same palette). Later, the
   Mac's Ghostty colors could be generated from this `colors.toml`.
 
-## Theme: Moonlit Fisherman, the Mac Studio's Catppuccin look (`themes/moonlit-fisherman`)
+## Theme: Moonlight, the Mac Studio's Catppuccin look (`themes/moonlight`)
 
-Named after its background; made as "Catppuccin Studio" and renamed the
-same day (2026-10-14) once the Studio's own wallpaper was replaced. Its
+Made as "Catppuccin Studio", renamed "Moonlit Fisherman" the same day
+(2026-10-14) after its background, then **Moonlight** (2026-10-17) once
+it had several moonlit backgrounds. Its
 colors are Catppuccin (Mocha, Neovim and tmux in Macchiato).
 
 Decided 2026-10-14: a second theme copying the Mac Studio, made and linked
@@ -601,7 +602,7 @@ Neovim, and no warm wallpaper showing through.
   illustration by Willian Reis on Unsplash (`FLxEGkr754I`, Unsplash
   License; credited here), Unsplash's original PNG (6000x4000, lossless
   for flat colors). `install.sh` downloads it (pinned SHA-256) into
-  `~/.config/omarchy/backgrounds/moonlit-fisherman/`, like One Dark's.
+  `~/.config/omarchy/backgrounds/moonlight/`, like One Dark's.
   Replaced the Studio's own wallpaper ("711 lighthouse", archdrawsalot's
   pack), which isn't freely licensed and had to be copied by hand.
 - **More backgrounds** (added 2026-10-17; cycle with Omarchy's background
@@ -618,7 +619,7 @@ Neovim, and no warm wallpaper showing through.
 - **Window opacity:** Omarchy's default.
 - **tmux bar** (added the same day): the Studio's catppuccin-tmux
   Macchiato bar, copied from its running tmux (`tmux show -gv`) into
-  `themes/moonlit-fisherman/tmux.conf` as plain options, no plugin: solid
+  `themes/moonlight/tmux.conf` as plain options, no plugin: solid
   `#24273a` bar, session chip left (green, red while the prefix is held),
   folder and clock chips right, window chips with the number in blue (peach
   for the current one), the number **left** of the name (the Studio has it

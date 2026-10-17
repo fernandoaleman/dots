@@ -21,13 +21,13 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
-- Omarchy theme **Moonlit Fisherman** (`themes/moonlit-fisherman`): the Mac
+- Omarchy theme **Moonlight** (`themes/moonlight`): the Mac
   Studio's look (Ghostty's Catppuccin Mocha in foot, background at 0.9,
   Neovim in Macchiato); `install.sh` downloads its background (Unsplash,
   Willian Reis).
-- Moonlit Fisherman: five more backgrounds (Unsplash illustrations),
+- Moonlight: five more backgrounds (Unsplash illustrations),
   downloaded by `install.sh`; cycle them with the background switcher.
-- Moonlit Fisherman's tmux bar: the Mac Studio's Macchiato bar, only while
+- Moonlight's tmux bar: the Mac Studio's Macchiato bar, only while
   that theme is active (other themes keep Omarchy's); a theme-set hook
   reloads tmux on every theme switch.
 - Omarchy theme **One Dark** (`themes/one-dark`): onedark.nvim's "dark"
@@ -53,7 +53,7 @@ by a clean install; macOS support comes in later `1.x` releases.
 - Switching Omarchy themes no longer piles up duplicate tmux
   `terminal-overrides`/`terminal-features` entries (the theme-set hook resets
   them before reloading).
-- Moonlit Fisherman: the whole terminal is see-through, not only foot's
+- Moonlight: the whole terminal is see-through, not only foot's
   padding (`alpha-mode=matching`; Omarchy paints tmux's pane background in
   the theme color, which foot kept solid).
 - macOS: `install.sh` installs the Todoist CLI's agent skills on the Mac too
