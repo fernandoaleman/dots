@@ -1059,6 +1059,32 @@ else
   ok "Slack already installed"
 fi
 
+# Todoist: the native app (AUR todoist-appimage: Todoist's own AppImage at a
+# pinned checksum; it pulls in appimagelauncher, built from source), not a web
+# app (packages.md, 2026-10-17). Its launcher runs it with --no-sandbox,
+# which isn't needed here (Chromium's user-namespace sandbox works), and
+# Electron doesn't find the keyring under Hyprland (token stored
+# unencrypted), so a local launcher, regenerated from the package's, drops
+# the flag and adds --password-store=gnome-libsecret (as Omarchy's
+# chrome-flags.conf does for Chrome).
+if omarchy-pkg-missing todoist-appimage; then
+  omarchy-pkg-aur-add todoist-appimage
+else
+  ok "Todoist already installed"
+fi
+todoist_src=/usr/share/applications/todoist.desktop
+todoist_dst="$HOME/.local/share/applications/todoist.desktop"
+if [[ -f $todoist_src ]]; then
+  todoist_want=$(sed -E 's/ --no-sandbox//; s|^(Exec=env DESKTOPINTEGRATION=false /usr/bin/todoist)|\1 --password-store=gnome-libsecret|' "$todoist_src")
+  if [[ -f $todoist_dst && $(<"$todoist_dst") == "$todoist_want" ]]; then
+    ok "Todoist launcher already sandboxed, with the keyring"
+  else
+    mkdir -p "${todoist_dst%/*}"
+    printf '%s\n' "$todoist_want" >"$todoist_dst"
+    ok "Todoist launcher sandboxed, with the keyring"
+  fi
+fi
+
 # Dictation: Voxtype with Omarchy's installer (menu: Install > AI > Dictation;
 # it asks to confirm, downloads a ~150 MB model, sets up the service; F9 hold
 # or Super+Ctrl+X via Omarchy's Hyprland bindings). Local, nothing in a cloud.
@@ -1120,7 +1146,6 @@ fi
 WEBAPPS=(
   "Teams|https://teams.cloud.microsoft"
   "Outlook|https://outlook.office.com"
-  "Todoist|https://app.todoist.com"
 )
 for webapp in "${WEBAPPS[@]}"; do
   IFS='|' read -r name url icon <<<"$webapp"
@@ -1135,11 +1160,13 @@ for webapp in "${WEBAPPS[@]}"; do
     warn "Could not install the $name web app (icon download failed?)"
   fi
 done
-# The Slack web app, replaced by the native app (above), on machines that
-# still have it: Omarchy's remover deletes its launcher and icon
-if grep -qs 'omarchy-launch-webapp' "$HOME/.local/share/applications/Slack.desktop"; then
-  omarchy-webapp-remove Slack >/dev/null && ok "Slack web app removed (native app instead)"
-fi
+# Web apps replaced by native apps (above), on machines that still have
+# them: Omarchy's remover deletes the launcher and icon
+for name in Slack Todoist; do
+  if grep -qs 'omarchy-launch-webapp' "$HOME/.local/share/applications/$name.desktop"; then
+    omarchy-webapp-remove "$name" >/dev/null && ok "$name web app removed (native app instead)"
+  fi
+done
 
 get_dots
 link_dots

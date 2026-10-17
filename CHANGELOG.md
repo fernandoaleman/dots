@@ -11,6 +11,9 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Changed
 
+- Todoist is the native app (AUR `todoist-appimage`) instead of the web
+  app, run with Chromium's sandbox on (not `--no-sandbox`) and its login
+  token in the keyring (`--password-store=gnome-libsecret`).
 - Slack is the native desktop app (AUR `slack-desktop`) instead of the
   Chrome web app: nicer notifications, which also keep coming with its
   window closed; `install.sh` removes the old web app.

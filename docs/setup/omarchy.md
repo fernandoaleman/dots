@@ -28,12 +28,13 @@ what `install.sh` does.
 
 ## 2. Slack, Teams and Outlook
 
-`install.sh` installs the Slack desktop app and creates the Teams and
-Outlook web apps. Once:
+`install.sh` installs the Slack and Todoist desktop apps and creates the
+Teams and Outlook web apps. Once:
 
 - Open **Slack** and sign in (the browser hands the sign-in back to the
   app); allow notifications in Slack's preferences if it asks. Closing its
   window keeps it running in the tray, so notifications continue.
+- Open **Todoist** and sign in (the browser hands it back to the app).
 - Sign in to **Teams** and **Outlook**; allow notifications when asked (or
   via the site's permission icon in the app window).
 
