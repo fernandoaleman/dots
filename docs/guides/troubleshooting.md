@@ -1058,6 +1058,15 @@ hand with `prefix q`. A theme's bar lives in
 (`cat ~/.local/state/omarchy/current/theme.name`); a renamed theme needs its
 bar file renamed too.
 
+### `make lint` changes a word you wrote (e.g. "ONGs" to "ONGs")
+
+**Symptom:** the typos hook fails and the word in the file has changed.
+**Cause:** the hook runs with `--write-changes`, so it applies its own
+correction; "ONGs" is read as a misspelling. Adding the word to
+`.typos.toml` didn't stop it. **Fix:** check `git diff` after a typos
+failure; reword (e.g. "PNG files"), or for an ID add it under
+`[default.extend-identifiers]` in `.typos.toml`.
+
 ## Known Omarchy issues (not caused by dots)
 
 ### Lazy reports `monokai-pro.nvim` "fetch failed: Repository not found"
