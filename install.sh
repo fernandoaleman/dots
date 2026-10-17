@@ -1167,12 +1167,12 @@ done
 # "theme slug|file|URL|SHA-256"
 THEME_BACKGROUNDS=(
   "one-dark|1-blue-swirls.jpg|https://images.unsplash.com/photo-1597773150796-e5c14ebecbf5?fm=jpg&q=100|48fd9ed033ab7b507cfbd1258f1cfd40b3fd3352ccb990c4035f13facc82668c"
-  "moonlit-fisherman|1-moonlit-fisherman.png|https://images.unsplash.com/vector-1775137004926-0f215b748df5|2a8fd84e2434e89cf07ee8649282575aad3e0097fa45c699d135caee3416c385"
-  "moonlit-fisherman|2-house-under-the-moon.png|https://images.unsplash.com/vector-1752645263991-76793504fc3a?fm=png&w=3840|951c3ddf6b27059de82172678f734d1598d92a59a273868438d42a0ee11a3ba7"
-  "moonlit-fisherman|3-runner-under-the-stars.png|https://images.unsplash.com/vector-1749575997215-0fb81fcfe921|ed0216a9ecfd4cc62cad16af21f403ba4a9fae3dc913c4c75922ce85e4307f81"
-  "moonlit-fisherman|4-woman-and-the-moon.png|https://images.unsplash.com/vector-1748198892088-9f34b0d5475a|15f9a0f8a2139d8e0bea775ed221d0b7a0819d831d71fde88577829bfa7224c6"
-  "moonlit-fisherman|5-two-figures-at-the-lake.png|https://images.unsplash.com/vector-1768488649615-0819c9f3abf2|2167db1efd4b53e441ae8f0aa4d7c051e3deb7d37506589299bce556d70fddbf"
-  "moonlit-fisherman|6-pine-lake.png|https://images.unsplash.com/vector-1787391147762-a89aa95c268e?fm=png&w=3840|91455c21c5cd238dc8d145249204660c5c9c4d4239a2bde41425434431df057d"
+  "moonlight|1-moonlit-fisherman.png|https://images.unsplash.com/vector-1775137004926-0f215b748df5|2a8fd84e2434e89cf07ee8649282575aad3e0097fa45c699d135caee3416c385"
+  "moonlight|2-house-under-the-moon.png|https://images.unsplash.com/vector-1752645263991-76793504fc3a?fm=png&w=3840|951c3ddf6b27059de82172678f734d1598d92a59a273868438d42a0ee11a3ba7"
+  "moonlight|3-runner-under-the-stars.png|https://images.unsplash.com/vector-1749575997215-0fb81fcfe921|ed0216a9ecfd4cc62cad16af21f403ba4a9fae3dc913c4c75922ce85e4307f81"
+  "moonlight|4-woman-and-the-moon.png|https://images.unsplash.com/vector-1748198892088-9f34b0d5475a|15f9a0f8a2139d8e0bea775ed221d0b7a0819d831d71fde88577829bfa7224c6"
+  "moonlight|5-two-figures-at-the-lake.png|https://images.unsplash.com/vector-1768488649615-0819c9f3abf2|2167db1efd4b53e441ae8f0aa4d7c051e3deb7d37506589299bce556d70fddbf"
+  "moonlight|6-pine-lake.png|https://images.unsplash.com/vector-1787391147762-a89aa95c268e?fm=png&w=3840|91455c21c5cd238dc8d145249204660c5c9c4d4239a2bde41425434431df057d"
 )
 for entry in "${THEME_BACKGROUNDS[@]}"; do
   IFS='|' read -r theme file bg_url bg_sha <<<"$entry"

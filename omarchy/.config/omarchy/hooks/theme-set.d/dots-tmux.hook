@@ -2,7 +2,7 @@
 #
 # dots: runs after every theme change (theme slug in $1). Reloads tmux's
 # config so its bar follows the theme: a dots theme's tmux.conf (e.g.
-# Moonlit Fisherman) or, for any other theme, Omarchy's own bar again.
+# Moonlight) or, for any other theme, Omarchy's own bar again.
 # terminal-overrides/-features go back to tmux's defaults first: Omarchy's
 # tmux.conf (and tmux.dots.conf) append to them, so each reload would add
 # the same entries again. See docs/decisions/desktop.md.
