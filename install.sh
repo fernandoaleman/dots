@@ -1050,6 +1050,15 @@ else
   ok "Bazecor already installed"
 fi
 
+# Slack: the native desktop app (AUR slack-desktop, Slack's Linux build, still
+# "beta"), not a web app (packages.md, 2026-10-17): nicer notifications, runs
+# in the tray when its window is closed, opens slack:// links
+if omarchy-pkg-missing slack-desktop; then
+  omarchy-pkg-aur-add slack-desktop
+else
+  ok "Slack already installed"
+fi
+
 # Dictation: Voxtype with Omarchy's installer (menu: Install > AI > Dictation;
 # it asks to confirm, downloads a ~150 MB model, sets up the service; F9 hold
 # or Super+Ctrl+X via Omarchy's Hyprland bindings). Local, nothing in a cloud.
@@ -1104,11 +1113,11 @@ fi
 
 # Web apps (Chrome app windows), created with Omarchy's installer:
 # "Name|URL|icon URL". With no icon URL, Omarchy fetches the site's own icon
-# (that fails for Slack workspace subdomains, hence the explicit one). They
-# open in the default Chrome profile, so logins, notification permissions
-# and extensions are shared with Chrome.
+# (that fails for some sites, e.g. Slack workspace subdomains; give one from
+# https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/<name>.png).
+# They open in the default Chrome profile, so logins, notification
+# permissions and extensions are shared with Chrome.
 WEBAPPS=(
-  "Slack|https://1000bulbs.slack.com|https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/slack.png"
   "Teams|https://teams.cloud.microsoft"
   "Outlook|https://outlook.office.com"
   "Todoist|https://app.todoist.com"
@@ -1126,6 +1135,11 @@ for webapp in "${WEBAPPS[@]}"; do
     warn "Could not install the $name web app (icon download failed?)"
   fi
 done
+# The Slack web app, replaced by the native app (above), on machines that
+# still have it: Omarchy's remover deletes its launcher and icon
+if grep -qs 'omarchy-launch-webapp' "$HOME/.local/share/applications/Slack.desktop"; then
+  omarchy-webapp-remove Slack >/dev/null && ok "Slack web app removed (native app instead)"
+fi
 
 get_dots
 link_dots

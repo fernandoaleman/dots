@@ -340,19 +340,23 @@ AUR `slack-desktop`). **Use:** the Mac for demos/onboarding that need it.
 
 ### Slack notifications stopped
 
-**Why:** the Slack web app only notifies while its window is open. Keep it
-parked on a workspace instead of closing it. Also check the notification
-permission (site permission icon in the app window) and Slack's own
-notification preferences.
+**Why:** check Slack's own notification preferences (and Do Not Disturb)
+first. The desktop app keeps notifying from the tray when its window is
+closed; if you quit it from the tray icon, it stops until reopened.
 
-### Slack: "Open With… No Apps available" / sign-in loop / workspace picker
+### Want the Slack web app back (instead of the desktop app)
 
-**Why:** with the generic `https://app.slack.com`, Slack shows a workspace
-picker when you belong to more than one workspace; its *Launch* link opens
-a regular Chrome tab, which tries the desktop app (`slack://` link) that
-isn't installed. **Fix (already applied):** the Slack web app opens the
-workspace URL `https://1000bulbs.slack.com` directly. If it happens anyway:
-*Cancel*, then **"use Slack in your browser"**, and reopen the web app.
+Slack moved from a Chrome web app to the native app on 2026-10-17
+([packages.md](../decisions/packages.md)). To go back: add
+`"Slack|https://<workspace>.slack.com|https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/slack.png"`
+to `WEBAPPS` in `install.sh`, drop the `slack-desktop` block and the
+web-app removal there, point the workspace 7 rule in `hyprland.dots.lua` at
+the web app's class (`chrome-<workspace>.slack.com__-Default`), then
+`omarchy-pkg-drop slack-desktop` and re-run `install.sh`. Use the workspace
+URL, not `https://app.slack.com`: with several workspaces the latter shows a
+picker whose *Launch* link opens a browser tab that tries the `slack://`
+link ("Open With… No Apps available"). The web app notifies only while its
+window is open.
 
 ### A web app was created without an icon / "Could not install the X web app"
 

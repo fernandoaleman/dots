@@ -11,6 +11,9 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Changed
 
+- Slack is the native desktop app (AUR `slack-desktop`) instead of the
+  Chrome web app: nicer notifications, which also keep coming with its
+  window closed; `install.sh` removes the old web app.
 - tmux sessions: sesh is back (mise tool, both systems): `prefix k` opens its
   built-in picker, `prefix L` is `sesh last`; the custom session picker is
   removed.
