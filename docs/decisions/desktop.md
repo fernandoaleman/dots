@@ -604,6 +604,17 @@ Neovim, and no warm wallpaper showing through.
   `~/.config/omarchy/backgrounds/moonlit-fisherman/`, like One Dark's.
   Replaced the Studio's own wallpaper ("711 lighthouse", archdrawsalot's
   pack), which isn't freely licensed and had to be copied by hand.
+- **More backgrounds** (added 2026-10-17; cycle with Omarchy's background
+  switcher, `Super+Ctrl+Space`), all Unsplash illustrations under the
+  Unsplash License, downloaded the same way:
+  `2-house-under-the-moon.png` (karem adem, `nCk7iiQCn8Y`),
+  `3-runner-under-the-stars.png` (Mila Okta Safitri, `H745_8JC58g`),
+  `4-woman-and-the-moon.png` (karem adem, `OuOfMgd9ueY`),
+  `5-two-figures-at-the-lake.png` (the iop, `AKkGOJla9_s`),
+  `6-pine-lake.png` (saatvik 5554, `bNt9ObIingY`). The house and pine
+  lake originals are small (1408x768 and 262x169), so those two use
+  Unsplash's 3840 px wide render (`?fm=png&w=3840`, byte-stable like the
+  originals); the rest are the original ONGs.
 - **Window opacity:** Omarchy's default.
 - **tmux bar** (added the same day): the Studio's catppuccin-tmux
   Macchiato bar, copied from its running tmux (`tmux show -gv`) into
