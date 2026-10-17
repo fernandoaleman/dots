@@ -358,6 +358,27 @@ picker whose *Launch* link opens a browser tab that tries the `slack://`
 link ("Open With… No Apps available"). The web app notifies only while its
 window is open.
 
+### Todoist: "Safe Storage Encryption is not available" or `--no-sandbox`
+
+**Symptom:** started from a terminal, Todoist logs *"Safe Storage Encryption
+is not available"* (its login token is stored unencrypted), or `ps` shows it
+running with `--no-sandbox`. **Cause:** it was started by the package's
+launcher (or plain `todoist`) instead of dots' override; Electron doesn't
+recognize Hyprland, so it doesn't use gnome-keyring without
+`--password-store=gnome-libsecret`. **Fix:** re-run `install.sh` (it rewrites
+`~/.local/share/applications/todoist.desktop`), or start it by hand with
+`todoist --password-store=gnome-libsecret`. The first start with the keyring
+logs a "Failed to decrypt API token" error and asks you to sign in again
+(the old token wasn't encrypted); that's expected. The same applies to any
+Electron app that keeps secrets: add the flag.
+
+### Want the Todoist web app back
+
+Add `"Todoist|https://app.todoist.com"` to `WEBAPPS` in `install.sh`, drop
+the Todoist block and `Todoist` from the web-app removal loop there, then
+`omarchy-pkg-drop todoist-appimage appimagelauncher`,
+`rm ~/.local/share/applications/todoist.desktop` and re-run `install.sh`.
+
 ### A web app was created without an icon / "Could not install the X web app"
 
 **Why:** `omarchy-webapp-install` fetches the site's icon automatically and
