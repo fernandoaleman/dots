@@ -587,7 +587,10 @@ The repo ships `backgrounds/` and a `preview.png` (1800x1012, Omarchy's
 stock size: the out-of-the-box look on a clean workspace). The tmux bar
 stays in dots (below), so the theme carries no tmux setup. Name clash: an
 unlisted Swarnim114/omarchy-moonlight-theme (2025-08) also installs as
-`moonlight`; kept the name anyway.
+`moonlight`; kept the name anyway. Listing on omarchy.org/themes requested
+2026-10-17: [omacom/omarchy-site#577](https://github.com/omacom/omarchy-site/pull/577)
+(thumbnail + `themes/index.html` entry, as merged listings do; merges had
+slowed to a few a month, so it may wait).
 
 Decided 2026-10-14: a second theme copying the Mac Studio, made and linked
 like One Dark (above). What the Studio uses (old `dotfiles` repo and its
