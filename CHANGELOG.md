@@ -25,6 +25,8 @@ by a clean install; macOS support comes in later `1.x` releases.
   Studio's look (Ghostty's Catppuccin Mocha in foot, background at 0.9,
   Neovim in Macchiato); `install.sh` downloads its background (Unsplash,
   Willian Reis).
+- Moonlit Fisherman: five more backgrounds (Unsplash illustrations),
+  downloaded by `install.sh`; cycle them with the background switcher.
 - Moonlit Fisherman's tmux bar: the Mac Studio's Macchiato bar, only while
   that theme is active (other themes keep Omarchy's); a theme-set hook
   reloads tmux on every theme switch.
