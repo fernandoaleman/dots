@@ -179,6 +179,22 @@ after the absolute path (`-Users-faleman-Work-x` on a Mac,
 To decide: what to sync (instructions and skills via git; memory and
 sessions via Syncthing?), how to map the Mac and Omarchy paths, conflicts,
 keeping personal projects and secrets in transcripts off the work Mac.
+
+Tested 2026-10-18 on Omarchy (v2.1.288, throwaway sessions):
+`CLAUDE_CONFIG_DIR=$HOME/.claude` plus `CLAUDE_CODE_PROJECT_DIR_NAME=<name>`
+(docs, *Manage sessions*: "Name the project directory yourself"; v2.1.234+)
+puts sessions and memory under `projects/<name>/` whatever the path: a
+session started in one folder is listed by the `--resume` picker, resumed by
+`--continue` and `--resume <id>` from another folder; memory reads and writes
+work; a session moved by hand from its old path-named folder resumes; a
+session whose folder no longer exists resumes in the current one. Gotcha:
+that variable moves `~/.claude.json` (troubleshooting). Symlinking the
+path-named folders to one shared folder instead breaks memory (troubleshooting).
+Prior art (none fits Syncthing + different homes): `VirelNode/session-roam`
+(Syncthing, needs identical paths; cross-machine session locks),
+`tawanorg/claude-sync` (S3/R2/WebDAV, rewrites paths inside transcripts),
+`NeoAcar/claude-handoff` (export/import one session), anthropics/claude-code
+#31992 and #25739 (open feature requests).
 The global `~/.claude/CLAUDE.md`, `team.md` and `personas.md` were copied
 by hand from the Mac Studio to the work Mac (2026-10-13; `CLAUDE.md` points
 at `~/Work/notes`, which isn't there); keep them in step (rsync or

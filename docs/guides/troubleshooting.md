@@ -1105,6 +1105,24 @@ correction; the plural of PNG is read as a misspelling and rewritten to
 2026-10-17). **Fix:** check `git diff` after a typos failure; reword (e.g. "PNG files"), or for an ID add it under
 `[default.extend-identifiers]` in `.typos.toml`.
 
+### Claude Code: first-run setup again, or settings gone (`CLAUDE_CONFIG_DIR`)
+
+Setting `CLAUDE_CONFIG_DIR` (even to `~/.claude`) makes Claude Code use
+`$CLAUDE_CONFIG_DIR/.claude.json` instead of `~/.claude.json` (account,
+trusted folders, MCP servers). Found testing 2026-10-18 (v2.1.288): with no
+file there it restored an old backup from `~/.claude/backups/` and showed the
+first-run theme picker. **Fix:** before setting it, copy the current
+`~/.claude.json` there, then always launch with it set (two copies drift).
+
+### Claude Code: memory "needs permission" in a symlinked project folder
+
+If `~/.claude/projects/<folder>` is a symlink to another folder, Claude reads
+the `MEMORY.md` index but asks permission to read memory files and refuses to
+save new ones, even with `Read`/`Edit`/`Write(~/.claude/projects/**)` allow
+rules (tested 2026-10-18, v2.1.288). Sessions work through the link. **Fix:**
+don't symlink project folders; name the folder with
+`CLAUDE_CODE_PROJECT_DIR_NAME` (needs `CLAUDE_CONFIG_DIR` set) instead.
+
 ## Known Omarchy issues (not caused by dots)
 
 ### Lazy reports `monokai-pro.nvim` "fetch failed: Repository not found"
