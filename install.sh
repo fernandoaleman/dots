@@ -1090,6 +1090,20 @@ if [[ -f $todoist_src ]]; then
     ok "Todoist launcher sandboxed, with the keyring"
   fi
 fi
+# Closing Todoist's window quits it unless "Stay Running in Tray" (its tray
+# menu) is on; it defaults to on only on Windows. Set just that key; Todoist
+# adds its other defaults on first run.
+todoist_settings="$HOME/.config/Todoist/settings.json"
+if [[ -f $todoist_src ]]; then
+  if [[ $(jq -r '.stay_in_tray' "$todoist_settings" 2>/dev/null) == true ]]; then
+    ok "Todoist already stays in the tray"
+  else
+    mkdir -p "${todoist_settings%/*}"
+    todoist_json=$(jq '.stay_in_tray = true' "$todoist_settings" 2>/dev/null || echo '{"stay_in_tray": true}')
+    printf '%s\n' "$todoist_json" >"$todoist_settings"
+    ok "Todoist stays in the tray when closed"
+  fi
+fi
 
 # Dictation: Voxtype with Omarchy's installer (menu: Install > AI > Dictation;
 # it asks to confirm, downloads a ~150 MB model, sets up the service; F9 hold

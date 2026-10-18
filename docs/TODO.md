@@ -221,6 +221,19 @@ and without the AWS VPN; then Screen Sharing's quality mode, Moonlight's
 bitrate/resolution/codec, and what the idle freeze is (display sleep on
 the host, or the connection dropping).
 
+### Teams: native app or web app (ask again)
+
+Installed 2026-10-17 to try, alongside the Teams web app (neither change is
+in dots yet): AUR `teams-for-linux-bin`, an unofficial Electron wrapper of
+the Teams website. Works so far: stays in the tray when closed, sign-in in
+the keyring (`v11`). Notes: its Teams page runs without Chromium's sandbox by
+design (`sandbox: false` in its code); it runs under XWayland
+(`--ozone-platform=x11` in its launcher, GPU off). A test notification showed
+inside the app, not as a desktop popup: Teams sent none (checked with
+`dbus-monitor`), so it's a Teams setting; the user is fine with that for
+now. To decide: keep it (dots installs it, removes the Teams web app, maybe a
+workspace rule) or remove it.
+
 ### Outlook PWA stops refreshing
 
 On the work Mac the Outlook PWA showed mail only up to 8 AM while Outlook
