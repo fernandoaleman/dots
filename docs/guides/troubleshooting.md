@@ -293,6 +293,16 @@ Install → Terminal), then add that command to `install.sh`. See
 shows its description; put it in `monitors.dots.lua` (shared) or
 `monitors.local.lua` (this machine only).
 
+### Omarchy's display scale menu doesn't change the desk monitors
+
+**Why:** the menu edits only the catch-all rule in Omarchy's
+`monitors.lua` (and its `GDK_SCALE`). `monitors.dots.lua`, loaded after it,
+sets scale 1.6 for each desk monitor by description, so those rules win.
+**Fix:** change the scale in `monitors.dots.lua`; to try one on this machine
+only, copy its three `hl.monitor` lines into `monitors.local.lua` with the
+new scale and positions in scaled pixels (2560 / scale per monitor, e.g.
+2048 at 1.25). Delete the local file to go back.
+
 ### A workspace is on the wrong monitor
 
 **Why:** workspaces created before the rules (or while a monitor was
