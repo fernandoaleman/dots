@@ -253,6 +253,8 @@ Aliases `co`, `br`, `ci`, `st`; `init.defaultBranch = master`;
   - `ggpur` = `git pull --rebase origin "$(git branch --show-current)"`
     (the old one used a zsh `current_branch` function; git prints the
     branch itself). No Omarchy clash.
+  - `gftf` = `git fetch --tags --force`; `ggpurt` = `ggpur && gftf`, as on
+    the Mac. No Omarchy clash.
 - `50-shortcuts`: `c` conflicted with Omarchy's `c` (opencode); `~/Work` +
   zoxide replace `~/code` + `c <project>`.
 - `90-path`: Omarchy already inits mise/starship/zoxide; PATH order kept as

@@ -27,3 +27,5 @@ ncdu() {
 # (scripts still get it; `command gs` runs it).
 alias gs='git status'
 alias ggpur='git pull --rebase origin "$(git branch --show-current)"'
+alias gftf='git fetch --tags --force'
+alias ggpurt='ggpur && gftf'
