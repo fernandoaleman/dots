@@ -250,7 +250,7 @@ isn't in the plugin catalog yet:
    bug, fixed upstream in 1.2.4; daemon enabled; CLI linked into
    `~/.local/bin`; widget). `--no-keybind`: it would write into Omarchy's
    `bindings.lua`; Super+Shift+V is bound in `hyprland.dots.lua` instead.
-4. Profile: the 1Password Document `work.ovpn` (tag `dots/vpn`,
+4. Profile: the 1Password Document `<company>.ovpn` (tag `dots/vpn`,
    platform-neutral title) is written to the plugin's
    `~/.config/omarchy/aws-vpn-client/profiles/` (600) by the secrets step
    and registered once (`add … --link`, named after the file).

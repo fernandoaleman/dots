@@ -153,7 +153,7 @@ DRY: its IAM section duplicated the `aws-role-switch` key (same hashes),
 so the section was deleted; the item keeps only the console sign-in and the
 MFA code. The key lives only in `aws-role-switch`.
 
-## VPN profile: `work.ovpn` (work vault): done
+## VPN profile: `<company>.ovpn` (work vault): done
 
 - SAML sign-in (`auth-federate`), so no client certificate or key: the
   profile holds the server endpoint, the CA and settings. Compared part by
@@ -162,7 +162,7 @@ MFA code. The key lives only in `aws-role-switch`.
   2026-09) has the current one; the AWS VPN client's own profile (= old
   repo) is that same file with `auth-federate` stripped on import.
 - User chose the latest download: streamed into the existing Document,
-  retitled `work.ovpn`, tag `dots/vpn` added (an older, unrelated tag
+  retitled `<company>.ovpn`, tag `dots/vpn` added (an older, unrelated tag
   kept), note; hash verified. Install path is decided with the AWS VPN
   plugin ([TODO](../TODO.md)).
 - A separate GitHub-runner VPN profile (own client key) on the Mac Studio
@@ -200,6 +200,8 @@ matches the Mac Studio by hash.
 Cloudflare (work) / (work devops) / (Personal), PagerTree
 (work) / (work bot, moved to the work vault). The rest of
 1Password follows in a later cleanup ([TODO](../TODO.md)).
+In this repo `work` stands for the company's name in the real titles
+(dots never names the employer; `install.sh` finds items by tag, not title).
 
 ## SSH setup
 
