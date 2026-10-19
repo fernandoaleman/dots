@@ -82,6 +82,13 @@ below"*), same `dofile`-if-exists pattern as monitors.
   bash -c "tmux attach || tmux new -s Work"`; `xdg-terminal-exec` supports
   `--app-id`, so it works for any terminal). Other terminals (Super+Return)
   open wherever you are.
+- The `tmux` window gets Omarchy's `terminal` tag (`o.window({ class =
+  "^tmux$" }, { tag = "+terminal" })`, added 2026-10-19): Omarchy tags
+  terminals by class (`default/hypr/apps/terminals.lua`), and its Super+C/V
+  (`default/hypr/bindings/clipboard.lua`) send Ctrl+Insert/Shift+Insert to
+  tagged windows but Ctrl+C/Ctrl+V to others, so the untagged window pasted
+  `^V` in Neovim and Super+C interrupted. Side effect: themes' terminal rules
+  (e.g. Kanagawa's opacity) apply to it as to other terminals.
 - Launching a pinned app takes you to its workspace (not `silent`). A pin
   only applies when the window opens; it can then be moved anywhere
   (Super+Shift+N) and stays there.

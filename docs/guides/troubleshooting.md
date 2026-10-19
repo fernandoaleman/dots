@@ -303,6 +303,15 @@ only, copy its three `hl.monitor` lines into `monitors.local.lua` with the
 new scale and positions in scaled pixels (2560 / scale per monitor, e.g.
 2048 at 1.25). Delete the local file to go back.
 
+### Super+V types `^V` (or Super+C interrupts) in a terminal window
+
+**Why:** Omarchy's Super+C/V send terminal keys (Ctrl+Insert/Shift+Insert)
+only to windows tagged `terminal`, matched by class; a terminal launched
+with its own app-id (like dots' `tmux`) isn't, so it gets Ctrl+V/Ctrl+C.
+Check with `hyprctl clients -j | jq '.[] | {class, tags}'`. **Fix:** tag
+the class in `hyprland.dots.lua`: `o.window({ class = "^name$" }, { tag =
+"+terminal" })`. Meanwhile Ctrl+Shift+V / Shift+Insert paste in foot.
+
 ### A workspace is on the wrong monitor
 
 **Why:** workspaces created before the rules (or while a monitor was

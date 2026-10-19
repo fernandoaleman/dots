@@ -72,6 +72,9 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Fixed
 
+- Super+V/Super+C paste and copy in the tmux window (Super+Alt+Return)
+  again: its `tmux` app-id hid it from Omarchy's terminal detection, so
+  they sent Ctrl+V (`^V` in Neovim) and Ctrl+C (interrupt).
 - Switching Omarchy themes no longer piles up duplicate tmux
   `terminal-overrides`/`terminal-features` entries (the theme-set hook resets
   them before reloading).

@@ -7,6 +7,11 @@
 hl.unbind("SUPER + ALT + RETURN")
 o.bind("SUPER + ALT + RETURN", "Tmux", 'omarchy-launch-terminal --app-id=tmux bash -c "tmux attach || tmux new -s Work"')
 
+-- Omarchy tags terminals by class (default/hypr/apps/terminals.lua) and
+-- Super+C/V send terminal copy/paste keys only to tagged windows; without
+-- the tag the tmux window gets Ctrl+C (interrupt) and Ctrl+V (^V in Neovim).
+o.window({ class = "^tmux$" }, { tag = "+terminal" })
+
 -- Apps always open on their workspace (see monitors.dots.lua: 1-3 left,
 -- 4-6 middle, 7-9 right). Matched once, when the window opens; after that
 -- a window can be moved anywhere (Super+Shift+N) and stays there.
