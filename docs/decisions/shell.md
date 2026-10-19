@@ -259,6 +259,10 @@ Aliases `co`, `br`, `ci`, `st`; `init.defaultBranch = master`;
     the newer `git restore --source=HEAD --staged --worktree :/`: `reset`
     isn't deprecated, and `--hard` also ends a stuck merge or cherry-pick,
     which `restore` doesn't (`man git`, "Reset, restore and revert").
+  - `gcm` = `git switch master` (was `git checkout master`; `switch` is the
+    newer form). **Overrides Omarchy's `gcm`** (`git commit -m`, in
+    `default/bash/aliases`); that command is `gcmsg` here. The user chose
+    muscle memory over Omarchy's name (troubleshooting has the way back).
 - `50-shortcuts`: `c` conflicted with Omarchy's `c` (opencode); `~/Work` +
   zoxide replace `~/code` + `c <project>`.
 - `90-path`: Omarchy already inits mise/starship/zoxide; PATH order kept as

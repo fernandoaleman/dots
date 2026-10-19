@@ -32,3 +32,6 @@ alias ggpurt='ggpur && gftf'
 # Not `git restore --staged --worktree :/`: reset --hard also ends a stuck
 # merge or cherry-pick (man git, "Reset, restore and revert").
 alias grhh='git reset HEAD --hard'
+# Overrides Omarchy's gcm (git commit -m; that's gcmsg here). git switch is
+# the newer git checkout <branch>.
+alias gcm='git switch master'

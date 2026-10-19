@@ -963,11 +963,21 @@ include mechanism, so customizing means a full override: stow a
 `starship.toml`, or point `STARSHIP_CONFIG` at a dots file in
 `~/.bashrc.dots`.
 
-### A git alias like `gs`, `gco`, `gp` is missing
+### `gcm` switches to master instead of committing
 
-**Why:** all old git aliases were dropped to learn Omarchy's (`g`, `gcm`,
-`gcam`, `gcad`, `ga`/`gd` worktrees). Add individual ones to
-`~/.config/bash/aliases`.
+**Why:** dots' `~/.config/bash/aliases` sets `gcm` to `git switch master`
+(the old Mac muscle memory), replacing Omarchy's `gcm` = `git commit -m`;
+commit with a message using `gcmsg` (same command). **Restore Omarchy's:**
+delete dots' `alias gcm=` line (or add `alias gcm='git commit -m'` to
+`~/.bashrc.local`).
+
+### A git alias like `gco`, `gp` is missing
+
+**Why:** the old git aliases were dropped to learn Omarchy's (`g`,
+`gcam`, `gcad`, `ga`/`gd` worktrees); a few were re-added for muscle memory
+(`gs`, `ggpur`, `gftf`, `ggpurt`, `grhh`, `gcm`). Add individual
+ones to the git section of `~/.config/bash/aliases`, checking Omarchy's
+`default/bash/aliases` for a clash first.
 
 ### Commands typed in one terminal aren't in another terminal's history
 
