@@ -24,7 +24,8 @@ To change the timings: `idle.screensaver` / `idle.lock` in `shell.json`
 ## Monitors: `hypr` package, `monitors.dots.lua`
 
 - `~/.config/hypr/monitors.lua` stays Omarchy's (catch-all rule: preferred
-  mode, auto position, scale 1.6, `GDK_SCALE=2`). `install.sh` appends a
+  mode, auto position, scale 1.25, `GDK_SCALE=1`, as Omarchy's own scale menu
+  set it on 2026-10-18; was 1.6 and 2, and the user kept the menu's values). `install.sh` appends a
   line that loads `~/.config/hypr/monitors.dots.lua` **by path** (`dofile`,
   after checking the file exists; Lua `require` can't load a dotted name).
   `dots_include` writes the marker comment with `--` for Lua files.

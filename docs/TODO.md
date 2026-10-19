@@ -319,16 +319,6 @@ Archive `fernandoaleman/nvim` once the Mac uses dots.
 
 ## When it happens
 
-### Around 2026-10-19/20: keep monitor scale 1.25 or go back to 1.6?
-
-Trying 1.25 on the three desk monitors since 2026-10-18 (more space; is it
-too small for the eyes?). The trial is the machine-local
-`~/.config/hypr/monitors.local.lua` (same rules, scale 1.25, positions 0 /
-2048 / 4096); dots still says 1.6. Ask the user, then either move 1.25 into
-`monitors.dots.lua` and `docs/decisions/desktop.md`, or delete the local
-file. Either way, Omarchy's menu also set `monitors.lua`'s catch-all to 1.25
-with `GDK_SCALE` 1 (was 1.6 and 2): ask whether to restore it.
-
 ### Around 2026-11-03: is AWS SSO login still used?
 
 SSO login was kept as a rarely used alternative to the daily role + MFA
