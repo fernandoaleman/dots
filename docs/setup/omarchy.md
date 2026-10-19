@@ -59,10 +59,16 @@ over HTTPS. GitHub stays on HTTPS (no SSH key for GitHub;
 ## 5. Work Claude Code plugins
 
 Not automated (for now): after `gh auth login` (the marketplace repo is
-private), in Claude Code run `/plugin`, add the work plugin marketplace
-(its GitHub `org/repo`) and install the work plugins from it. The names
-are kept out of this public repo; the old chezmoi script
-(`run_once_after_35-setup-claude-plugins`) has the list.
+private), add the work plugin marketplace and install the work plugins
+from it, user-wide: `claude plugin marketplace add <org>/<repo>`, then
+`claude plugin install <plugin>@<marketplace> --scope user` for each (or
+`/plugin` inside Claude Code). The names are kept out of this public repo;
+the old chezmoi script (`run_once_after_35-setup-claude-plugins`) or another
+machine's `claude plugin list` has the list.
+
+Public plugins, same way: `claude plugin marketplace add cloudflare/skills`,
+`claude plugin install cloudflare@cloudflare --scope user` (its MCP servers
+ask you to sign in on first use).
 
 Same on the Mac.
 
