@@ -975,7 +975,7 @@ delete dots' `alias gcm=` line (or add `alias gcm='git commit -m'` to
 
 **Why:** the old git aliases were dropped to learn Omarchy's (`g`,
 `gcam`, `gcad`, `ga`/`gd` worktrees); a few were re-added for muscle memory
-(`gs`, `ggpur`, `gftf`, `ggpurt`, `grhh`, `gcm`). Add individual
+(`gs`, `ggpur`, `gftf`, `ggpurt`, `grhh`, `gcm`, `gcmsg`). Add individual
 ones to the git section of `~/.config/bash/aliases`, checking Omarchy's
 `default/bash/aliases` for a clash first.
 
