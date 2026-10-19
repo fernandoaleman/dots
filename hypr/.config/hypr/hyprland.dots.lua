@@ -18,7 +18,7 @@ o.window({ class = "^tmux$" }, { tag = "+terminal" })
 o.window({ initial_class = "^google-chrome$" }, { workspace = "1" })
 o.window({ initial_class = "^tmux$" }, { workspace = "4" })
 o.window({ initial_class = "^slack$" }, { workspace = "7" })
-o.window({ initial_class = "^chrome-teams\\.cloud\\.microsoft__-Default$" }, { workspace = "7" })
+o.window({ initial_class = "^teams-for-linux$" }, { workspace = "7" })
 o.window({ initial_class = "^chrome-outlook\\.office\\.com__-Default$" }, { workspace = "8" })
 o.window({ initial_class = "^Spotify$" }, { workspace = "9" })
 

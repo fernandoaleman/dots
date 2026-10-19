@@ -903,6 +903,17 @@ plugins require `luarocks`, so you can ignore any warnings below"*.
 tap still uses them. Only warnings; the cask installs. Goes away when the
 tap is updated.
 
+### Two notifications for every Teams message
+
+**Why:** Teams was running twice: teams-for-linux and the old Teams web app
+(a Chrome app window, which also notifies through Chrome's permission for
+`teams.cloud.microsoft`). **Fix:** use only teams-for-linux. `install.sh`
+removes the web app's launcher (`omarchy-webapp-remove Teams`); close any
+open Teams web app window or tab, and remove the site's permission in
+Chrome (`chrome://settings/content/notifications`, *Allowed to send
+notifications*: `https://teams.cloud.microsoft`; the same for
+`https://app.slack.com`, left from the old Slack web app).
+
 ## Syncthing
 
 ### Claude Code: an extra session, or a `sync-conflict` file

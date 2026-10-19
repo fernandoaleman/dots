@@ -33,8 +33,10 @@ To change the timings: `idle.screensaver` / `idle.lock` in `shell.json`
   apply to these exact monitors; any other screen (e.g. a laptop panel)
   falls back to Omarchy's catch-all (*"a fallback rule to use when no other
   rules match"*). Port names like `HDMI-A-1` aren't unique across machines.
-- Desk: three 32" curved LG UltraGear 1440p monitors, scale 1.6 (Omarchy's),
-  positions in scaled pixels (2560 / 1.6 = 1600 per monitor):
+- Desk: three 32" curved LG UltraGear 1440p monitors, scale 1.25,
+  positions in scaled pixels (2560 / 1.25 = 2048 per monitor). Was 1.6
+  (Omarchy's default for them) until 2026-10-19: 1.25, tried from
+  2026-10-18, gives more room and the user kept it.
 
   | Position | Port | Description serial | Mode | Workspaces |
   |---|---|---|---|---|
@@ -69,7 +71,7 @@ below"*), same `dofile`-if-exists pattern as monitors.
 | Chrome | `google-chrome` | 1 (left) |
 | tmux terminal (Super+Alt+Return) | `tmux` | 4 (middle) |
 | Slack (native app) | `slack` | 7 (right) |
-| Teams web app | `chrome-teams.cloud.microsoft__-Default` | 7 (right, side by side with Slack) |
+| Teams (teams-for-linux) | `teams-for-linux` | 7 (right, side by side with Slack) |
 | Outlook web app | `chrome-outlook.office.com__-Default` | 8 (right) |
 | Spotify | `Spotify` | 9 (right) |
 

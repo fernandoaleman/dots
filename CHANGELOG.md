@@ -11,6 +11,11 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Changed
 
+- Teams is teams-for-linux (AUR `teams-for-linux-bin`) instead of the web
+  app, which ran alongside it and doubled every notification; `install.sh`
+  removes the old web app.
+- Desk monitors at scale 1.25 instead of 1.6 (more room; tried since
+  2026-10-18).
 - Todoist is the native app (AUR `todoist-appimage`) instead of the web
   app, run with Chromium's sandbox on (not `--no-sandbox`) and its login
   token in the keyring (`--password-store=gnome-libsecret`), and it

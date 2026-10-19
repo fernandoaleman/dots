@@ -1158,6 +1158,15 @@ else
   ok "Slack already installed"
 fi
 
+# Teams: teams-for-linux (AUR teams-for-linux-bin, an unofficial desktop wrapper
+# of Teams' web app; Microsoft has no Linux app), not a web app (packages.md,
+# 2026-10-19): one Teams at a time, or every message notifies twice
+if omarchy-pkg-missing teams-for-linux-bin; then
+  omarchy-pkg-aur-add teams-for-linux-bin
+else
+  ok "Teams for Linux already installed"
+fi
+
 # Todoist: the native app (AUR todoist-appimage: Todoist's own AppImage at a
 # pinned checksum; it pulls in appimagelauncher, built from source), not a web
 # app (packages.md, 2026-10-17). Its launcher runs it with --no-sandbox,
@@ -1264,7 +1273,6 @@ fi
 # They open in the default Chrome profile, so logins, notification
 # permissions and extensions are shared with Chrome.
 WEBAPPS=(
-  "Teams|https://teams.cloud.microsoft"
   "Outlook|https://outlook.office.com"
 )
 for webapp in "${WEBAPPS[@]}"; do
@@ -1282,7 +1290,7 @@ for webapp in "${WEBAPPS[@]}"; do
 done
 # Web apps replaced by native apps (above), on machines that still have
 # them: Omarchy's remover deletes the launcher and icon
-for name in Slack Todoist; do
+for name in Slack Teams Todoist; do
   if grep -qs 'omarchy-launch-webapp' "$HOME/.local/share/applications/$name.desktop"; then
     omarchy-webapp-remove "$name" >/dev/null && ok "$name web app removed (native app instead)"
   fi
