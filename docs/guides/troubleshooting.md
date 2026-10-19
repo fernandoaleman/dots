@@ -1006,6 +1006,16 @@ for how to bring it back (`omarchy-pkg-add git-delta`; Omarchy's
 account on every call (`dots_op_accounts`, `aws-role-login` searches all);
 by hand: `op account list`, then `op --account <ID or sign-in address> …`.
 
+### 1Password: `op` can't import an existing SSH key
+
+Tested 2026-10-19 (`op` 2.39.0): `op item create` with an `SSH_KEY` template
+whose `private key` (`SSHKEY`) field holds an OpenSSH private key creates an
+item without a usable key (no `private key` or `public key` field to read).
+`op` only generates new keys (`--ssh-generate-key`). **Fix:** import the key
+file in the 1Password app (New Item > SSH Key > Add Private Key > Import a
+Key File), with the title and `dots/ssh` tag `install.sh` expects; then
+check `op read "op://<vault>/<item>/public key" | ssh-keygen -lf -`.
+
 ### `aws-role-login`: "need exactly one 1Password item tagged dots/aws-mfa"
 
 **Why:** it searches every signed-in 1Password account, and found the tag
