@@ -71,7 +71,7 @@ below"*), same `dofile`-if-exists pattern as monitors.
 | Chrome | `google-chrome` | 1 (left) |
 | tmux terminal (Super+Alt+Return) | `tmux` | 4 (middle) |
 | Slack (native app) | `slack` | 7 (right) |
-| Teams (teams-for-linux) | `teams-for-linux` | 7 (right, side by side with Slack) |
+| Teams web app | `chrome-teams.cloud.microsoft__-Default` | 7 (right, side by side with Slack) |
 | Outlook web app | `chrome-outlook.office.com__-Default` | 8 (right) |
 | Spotify | `Spotify` | 9 (right) |
 

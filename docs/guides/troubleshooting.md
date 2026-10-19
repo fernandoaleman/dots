@@ -905,14 +905,10 @@ tap is updated.
 
 ### Two notifications for every Teams message
 
-**Why:** Teams was running twice: teams-for-linux and the old Teams web app
-(a Chrome app window, which also notifies through Chrome's permission for
-`teams.cloud.microsoft`). **Fix:** use only teams-for-linux. `install.sh`
-removes the web app's launcher (`omarchy-webapp-remove Teams`); close any
-open Teams web app window or tab, and remove the site's permission in
-Chrome (`chrome://settings/content/notifications`, *Allowed to send
-notifications*: `https://teams.cloud.microsoft`; the same for
-`https://app.slack.com`, left from the old Slack web app).
+**Why:** Teams was running twice: the Teams web app and teams-for-linux
+(tried by hand, then dropped: packages.md). **Fix:** run only the web app:
+`omarchy-pkg-remove teams-for-linux-bin` (quit it from the tray first), and
+close any Teams tab in Chrome as well.
 
 ## Syncthing
 
