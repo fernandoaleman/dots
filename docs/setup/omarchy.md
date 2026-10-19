@@ -127,3 +127,7 @@ hooks:
 cd ~/Work/dots
 make setup
 ```
+
+Then copy the private-words list from another machine to
+`~/.config/dots/private-words` (mode 600); without it every commit fails
+([secrets.md](../decisions/secrets.md#private-words-a-lint-check-not-a-habit-decided-2026-10-19)).

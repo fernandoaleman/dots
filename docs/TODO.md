@@ -75,6 +75,13 @@ capabilities). If Omarchy stays behind, reconsider AUR `sunshine-bin`.
   (`TMUX_SSH_COMMIT` in `install.sh`).
 - Investigate whether tmux-ssh works inside herdr.
 
+### Private words list from 1Password
+
+Keep `~/.config/dots/private-words` (the `private words` hook's list,
+[secrets.md](decisions/secrets.md#private-words-a-lint-check-not-a-habit-decided-2026-10-19))
+in 1Password and have `install.sh` write it like the other secrets, so a new
+machine doesn't need it copied by hand. Today it's only on Omarchy.
+
 ### 1Password naming cleanup
 
 Retitle items to `<Service> (<account>)` (e.g. `Cloudflare (work)`,

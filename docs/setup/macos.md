@@ -26,7 +26,8 @@ permission prompts; that's expected
 ([macos.md](../decisions/macos.md#bootstrap-on-a-fresh-mac)). The first
 `nvim` start downloads its plugins and tools; let it finish. To commit to
 dots from the Mac, run `make setup` in `~/Work/dots` once (prek and its
-git hooks).
+git hooks) and copy the private-words list to `~/.config/dots/private-words`
+(mode 600; see [omarchy.md](omarchy.md) step 8).
 
 **Optional, to let an agent on Omarchy drive the setup over SSH:** System
 Settings > General > Sharing > **Remote Login** on (Allow access: only your

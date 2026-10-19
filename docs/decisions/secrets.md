@@ -332,3 +332,34 @@ account's own vault, and dots reads 1Password per machine profile:
 - Tested: Omarchy (both accounts) reports every file up to date; the work
   Mac installed its keys, AWS files and tokens from the work account only;
   re-runs change nothing.
+
+## Private words: a lint check, not a habit (decided 2026-10-19)
+
+The repo is public, and the employer must never be named in it. That rule
+was followed by habit until a pre-push scan on 2026-10-19 found the
+company's name in 1Password item titles, the VPN profile's name and the old
+Slack web app's URL (commits 2026-10-03..17). Fixed by making the repo
+private, rewording the docs (`work`, `<company>.ovpn`), rewriting history
+with `git filter-repo --replace-text` (one case-insensitive rule), a
+force-push of `master` and the tags (Releases follow their tags), and
+making it public again. The work key's file name `okb_ed25519` was kept
+(user's call: it doesn't name the company on its own).
+
+So a prek hook enforces it: `scripts/check-private-words`, at pre-commit
+(staged files) and commit-msg (the message), so also in `make lint`. The
+words are in a **machine-local** list, `~/.config/dots/private-words` (mode
+600; one extended regex per line, case-insensitive), because a list in the
+repo would publish them.
+
+- **Fails closed:** no list means no commit, so a machine without one can't
+  commit unchecked. A list with only comments is an explicit opt-out (it
+  warns). A broken pattern fails too (grep's error exit isn't read as
+  clean).
+- **Tested** with controls on both systems: a hit in a file and in a
+  message fails, a clean tree passes, `\b` word boundaries work in macOS's
+  BSD grep and under `/bin/bash` 3.2.
+- **Not covered:** commits made with `--no-verify` or on a machine without
+  the hooks (`make setup`). Before a push, also scan
+  `git log -p origin/master..` by hand.
+- **Later:** keep the list in 1Password and have `install.sh` write it
+  ([TODO](../TODO.md)).

@@ -910,6 +910,16 @@ tap is updated.
 `omarchy-pkg-remove teams-for-linux-bin` (quit it from the tray first), and
 close any Teams tab in Chrome as well.
 
+### `private words` fails a commit or `make lint`
+
+**Why:** a staged file or the commit message contains a word from
+`~/.config/dots/private-words` (the public repo must not name the
+employer; [secrets.md](../decisions/secrets.md#private-words-a-lint-check-not-a-habit-decided-2026-10-19)),
+or the list is missing on this machine, or one of its patterns is broken.
+**Fix:** reword the lines it prints (it prints them only locally). If the
+list is missing, copy it from another machine (mode 600); to commit without
+the check, leave the file with only comments.
+
 ## Syncthing
 
 ### Claude Code: an extra session, or a `sync-conflict` file

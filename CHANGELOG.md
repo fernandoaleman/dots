@@ -11,6 +11,8 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Changed
 
+- The docs refer to the employer as "work", and the git history was
+  rewritten to match (all commit IDs before this release changed).
 - Desk monitors at scale 1.25 instead of 1.6 (more room; tried since
   2026-10-18).
 - Todoist is the native app (AUR `todoist-appimage`) instead of the web
@@ -30,6 +32,9 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
+- `private words` git hook (prek): fails a commit or `make lint` when a
+  staged file or the message contains a word from the machine-local list
+  `~/.config/dots/private-words`; no list, no commit.
 - Syncthing for coding agents (both systems): `~/.claude/projects`
   (Claude Code's sessions and memory, old path-named folders kept local)
   and `~/.agents` (instructions, team files, skills) on every machine, via

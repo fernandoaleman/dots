@@ -48,3 +48,16 @@ hooks = [
   ] },
   { id = "shellcheck-bash-config", name = "shellcheck (bash config)", language = "system", entry = "shellcheck", files = "^bash/(\\.bashrc\\.dots|\\.config/bash/(aliases|completions|claude))$" },
 ]
+
+# ── Private words ──────────────────────────────────────
+# The repo is public: fail on words from the machine-local list
+# ~/.config/dots/private-words (employer names etc.; never committed), in
+# staged files and in the commit message (docs/decisions/secrets.md).
+[[repos]]
+repo = "local"
+hooks = [
+  { id = "private-words", name = "private words", language = "system", entry = "scripts/check-private-words", stages = [
+    "pre-commit",
+    "commit-msg",
+  ] },
+]

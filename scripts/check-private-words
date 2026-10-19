@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# prek hook (pre-commit and commit-msg): fail if a staged file or the commit
+# message contains a word from the machine-local list ~/.config/dots/private-words
+# (override with DOTS_PRIVATE_WORDS). The repo is public and the list itself
+# would give the words away, so it is never committed: one extended regex per
+# line, case-insensitive, `#` comments and blank lines ignored. A missing list
+# fails, so a new machine can't commit unchecked; a list with no patterns is
+# an explicit opt-out and only warns. Bash 3.2-compatible (macOS /bin/bash).
+set -euo pipefail
+
+list=${DOTS_PRIVATE_WORDS:-$HOME/.config/dots/private-words}
+if [[ ! -f $list ]]; then
+  echo "private words: no list at ${list/#$HOME/\~}; create it (one regex per line)," >&2
+  echo "or leave it with only comments to skip the check (docs/guides/troubleshooting.md)" >&2
+  exit 1
+fi
+
+patterns=$(mktemp)
+trap 'rm -f "$patterns"' EXIT
+# An empty pattern matches every line, so blank lines must go
+grep -v -E '^[[:space:]]*(#|$)' "$list" >"$patterns" || true
+if [[ ! -s $patterns ]]; then
+  echo "private words: ${list/#$HOME/\~} has no patterns; not checking" >&2
+  exit 0
+fi
+
+(($#)) || exit 0
+# -I skips binary files; prints file:line:text for each hit (local output only).
+# grep exits 0 on a hit, 1 on none, 2 on an error (e.g. a bad regex): only 1
+# passes, so an error can't read as clean.
+rc=0
+grep -H -n -i -I -E -f "$patterns" -- "$@" || rc=$?
+case $rc in
+0) echo "private words: the lines above match ${list/#$HOME/\~}; reword them" >&2 ;;
+1) exit 0 ;;
+*) echo "private words: grep failed (exit $rc); check ${list/#$HOME/\~}" >&2 ;;
+esac
+exit 1
