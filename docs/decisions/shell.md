@@ -255,6 +255,10 @@ Aliases `co`, `br`, `ci`, `st`; `init.defaultBranch = master`;
     branch itself). No Omarchy clash.
   - `gftf` = `git fetch --tags --force`; `ggpurt` = `ggpur && gftf`, as on
     the Mac. No Omarchy clash.
+  - `grhh` = `git reset HEAD --hard`, as on the Mac (no Omarchy clash). Not
+    the newer `git restore --source=HEAD --staged --worktree :/`: `reset`
+    isn't deprecated, and `--hard` also ends a stuck merge or cherry-pick,
+    which `restore` doesn't (`man git`, "Reset, restore and revert").
 - `50-shortcuts`: `c` conflicted with Omarchy's `c` (opencode); `~/Work` +
   zoxide replace `~/code` + `c <project>`.
 - `90-path`: Omarchy already inits mise/starship/zoxide; PATH order kept as

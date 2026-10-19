@@ -29,3 +29,6 @@ alias gs='git status'
 alias ggpur='git pull --rebase origin "$(git branch --show-current)"'
 alias gftf='git fetch --tags --force'
 alias ggpurt='ggpur && gftf'
+# Not `git restore --staged --worktree :/`: reset --hard also ends a stuck
+# merge or cherry-pick (man git, "Reset, restore and revert").
+alias grhh='git reset HEAD --hard'
