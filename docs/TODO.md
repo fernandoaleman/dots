@@ -201,8 +201,8 @@ everywhere). Done: `claude-project-name`, the `claude` wrapper (off until
 `~/.claude/.claude.json` exists), `claude-migrate-projects` (`--apply` tested on a scratch copy; Mac
 Studio mapping reviewed, overrides in `~/.config/dots/claude-projects`;
 Omarchy backed up to `~/claude-migration` 2026-10-19).
-Next: apply on Omarchy (its own folders, then the Mac Studio backup; dots
-on Omarchy is the master), switching on, Syncthing for `~/.claude/projects`
+Omarchy migrated (its own folders, then the Mac Studio backup) and
+switched on 2026-10-19; old path-named folders kept. Next: Syncthing for `~/.claude/projects`
 (ignore `/-*`), shared `AGENTS.md` and `~/.agents/skills`, Mac Studio
 cutover. Other launchers (herdr, editors) bypass the bash wrapper.
 The global `~/.claude/CLAUDE.md`, `team.md` and `personas.md` were copied
