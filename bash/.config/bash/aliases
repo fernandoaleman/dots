@@ -20,3 +20,9 @@ ncdu() {
   echo "ncdu isn't installed; Omarchy ships dua. Interactive disk usage: dua i ${*:-.}" >&2
   return 127
 }
+
+# Git: old zsh 50-aliases kept for muscle memory (re-added 2026-10-19,
+# docs/decisions/shell.md); to retire once Omarchy's (g, gcm, gcam, gcad)
+# are habit (docs/TODO.md). gs shadows Ghostscript's gs at the prompt only
+# (scripts still get it; `command gs` runs it).
+alias gs='git status'

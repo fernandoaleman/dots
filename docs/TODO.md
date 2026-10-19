@@ -237,13 +237,12 @@ little on the Mac Studio, not on the work Mac. Revisit whether to use it;
 the Studio's Claude Code SessionStart hook (`herdr-agent-state.sh`) and
 `herdr` skill come with it.
 
-### Git aliases: `ggpur` and `gftf`
+### Git aliases: retire the muscle-memory ones
 
-Still typed daily after all old git aliases were dropped
-([shell.md](decisions/shell.md)): `ggpur` = `git pull --rebase origin
-<current branch>` and `gftf` = `git fetch --tags --force` (old zsh
-`50-aliases`). Decide shell alias (`~/.config/bash/aliases`) vs git alias
-(`config.dots`), names, and whether one command should do both.
+Old zsh `50-aliases` git aliases re-added 2026-10-19 in their own section
+of `~/.config/bash/aliases` ([shell.md](decisions/shell.md)) because muscle
+memory was slowing work: `gs`. Once Omarchy's (`g`, `gcm`, `gcam`, `gcad`)
+are habit, decide which to keep and drop the rest.
 
 ### Office: remote desktop slow, fuzzy, freezes when idle
 

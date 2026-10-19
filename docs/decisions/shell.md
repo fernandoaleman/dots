@@ -17,7 +17,7 @@ Decided 2026-10-02 on Omarchy (bash 5.3, Omarchy package `/usr/share/omarchy`).
 | `30-gpg` | Dropped |
 | `30-plugins` (autosuggestions, syntax highlighting) | Dropped |
 | `40-api-tokens` | Deferred to secrets / 1Password |
-| `50-aliases` | Mostly dropped. **Kept:** `ll`, `ln`, `mkdir`, `grep`, `path` |
+| `50-aliases` | Mostly dropped. **Kept:** `ll`, `ln`, `mkdir`, `grep`, `path`; git muscle memory re-added 2026-10-19 (see below) |
 | `50-shortcuts` | Dropped, `~/Work` + zoxide |
 | `90-path` | Dropped, Omarchy's PATH |
 | `functions/` | All dropped |
@@ -243,6 +243,13 @@ Aliases `co`, `br`, `ci`, `st`; `init.defaultBranch = master`;
   re-added later. Docker (keep Omarchy's `d`), Bundler/Rails, Terraform, ag,
   chezmoi and `top=btm` were also dropped, as were `cp -iv`, `mv -iv`,
   `e`, `v` and `cat=bat`.
+- **Git aliases re-added 2026-10-19** (muscle memory was slowing work),
+  each checked against Omarchy first, in their own commented section of
+  `~/.config/bash/aliases` so they're easy to find and retire later
+  (docs/TODO.md):
+  - `gs` = `git status`. Omarchy has no `gs` alias; `/usr/bin/gs` is
+    Ghostscript (`ghostscript`, an Omarchy dependency), shadowed only at
+    the interactive prompt (`command gs` still runs it; scripts unaffected).
 - `50-shortcuts`: `c` conflicted with Omarchy's `c` (opencode); `~/Work` +
   zoxide replace `~/code` + `c <project>`.
 - `90-path`: Omarchy already inits mise/starship/zoxide; PATH order kept as

@@ -28,6 +28,8 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
+- Git aliases from the old setup, for muscle memory, in their own
+  section of `~/.config/bash/aliases` (to retire later): `gs`.
 - `gopls` and `lua-language-server` (both systems), for Claude Code's
   `gopls-lsp` and `lua-lsp` plugins.
 - `claude-migrate-projects`: copies Claude Code's path-named project
