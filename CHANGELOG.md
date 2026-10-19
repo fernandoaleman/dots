@@ -28,6 +28,11 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
+- Syncthing for coding agents (both systems): `~/.claude/projects`
+  (Claude Code's sessions and memory, old path-named folders kept local)
+  and `~/.agents` (instructions, team files, skills) on every machine, via
+  Omarchy; Omarchy keeps old versions (trash can 30 days for sessions,
+  staggered 365 days for `~/.agents`).
 - One global instructions file for every coding agent,
   `~/.agents/AGENTS.md` (private, not in dots): `install.sh` creates a
   `~/.claude/CLAUDE.md` that imports it (with `team.md` and

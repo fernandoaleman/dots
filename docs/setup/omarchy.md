@@ -109,6 +109,10 @@ By hand, in its web UI (`http://localhost:8384`):
    **Add Device** (address `tcp://<its Tailscale IP>:22000, dynamic`). Then
    accept its folders: **Share** `obsidian-work` with every Mac, and
    `obsidian-personal` only with the Mac Studio (never the work laptop).
+   Also **Share** `claude-projects` and `agents` (coding agents'
+   sessions, memory, instructions, skills;
+   [agents.md](../decisions/agents.md#sync-between-machines-syncthing))
+   with every Mac, once it has run `claude-migrate-projects --apply`.
 3. In Obsidian: Open folder as vault > `~/Obsidian/Work` (and `Personal`).
 
 Never share `~/Work` or git repos.

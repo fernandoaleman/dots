@@ -160,11 +160,16 @@ upgrade.
 `install.sh` starts Syncthing, names the device after the Mac's model, adds
 Omarchy (the hub) and shares `~/Obsidian/Work` with it (personal Macs also
 `~/Obsidian/Personal`, with versioning;
-[packages.md](../decisions/packages.md#syncthing-obsidian-vaults-across-machines)).
+[packages.md](../decisions/packages.md#syncthing-obsidian-vaults-across-machines)),
+plus `~/.claude/projects` and `~/.agents` for coding agents
+([agents.md](../decisions/agents.md#sync-between-machines-syncthing)).
 By hand:
 
 1. **On Omarchy**, approve the new Mac and its folders
-   ([omarchy.md](omarchy.md) step 7); the vaults then sync down.
+   ([omarchy.md](omarchy.md) step 7); the vaults then sync down. Before
+   approving `claude-projects`, migrate the Mac's Claude Code sessions
+   (`claude-migrate-projects --apply`, then `cp ~/.claude.json
+   ~/.claude/`; see [TODO.md](../TODO.md)).
 2. In the Mac's web UI (`http://localhost:8384`), Settings > GUI: set a
    username and password (1Password; the work Mac's in the work account).
 3. In Obsidian: Open folder as vault > `~/Obsidian/Work` (and `Personal`).

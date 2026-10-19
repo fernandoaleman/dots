@@ -41,7 +41,7 @@ Plus links `~/.claude/team.md` and `~/.claude/personas.md` into
 - **`install.sh`** (`setup_agent_instructions`, both OSes) creates only
   what's missing, and leaves a real file in the way alone with a warning.
   The links dangle until `~/.agents` arrives on a new machine (Syncthing,
-  still to set up; until then copy it by hand).
+  below).
 - **Later:** slim the file (Claude's docs suggest under 200 lines; it's
   1,046) by moving reference sections (Jira CLI, AWS, PagerTree, Slack,
   Cloudflare, Codex review threads) into skills.
@@ -54,3 +54,36 @@ opencode reads, each linked from `~/.claude/skills/<name>` for Claude Code.
 Omarchy's own skills (`omarchy`, `diagnose-crash`) and `todoist-cli`
 (`install.sh`, `td skill install`) are left as they install themselves.
 See [desktop.md](desktop.md) for the Todoist skill.
+
+## Sync between machines: Syncthing
+
+Decided 2026-10-19. Two Syncthing folders, set up by `install.sh`
+(`setup_syncthing_agents`, both OSes, after the Obsidian vaults) and
+paired through Omarchy like the vaults
+([packages.md](packages.md#syncthing-obsidian-vaults-across-machines)):
+
+| Folder ID | Path | Kept local (`.stignore`) | Versioning on Omarchy |
+|---|---|---|---|
+| `claude-projects` | `~/.claude/projects` (sessions, memory) | `/-*`: Claude's old path-named project folders (and any made by a launcher that bypasses the `claude` wrapper) | trash can, 30 days, in `~/.local/state/syncthing-versions/claude-projects` |
+| `agents` | `~/.agents` (instructions, team files, skills) | `/skills/omarchy`, `/skills/diagnose-crash` (Omarchy's links into `/usr/share/omarchy`), `/skills/todoist-cli` (`td skill install` on each machine) | staggered, 365 days, like the vaults |
+
+- **Every machine, both profiles:** most sessions are work ones, so the
+  work MacBook gets them too (user's call, 2026-10-19).
+- **Trash can for sessions, not staggered.** Session files only grow (one
+  here is 57 MB) and change on every turn; staggered keeps up to ~200 old
+  copies of each. Trash can keeps one previous copy per file
+  (docs.syncthing.net, *File Versioning*). Its folder is outside
+  `~/.claude/projects` so Claude never lists those copies; Syncthing wants
+  it on the same filesystem.
+- **Versions only on Omarchy, the hub.** Syncthing versions only changes
+  that come from another device, so the hub keeps what the Macs change; the
+  `~/claude-migration` backups stay as a second copy.
+- **Rule: one machine per session at a time.** Two machines writing the
+  same session make a `*.sync-conflict-*.jsonl` copy
+  ([troubleshooting](../guides/troubleshooting.md#claude-code-an-extra-session-or-a-sync-conflict-file)).
+- **Claude's 30-day cleanup** (`cleanupPeriodDays`) now runs everywhere at
+  once: whichever machine deletes old sessions first deletes them on all.
+  Same history as one machine; raise the setting to keep more.
+- **A machine joins only after its own migration** (`claude-migrate-projects
+  --apply` and the `~/.claude/.claude.json` switch), or its new sessions
+  land in ignored `-*` folders and don't sync.

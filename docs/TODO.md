@@ -213,10 +213,11 @@ brought over by hand 2026-10-19 (machine-local): its 11 plugins (plus
 herdr hook and its unused sandbox domains), `team.md`, `personas.md`,
 `team-interview-notes.md`, `jira/team_directory.md` (kim-daily's local
 override); skipped `tasks/`. Shared `~/.agents/AGENTS.md` done 2026-10-19
-([agents.md](decisions/agents.md)). Next: Syncthing for
-`~/.claude/projects` (ignore `/-*`) and `~/.agents` (instructions, team
-files, skills), backup or versioning, prove Omarchy <-> MacBook, Mac Studio
-cutover; later slim `AGENTS.md` (1,046 lines) by moving reference sections
+([agents.md](decisions/agents.md)). Syncthing folders `claude-projects`
+and `agents` set up on Omarchy 2026-10-19 (not shared yet). Next: MacBook
+(pull dots, migrate its sessions, `cp ~/.claude.json ~/.claude/`, replace
+its copied `~/.claude/skills` with links, `install.sh`, approve on Omarchy)
+to prove sync, then the Mac Studio cutover; later slim `AGENTS.md` (1,046 lines) by moving reference sections
 into skills. Also (user, 2026-10-19): get `team.md` and `personas.md` to
 Codex, opencode and pi too (they don't expand `@` imports; only Claude
 loads them now). Other launchers (herdr, editors) bypass the bash wrapper.

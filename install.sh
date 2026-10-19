@@ -263,6 +263,62 @@ setup_syncthing_vaults() {
   ok "Vaults set up (pair new machines and set the GUI password by hand: docs/setup)"
 }
 
+# Syncthing for coding agents (docs/decisions/agents.md), on every machine:
+# Claude Code's named project folders (~/.claude/projects: sessions, memory)
+# and ~/.agents (instructions, team files, skills). Kept local: Claude's old
+# path-named project folders (-home-...), and the skills a machine installs
+# itself. Omarchy, the hub, keeps old versions: trash can, 30 days, for
+# sessions (staggered would keep hundreds of copies of each growing session
+# file), outside ~/.claude/projects so Claude doesn't see them; staggered,
+# 365 days, for ~/.agents. Runs after setup_syncthing_vaults (hub added).
+setup_syncthing_agents() {
+  local st=syncthing key gui spec folder dir label type body
+  step "Syncthing: coding agents"
+  if ! $st cli show system &>/dev/null; then
+    warn "Syncthing isn't answering; re-run install.sh later"
+    return
+  fi
+  key=$($st cli config gui apikey get)
+  gui=http://$($st cli config gui raw-address get)
+  for spec in "claude-projects:.claude/projects:Claude projects:trashcan" "agents:.agents:Agents:staggered"; do
+    IFS=: read -r folder dir label type <<<"$spec"
+    dir=$HOME/$dir
+    mkdir -p "$dir"
+    if [[ ! -f $dir/.stignore ]]; then
+      case $folder in
+      claude-projects) printf '%s\n' "// Claude's old path-named project folders stay on their machine" '/-*' ;;
+      agents) printf '%s\n' "// Skills each machine installs itself (Omarchy's links, td skill install)" \
+        /skills/omarchy /skills/diagnose-crash /skills/todoist-cli ;;
+      esac >"$dir/.stignore"
+      ok "${dir/#$HOME/\~}/.stignore written"
+    fi
+    if ! $st cli config folders list | grep -qx "$folder"; then
+      $st cli config folders add --id "$folder" --label "$label" --path "$dir"
+      ok "Folder $folder at ${dir/#$HOME/\~}"
+    fi
+    if [[ $DOTS_OS == macos ]] &&
+      ! $st cli config folders "$folder" devices list | grep -qx "$SYNCTHING_HUB_ID"; then
+      $st cli config folders "$folder" devices add --device-id "$SYNCTHING_HUB_ID"
+      ok "Sharing $folder with Omarchy"
+    fi
+    if [[ $DOTS_OS == omarchy && $($st cli config folders "$folder" versioning type get) != "$type" ]]; then
+      case $type in
+      trashcan)
+        mkdir -p "$HOME/.local/state/syncthing-versions/$folder"
+        body=$(printf '{"versioning": {"type": "trashcan", "params": {"cleanoutDays": "30"},
+          "cleanupIntervalS": 3600, "fsPath": "%s"}}' "$HOME/.local/state/syncthing-versions/$folder") ;;
+      staggered)
+        body='{"versioning": {"type": "staggered",
+          "params": {"maxAge": "31536000", "cleanInterval": "3600"}, "cleanupIntervalS": 3600}}' ;;
+      esac
+      curl -fsS -X PATCH -H "X-API-Key: $key" -H 'Content-Type: application/json' \
+        "$gui/rest/config/folders/$folder" -d "$body"
+      ok "Versioning on $folder: $type"
+    fi
+  done
+  ok "Agent folders set up (approve each new machine's share on Omarchy: docs/setup)"
+}
+
 # Todoist CLI (td, a mise tool) agent skills: claude-code -> ~/.claude/skills
 # (Claude Code, opencode), universal -> ~/.agents/skills (Codex, opencode).
 # `td skill install` exits 0 even when the skill exists, so ask `td skill
@@ -721,6 +777,7 @@ if [[ $DOTS_OS == macos ]]; then
     ok "Syncthing started; starts at login (web UI: http://localhost:8384)"
   fi
   setup_syncthing_vaults
+  setup_syncthing_agents
 
   # mise as Omarchy sets it up (install/user/mise.sh, mise-work.sh): no pruning
   # of a running tool's old version on `mise up`, ~/Work with its .mise.toml
@@ -1168,6 +1225,7 @@ else
   ok "Syncthing service enabled and started"
 fi
 setup_syncthing_vaults
+setup_syncthing_agents
 for rule in "22000 tcp" "22000 udp" "21027 udp"; do
   read -r port proto <<<"$rule"
   for cidr in 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16; do

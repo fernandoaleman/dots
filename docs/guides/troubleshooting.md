@@ -905,6 +905,34 @@ tap is updated.
 
 ## Syncthing
 
+### Claude Code: an extra session, or a `sync-conflict` file
+
+**Why:** the same session was open on two machines, and both wrote to it
+before Syncthing caught up; Syncthing keeps both and renames one
+`<id>.sync-conflict-<date>-<time>-<device>.jsonl`, which `claude --resume`
+may list as an odd extra session. **Fix:** resume the real one (the name
+without `sync-conflict`); if the copy has turns you want, `claude --resume`
+it once and ask for what's missing, then delete it. Keep a session on one
+machine at a time.
+
+### Claude Code: a session or memory didn't reach another machine
+
+**Why:** it's in a path-named folder (`-home-…`, `-Users-…`), which
+`.stignore` keeps local: Claude was started without the `claude` wrapper
+(herdr, an editor, `command claude`) or before the machine's switch-over
+(`~/.claude/.claude.json`). **Fix:** start it through the wrapper; move an
+existing session with `claude-migrate-projects --apply`. Also check the
+folder is shared with that machine in Omarchy's Syncthing UI.
+
+### Claude Code: get back an old or deleted session
+
+Omarchy keeps the previous copy of each session or memory file a Mac
+changed or deleted, for 30 days, in
+`~/.local/state/syncthing-versions/claude-projects` (same paths as in
+`~/.claude/projects`, with a timestamp). Copy it back while Claude isn't
+running in that project. `~/.agents` versions are in `~/.agents/.stversions`
+(365 days).
+
 ### `.sync-conflict` files or a broken git repo inside a synced folder
 
 **Why:** a git repo (or `~/Work`) was put in a Syncthing folder. Syncthing
