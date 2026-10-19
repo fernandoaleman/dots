@@ -160,11 +160,15 @@ whether Hammerspoon could also serve the window manager decision.
 
 ### Claude Code: my own skills in a repo or plugin marketplace
 
-Personal Claude Code skills live only in each machine's `~/.claude/skills`
-(copied by hand from the Mac Studio to the work Mac, 2026-10-13). Keep them
-in a private repo, or a private plugin marketplace like the company's, so
-every machine installs the same versions; keep any work-only skills off
-this public repo.
+Personal skills now live in `~/.agents/skills/<name>` (read by Codex and
+opencode), each linked from `~/.claude/skills/<name>` (copied from the Mac
+Studio to Omarchy 2026-10-19; the work Mac still has its hand-copied
+2026-10-13 set); they'll sync with Syncthing alongside the Claude projects.
+`todoist-cli` stays `install.sh`'s (`td skill install`). Later, once
+Omarchy has been used for a while (user, 2026-10-19): move them to a
+private repo, or a private plugin marketplace like the company's, so every
+machine installs the same versions; keep any work-only skills off this
+public repo.
 
 ### Claude Code: memory and sessions across machines
 
