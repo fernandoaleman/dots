@@ -1,0 +1,265 @@
+#!/usr/bin/env bash
+#
+# claude-migrate-projects: plan moving Claude Code's per-folder project data
+# (~/.claude/projects/-Users-me-code-repo) to one name per project that every
+# machine shares (~/.claude/projects/repo), for sessions and memory that sync
+# across machines. Dry run: it prints the plan and writes nothing.
+#
+# Usage: claude-migrate-projects [--from DIR|BACKUP.tar.gz] [--host SSH_HOST]
+#                                [--machine NAME]
+#   --from     a .claude folder, or a backup holding one (default ~/.claude)
+#   --host     where the sessions were made, to look up each folder's git
+#              remote over ssh (read-only); default this machine
+#   --machine  label for memory staged for a merge (default --host or this
+#              machine's short hostname)
+#
+# Naming: the repo name from the folder's git remote, else the folder's own
+# name (home is "home"). Different repos or folders that end up with one
+# name, and folders that no longer exist, are flagged for your call; set
+# their name in ~/.config/dots/claude-projects, one "<path glob> <name>" per
+# line, where the glob matches the folder's path on --host with ~ for its
+# home (or the old folder name when the path is unknown) and the name "-"
+# leaves the folder out.
+set -euo pipefail
+shopt -s nullglob
+
+OVERRIDES=${XDG_CONFIG_HOME:-$HOME/.config}/dots/claude-projects
+LOCAL_PROJECTS=${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects
+
+usage() { sed -n '3,23p' "$0" | sed 's/^# \{0,1\}//'; }
+die() { echo "claude-migrate-projects: $*" >&2; exit 1; }
+
+from=$HOME/.claude host="" machine=""
+while (($#)); do
+  case $1 in
+  --from) from=${2:?--from needs a value}; shift 2 ;;
+  --host) host=${2:?--host needs a value}; shift 2 ;;
+  --machine) machine=${2:?--machine needs a value}; shift 2 ;;
+  -h | --help) usage; exit 0 ;;
+  *) usage >&2; exit 2 ;;
+  esac
+done
+machine=${machine:-${host:-$(hostname -s)}}
+
+# Claude Code names a project folder after its path, every character other
+# than A-Z a-z 0-9 replaced by "-"; names for CLAUDE_CODE_PROJECT_DIR_NAME
+# are 1-64 of A-Z a-z 0-9 _ -. New names never start with "-", so they
+# can't be mistaken for (or synced like) the old path-named folders.
+encode() { local LC_ALL=C; printf '%s' "${1//[^A-Za-z0-9]/-}"; }
+sanitize() {
+  local LC_ALL=C s=${1//[^A-Za-z0-9_-]/-}
+  s=${s#"${s%%[!-]*}"}
+  printf '%s' "${s:0:64}"
+}
+
+# ── Source: a .claude folder, or the projects in a backup ──────────────
+if [[ -f $from ]]; then
+  tmp=$(mktemp -d)
+  trap 'rm -rf "$tmp"' EXIT
+  # macOS tar stores metadata as ._ files and xattr headers GNU tar warns about.
+  quiet=()
+  tar --version 2>/dev/null | grep -q 'GNU tar' && quiet=(--warning=no-unknown-keyword)
+  tar -xzf "$from" "${quiet[@]}" --exclude='._*' -C "$tmp" .claude/projects ||
+    die "can't unpack .claude/projects from $from"
+  src=$tmp/.claude/projects
+else
+  src=$from/projects
+fi
+[[ -d $src ]] || die "no projects folder in $from"
+
+# ── Each old folder: sessions, memory files, the folder it was made in ──
+folders=() sessions=() memories=() paths=()
+for dir in "$src"/*/; do
+  dir=${dir%/} folder=${dir##*/}
+  jsonl=("$dir"/*.jsonl)
+  mem=0
+  [[ -d $dir/memory ]] && mem=$(find "$dir/memory" -type f | wc -l)
+  # A session's first cwd is where it started; the folder is named after it.
+  path=""
+  if ((${#jsonl[@]})); then
+    while IFS= read -r cwd; do
+      if [[ $(encode "$cwd") == "$folder" ]]; then path=$cwd; break; fi
+    done < <(grep -h -m1 -o '"cwd":"[^"]*"' "${jsonl[@]}" | sed 's/^"cwd":"//; s/"$//' | sort -u)
+  fi
+  folders+=("$folder") sessions+=("${#jsonl[@]}") memories+=("$mem") paths+=("$path")
+done
+((${#folders[@]})) || die "no project folders in $src"
+
+# ── Look up each path and its git remote where the sessions were made ──
+# Runs under bash 3.2 too (macOS /bin/bash over ssh). Memory-only folders
+# have no session to read a path from, so it searches for a directory whose
+# encoded path is the folder name.
+resolver() {
+  cat <<'EOS'
+export LC_ALL=C
+enc() { printf '%s' "${1//[^A-Za-z0-9]/-}"; }
+decode() {
+  local want=$1 cur=$2 child e
+  if [ -n "$cur" ] && [ "$(enc "$cur")" = "$want" ]; then printf '%s\n' "$cur"; return 0; fi
+  for child in "$cur"/* "$cur"/.[!.]*; do
+    [ -d "$child" ] && [ ! -L "$child" ] || continue
+    e=$(enc "$child")
+    case $want in "$e" | "$e"-*) decode "$want" "$child" && return 0 ;; esac
+  done
+  return 1
+}
+printf 'HOME\037%s\n' "$HOME"
+while IFS=$'\037' read -r folder path; do
+  status=found
+  if [ -z "$path" ]; then
+    if path=$(decode "$folder" ""); then status=decoded; else
+      printf '%s\037\037unresolved\037\n' "$folder"; continue
+    fi
+  fi
+  if [ ! -d "$path" ]; then printf '%s\037%s\037missing\037\n' "$folder" "$path"; continue; fi
+  remote=""
+  if git -C "$path" rev-parse --git-dir >/dev/null 2>&1; then
+    remote=$(git -C "$path" remote get-url origin 2>/dev/null) ||
+      remote=$(git -C "$path" remote get-url "$(git -C "$path" remote | head -n1)" 2>/dev/null) ||
+      remote=""
+    [ -n "$remote" ] || status=$status-git
+  fi
+  printf '%s\037%s\037%s\037%s\n' "$folder" "$path" "$status" "$remote"
+done <<'EOF_DATA'
+EOS
+  local i
+  for i in "${!folders[@]}"; do printf '%s\037%s\n' "${folders[i]}" "${paths[i]}"; done
+  echo EOF_DATA
+}
+
+if [[ -n $host ]]; then
+  resolved=$(resolver | ssh "$host" bash -s) || die "lookup on $host failed"
+else
+  resolved=$(resolver | bash -s) || die "lookup failed"
+fi
+
+declare -A status remote
+src_home=""
+while IFS=$'\037' read -r folder path st rem; do
+  if [[ $folder == HOME ]]; then src_home=$path; continue; fi
+  status[$folder]=$st remote[$folder]=$rem
+  for i in "${!folders[@]}"; do
+    if [[ ${folders[i]} == "$folder" ]]; then paths[i]=$path; fi
+  done
+done <<<"$resolved"
+
+tilde() { [[ $1 == "$src_home" || $1 == "$src_home"/* ]] && printf '~%s' "${1#"$src_home"}" || printf '%s' "$1"; }
+
+# ── Name each folder ────────────────────────────────────────────────────
+overrides=()
+if [[ -f $OVERRIDES ]]; then
+  while read -r line; do
+    if [[ $line && $line != \#* ]]; then overrides+=("$line"); fi
+  done <"$OVERRIDES"
+fi
+
+# ids tell apart what shares a name: the remote's owner/repo, or the path.
+names=() hows=() calls=() ids=()
+for i in "${!folders[@]}"; do
+  folder=${folders[i]} path=${paths[i]} st=${status[${folders[i]}]:-unresolved}
+  rem=${remote[$folder]:-}
+  key=$folder
+  if [[ $path ]]; then key=$(tilde "$path"); fi
+  name="" how="" call="" id=""
+  for line in "${overrides[@]}"; do
+    pattern=${line%%[[:space:]]*} value=${line##*[[:space:]]}
+    # shellcheck disable=SC2053 # the pattern is a glob on purpose
+    if [[ $key == $pattern ]]; then name=$value how="your override ($pattern)" id=override; break; fi
+  done
+  if [[ -z $name && -n $rem ]]; then
+    url=${rem%/} url=${url%.git}
+    repo=${url##*/} rest=${url%/*} owner=${rest##*[/:]}
+    name=$(sanitize "$repo") how="git remote" id=${owner,,}/${repo,,}
+  fi
+  if [[ -z $name ]]; then
+    case $st in
+    unresolved) name="?" call="can't tell which folder this was" ;;
+    missing) how="folder name" call="folder no longer exists" ;;
+    *) how="folder name (no git remote)" ;;
+    esac
+    if [[ $name != "?" ]]; then
+      if [[ $path == "$src_home" ]]; then name=home; else name=$(sanitize "${path##*/}"); fi
+      id=path:$path
+    fi
+  fi
+  [[ $name == - || $name =~ ^[A-Za-z0-9_][A-Za-z0-9_-]{0,63}$ || $name == "?" ]] ||
+    call="name \"$name\" isn't 1-64 of A-Z a-z 0-9 _ - (not starting with -)"
+  names+=("$name") hows+=("$how") calls+=("$call") ids+=("$id")
+done
+
+# ── Report ──────────────────────────────────────────────────────────────
+bold=$'\e[1m' dim=$'\e[2m' yellow=$'\e[33m' reset=$'\e[0m'
+[[ -t 1 ]] || bold="" dim="" yellow="" reset=""
+
+echo "${bold}Plan for ${#folders[@]} project folders from $from${reset}"
+echo "${dim}paths and remotes looked up on ${host:-this machine}${reset}"
+echo
+
+total_new=0 total_have=0 total_mem=0 needs=0
+mapfile -t targets < <(printf '%s\n' "${names[@]}" | sort -u)
+for target in "${targets[@]}"; do
+  members=()
+  for i in "${!folders[@]}"; do
+    if [[ ${names[i]} == "$target" ]]; then members+=("$i"); fi
+  done
+  case $target in
+  -) echo "${bold}left out${reset} ${dim}(your override)${reset}" ;;
+  "?") echo "${bold}${yellow}? no name yet${reset}" ;;
+  *)
+    here=$LOCAL_PROJECTS/$target extra=""
+    if [[ -d $here ]]; then
+      have=("$here"/*.jsonl) hmem=0
+      [[ -d $here/memory ]] && hmem=$(find "$here/memory" -type f | wc -l)
+      extra=" ${dim}(already here: ${#have[@]} sessions, $hmem memory)${reset}"
+    fi
+    echo "${bold}$target${reset}$extra"
+    ;;
+  esac
+  declare -A seen=()
+  for i in "${members[@]}"; do
+    if [[ ${ids[i]} && ${ids[i]} != override ]]; then seen[${ids[i]}]=1; fi
+  done
+  if [[ $target != [-?] ]] && ((${#seen[@]} > 1)); then
+    echo "  ${yellow}needs your call: ${#seen[@]} different repos or folders share this name${reset}"
+    needs=$((needs + 1))
+  fi
+  unset seen
+  with_mem=0
+  if [[ $target != [-?] && -d $LOCAL_PROJECTS/$target/memory ]]; then with_mem=1; fi
+  for i in "${members[@]}"; do
+    folder=${folders[i]} n_new=0 n_have=0
+    for f in "$src/$folder"/*.jsonl; do
+      if [[ $target != [-?] && -e $LOCAL_PROJECTS/$target/${f##*/} ]]; then
+        n_have=$((n_have + 1))
+      else
+        n_new=$((n_new + 1))
+      fi
+    done
+    where=$(tilde "${paths[i]}")
+    [[ $where ]] || where="path unknown"
+    counts="${sessions[i]} session$( ((sessions[i] == 1)) || echo s), ${memories[i]} memory"
+    if ((n_have)); then counts+=", $n_have already here"; fi
+    printf '  <- %s\n     %s | %s | %s\n' "$folder" "$counts" "$where" "${hows[i]:-no name}"
+    if [[ ${calls[i]} ]]; then
+      echo "     ${yellow}needs your call: ${calls[i]}${reset}"
+      needs=$((needs + 1))
+    fi
+    if [[ $target != [-?] ]]; then
+      total_new=$((total_new + n_new)) total_have=$((total_have + n_have))
+      total_mem=$((total_mem + memories[i]))
+      if ((memories[i])); then with_mem=$((with_mem + 1)); fi
+    fi
+  done
+  if [[ $target != [-?] ]] && ((with_mem > 1)); then
+    echo "     memory: from more than one folder, so staged as memory-from-$machine-* for a merge"
+  fi
+  echo
+done
+
+echo "${bold}Summary${reset}"
+echo "  ${#folders[@]} folders -> $(printf '%s\n' "${targets[@]}" | grep -cv '^[-?]$') project names"
+echo "  sessions to copy: $total_new (already here: $total_have); memory files: $total_mem"
+if ((needs)); then
+  echo "  ${yellow}$needs need your call: set names in $OVERRIDES${reset}"
+fi
+echo "  Dry run: nothing was written."

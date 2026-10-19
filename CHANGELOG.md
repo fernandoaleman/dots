@@ -28,6 +28,13 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
+- `claude-migrate-projects` (dry run): plans moving Claude Code's
+  path-named project folders (sessions and memory) to one name per
+  project, the repo name from its git remote or else the folder's name,
+  for syncing across machines; reads a `.claude` folder or a backup, looks
+  up paths and remotes on the machine they came from (`--host`, over ssh,
+  read-only), and takes machine-local overrides from
+  `~/.config/dots/claude-projects`.
 - Omarchy theme **Moonlight**: the Mac Studio's look (Ghostty's Catppuccin
   Mocha in foot, background at 0.9, Neovim in Macchiato) with six night-sky
   backgrounds (Unsplash illustrations; cycle with the background switcher).
