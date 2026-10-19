@@ -206,7 +206,13 @@ everywhere). Done: `claude-project-name`, the `claude` wrapper (off until
 Studio mapping reviewed, overrides in `~/.config/dots/claude-projects`;
 Omarchy backed up to `~/claude-migration` 2026-10-19).
 Omarchy migrated (its own folders, then the Mac Studio backup) and
-switched on 2026-10-19; old path-named folders kept. Next: Syncthing for `~/.claude/projects`
+switched on 2026-10-19; old path-named folders kept. Mac Studio extras
+brought over by hand 2026-10-19 (machine-local): its 11 plugins (plus
+`gopls`/`lua-language-server`), `settings.json` choices (`autoMode` with
+`~/Work` paths, `effortLevel`, `editorMode`, `voiceEnabled`; skipped its
+herdr hook and its unused sandbox domains), `team.md`, `personas.md`,
+`team-interview-notes.md`, `jira/team_directory.md` (kim-daily's local
+override); skipped `tasks/`. Next: Syncthing for `~/.claude/projects`
 (ignore `/-*`), shared `AGENTS.md` and `~/.agents/skills`, Mac Studio
 cutover. Other launchers (herdr, editors) bypass the bash wrapper.
 The global `~/.claude/CLAUDE.md`, `team.md` and `personas.md` were copied
