@@ -198,10 +198,11 @@ Prior art (none fits Syncthing + different homes): `VirelNode/session-roam`
 Agreed 2026-10-18: names are the repo name (from the git remote; else the
 repo's or folder's name; no personal/work prefix, everything syncs
 everywhere). Done: `claude-project-name`, the `claude` wrapper (off until
-`~/.claude/.claude.json` exists), `claude-migrate-projects` (dry run; Mac
-Studio mapping reviewed, overrides in `~/.config/dots/claude-projects`).
-Next: the migration's apply step (copies, idempotent by session ID; dots on
-Omarchy is the master), switching on, Syncthing for `~/.claude/projects`
+`~/.claude/.claude.json` exists), `claude-migrate-projects` (`--apply` tested on a scratch copy; Mac
+Studio mapping reviewed, overrides in `~/.config/dots/claude-projects`;
+Omarchy backed up to `~/claude-migration` 2026-10-19).
+Next: apply on Omarchy (its own folders, then the Mac Studio backup; dots
+on Omarchy is the master), switching on, Syncthing for `~/.claude/projects`
 (ignore `/-*`), shared `AGENTS.md` and `~/.agents/skills`, Mac Studio
 cutover. Other launchers (herdr, editors) bypass the bash wrapper.
 The global `~/.claude/CLAUDE.md`, `team.md` and `personas.md` were copied

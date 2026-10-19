@@ -1,17 +1,26 @@
 #!/usr/bin/env bash
 #
-# claude-migrate-projects: plan moving Claude Code's per-folder project data
+# claude-migrate-projects: copy Claude Code's per-folder project data
 # (~/.claude/projects/-Users-me-code-repo) to one name per project that every
 # machine shares (~/.claude/projects/repo), for sessions and memory that sync
-# across machines. Dry run: it prints the plan and writes nothing.
+# across machines. Without --apply it prints the plan and writes nothing.
 #
 # Usage: claude-migrate-projects [--from DIR|BACKUP.tar.gz] [--host SSH_HOST]
-#                                [--machine NAME]
+#                                [--machine NAME] [--to DIR] [--apply]
 #   --from     a .claude folder, or a backup holding one (default ~/.claude)
 #   --host     where the sessions were made, to look up each folder's git
 #              remote over ssh (read-only); default this machine
 #   --machine  label for memory staged for a merge (default --host or this
 #              machine's short hostname)
+#   --to       the projects folder to copy into (default ~/.claude/projects)
+#   --apply    copy, after backing up --to into ~/claude-migration
+#
+# Copies only: old folders stay as they are. Re-running is safe: a session
+# already copied is skipped, or brought up to date if it has grown since; a
+# copy that differs otherwise is left alone and reported. A folder's memory
+# is copied to memory/ when it's the project's only memory, and kept up to
+# date on re-runs (newer files win, none deleted); memory from more folders
+# goes to memory-from-<machine>-<old folder>/ to merge by hand.
 #
 # Naming is claude-project-name's, as the claude wrapper uses: the repo name
 # from the folder's git remote, else the repo's or folder's own name (home is
@@ -28,15 +37,18 @@ shopt -s nullglob
 source "$(dirname "$(readlink -f "$0")")/claude-project-name"
 LOCAL_PROJECTS=${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects
 
-usage() { sed -n '3,24p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '3,32p' "$0" | sed 's/^# \{0,1\}//'; }
 die() { echo "claude-migrate-projects: $*" >&2; exit 1; }
 
-from=$HOME/.claude host="" machine=""
+from=$HOME/.claude host="" machine="" apply=""
+BACKUP_DIR=$HOME/claude-migration
 while (($#)); do
   case $1 in
   --from) from=${2:?--from needs a value}; shift 2 ;;
   --host) host=${2:?--host needs a value}; shift 2 ;;
   --machine) machine=${2:?--machine needs a value}; shift 2 ;;
+  --to) LOCAL_PROJECTS=${2:?--to needs a value}; shift 2 ;;
+  --apply) apply=1; shift ;;
   -h | --help) usage; exit 0 ;;
   *) usage >&2; exit 2 ;;
   esac
@@ -164,79 +176,160 @@ for i in "${!folders[@]}"; do
   names+=("$name") hows+=("$how") calls+=("$call") ids+=("$id")
 done
 
-# ── Report ──────────────────────────────────────────────────────────────
+# ── Plan, and with --apply copy ─────────────────────────────────────────
+# What copying session SRC to DEST would do: new, same, grown (DEST is the
+# start of SRC: the session went on after an earlier copy) or differs.
+session_action() {
+  [[ -e $2 ]] || { echo new; return; }
+  if cmp -s "$1" "$2"; then echo same; return; fi
+  local n
+  n=$(wc -c <"$2")
+  if (($(wc -c <"$1") > n)) && head -c "$n" "$1" | cmp -s - "$2"; then echo grown; else echo differs; fi
+}
+
+# Copy files from memory folder SRC into DEST that are missing there or
+# older; prints how many.
+sync_memory() {
+  local f rel n=0
+  while IFS= read -r f; do
+    rel=${f#"$1"/}
+    if [[ -e $2/$rel ]] && { [[ ! $f -nt $2/$rel ]] || cmp -s "$f" "$2/$rel"; }; then continue; fi
+    if [[ $write ]]; then mkdir -p "$(dirname "$2/$rel")" && cp -p "$f" "$2/$rel"; fi
+    n=$((n + 1))
+  done < <(find "$1" -type f)
+  echo "$n"
+}
+
 bold=$'\e[1m' dim=$'\e[2m' yellow=$'\e[33m' reset=$'\e[0m'
 [[ -t 1 ]] || bold="" dim="" yellow="" reset=""
-
-echo "${bold}Plan for ${#folders[@]} project folders from $from${reset}"
-echo "${dim}paths and remotes looked up on ${host:-this machine}${reset}"
-echo
-
-total_new=0 total_have=0 total_mem=0 needs=0
 mapfile -t targets < <(printf '%s\n' "${names[@]}" | sort -u)
-for target in "${targets[@]}"; do
-  members=()
-  for i in "${!folders[@]}"; do
-    if [[ ${names[i]} == "$target" ]]; then members+=("$i"); fi
-  done
-  case $target in
-  -) echo "${bold}left out${reset} ${dim}(your override)${reset}" ;;
-  "?") echo "${bold}${yellow}? no name yet${reset}" ;;
-  *)
-    here=$LOCAL_PROJECTS/$target extra=""
-    if [[ -d $here ]]; then
-      have=("$here"/*.jsonl) hmem=0
-      [[ -d $here/memory ]] && hmem=$(find "$here/memory" -type f | wc -l)
-      extra=" ${dim}(already here: ${#have[@]} sessions, $hmem memory)${reset}"
-    fi
-    echo "${bold}$target${reset}$extra"
-    ;;
-  esac
-  declare -A seen=()
-  for i in "${members[@]}"; do
-    if [[ ${ids[i]} && ${ids[i]} != override ]]; then seen[${ids[i]}]=1; fi
-  done
-  if [[ $target != [-?] ]] && ((${#seen[@]} > 1)); then
-    echo "  ${yellow}needs your call: ${#seen[@]} different repos or folders share this name${reset}"
-    needs=$((needs + 1))
-  fi
-  unset seen
-  with_mem=0
-  if [[ $target != [-?] && -d $LOCAL_PROJECTS/$target/memory ]]; then with_mem=1; fi
-  for i in "${members[@]}"; do
-    folder=${folders[i]} n_new=0 n_have=0
-    for f in "$src/$folder"/*.jsonl; do
-      if [[ $target != [-?] && -e $LOCAL_PROJECTS/$target/${f##*/} ]]; then
-        n_have=$((n_have + 1))
-      else
-        n_new=$((n_new + 1))
-      fi
+
+# One pass over every project: report, and copy when write is set.
+run() {
+  local target members i folder dest marker mem_members m action f id n
+  local c_new c_grown c_same c_diff
+  total_new=0 total_grown=0 total_same=0 total_diff=0 total_mem=0 needs=0
+  for target in "${targets[@]}"; do
+    members=()
+    for i in "${!folders[@]}"; do
+      if [[ ${names[i]} == "$target" ]]; then members+=("$i"); fi
     done
-    where=$(tilde "${paths[i]}")
-    [[ $where ]] || where="path unknown"
-    counts="${sessions[i]} session$( ((sessions[i] == 1)) || echo s), ${memories[i]} memory"
-    if ((n_have)); then counts+=", $n_have already here"; fi
-    printf '  <- %s\n     %s | %s | %s\n' "$folder" "$counts" "$where" "${hows[i]:-no name}"
-    if [[ ${calls[i]} ]]; then
-      echo "     ${yellow}needs your call: ${calls[i]}${reset}"
+    dest=$LOCAL_PROJECTS/$target
+    case $target in
+    -) echo "${bold}left out${reset} ${dim}(your override)${reset}" ;;
+    "?") echo "${bold}${yellow}? no name yet${reset}" ;;
+    *)
+      if [[ -d $dest ]]; then
+        have=("$dest"/*.jsonl) n=0
+        [[ -d $dest/memory ]] && n=$(find "$dest/memory" -type f | wc -l)
+        echo "${bold}$target${reset} ${dim}(already here: ${#have[@]} sessions, $n memory)${reset}"
+      else
+        echo "${bold}$target${reset}"
+      fi
+      ;;
+    esac
+    declare -A seen=()
+    for i in "${members[@]}"; do
+      if [[ ${ids[i]} && ${ids[i]} != override ]]; then seen[${ids[i]}]=1; fi
+    done
+    if [[ $target != [-?] ]] && ((${#seen[@]} > 1)); then
+      echo "  ${yellow}needs your call: ${#seen[@]} different repos or folders share this name${reset}"
       needs=$((needs + 1))
     fi
-    if [[ $target != [-?] ]]; then
-      total_new=$((total_new + n_new)) total_have=$((total_have + n_have))
-      total_mem=$((total_mem + memories[i]))
-      if ((memories[i])); then with_mem=$((with_mem + 1)); fi
-    fi
+    unset seen
+
+    # Memory: decided from what's there before this run copies anything.
+    marker=""
+    [[ -r $dest/.migrated-memory-from ]] && marker=$(<"$dest/.migrated-memory-from")
+    mem_members=0
+    for i in "${members[@]}"; do ((memories[i] == 0)) || mem_members=$((mem_members + 1)); done
+
+    for i in "${members[@]}"; do
+      folder=${folders[i]}
+      where=$(tilde "${paths[i]}")
+      [[ $where ]] || where="path unknown"
+      printf '  <- %s\n     %s session%s, %s memory | %s | %s\n' "$folder" "${sessions[i]}" \
+        "$( ((sessions[i] == 1)) || echo s)" "${memories[i]}" "$where" "${hows[i]:-no name}"
+      if [[ ${calls[i]} ]]; then
+        echo "     ${yellow}needs your call: ${calls[i]}${reset}"
+        needs=$((needs + 1))
+      fi
+      [[ $target != [-?] ]] || continue
+
+      c_new=0 c_grown=0 c_same=0 c_diff=0
+      for f in "$src/$folder"/*.jsonl; do
+        id=${f##*/} id=${id%.jsonl}
+        action=$(session_action "$f" "$dest/$id.jsonl")
+        case $action in
+        new | grown)
+          if [[ $write ]]; then
+            mkdir -p "$dest"
+            cp -p "$f" "$dest/$id.jsonl"
+            if [[ -d $src/$folder/$id ]]; then cp -Rp "$src/$folder/$id" "$dest/"; fi
+          fi
+          ;;&
+        new) c_new=$((c_new + 1)) ;;
+        grown) c_grown=$((c_grown + 1)) ;;
+        same) c_same=$((c_same + 1)) ;;
+        differs)
+          c_diff=$((c_diff + 1))
+          echo "     ${yellow}left alone: session $id differs from the copy here${reset}"
+          ;;
+        esac
+      done
+      if ((sessions[i])); then
+        echo "     sessions: $c_new new, $c_grown grown since copied, $c_same already here"
+      fi
+      total_new=$((total_new + c_new)) total_grown=$((total_grown + c_grown))
+      total_same=$((total_same + c_same)) total_diff=$((total_diff + c_diff))
+
+      ((memories[i])) || continue
+      id=$machine:$folder
+      if [[ $marker == "$id" ]]; then
+        n=$(sync_memory "$src/$folder/memory" "$dest/memory")
+        echo "     memory: $n new or newer files into memory/"
+      elif [[ -z $marker && ! -e $dest/memory ]] && ((mem_members == 1)); then
+        n=$(sync_memory "$src/$folder/memory" "$dest/memory")
+        if [[ $write ]]; then printf '%s\n' "$id" >"$dest/.migrated-memory-from"; fi
+        echo "     memory: $n files copied to memory/"
+      else
+        m=memory-from-$machine-$folder
+        n=$(sync_memory "$src/$folder/memory" "$dest/$m")
+        echo "     memory: $n files to $m/ (merge into memory/ by hand)"
+      fi
+      total_mem=$((total_mem + n))
+    done
+    echo
   done
-  if [[ $target != [-?] ]] && ((with_mem > 1)); then
-    echo "     memory: from more than one folder, so staged as memory-from-$machine-* for a merge"
+}
+
+write=""
+echo "${bold}Plan for ${#folders[@]} project folders from $from${reset}"
+echo "${dim}paths and remotes looked up on ${host:-this machine}; copying into $LOCAL_PROJECTS${reset}"
+echo
+if [[ $apply ]]; then
+  run >/dev/null
+  ((needs == 0)) || die "$needs need your call first (run without --apply to see them)"
+  if [[ -d $LOCAL_PROJECTS ]]; then
+    (umask 077 && mkdir -p "$BACKUP_DIR")
+    backup=$BACKUP_DIR/projects-before-migrate-$(date +%Y%m%d-%H%M%S).tar.gz
+    (umask 077 && tar -czf "$backup" -C "$(dirname "$LOCAL_PROJECTS")" "$(basename "$LOCAL_PROJECTS")")
+    echo "Backed up $LOCAL_PROJECTS to $backup"
+    echo
   fi
-  echo
-done
+  if pgrep -x claude >/dev/null; then
+    echo "${yellow}Claude is running: open sessions are copied as far as written; re-run after closing it.${reset}"
+    echo
+  fi
+  write=1
+fi
+run
 
 echo "${bold}Summary${reset}"
 echo "  ${#folders[@]} folders -> $(printf '%s\n' "${targets[@]}" | grep -cv '^[-?]$') project names"
-echo "  sessions to copy: $total_new (already here: $total_have); memory files: $total_mem"
+echo "  sessions: $total_new new, $total_grown grown, $total_same already here, $total_diff left alone"
+echo "  memory files: $total_mem"
 if ((needs)); then
   echo "  ${yellow}$needs need your call: set names in $CLAUDE_PROJECTS_OVERRIDES${reset}"
 fi
-echo "  Dry run: nothing was written."
+if [[ $write ]]; then echo "  Copied. Old folders are unchanged."; else echo "  Dry run: nothing was written."; fi

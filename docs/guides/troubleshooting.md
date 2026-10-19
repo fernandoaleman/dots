@@ -1126,6 +1126,15 @@ first-run theme picker. **Fix:** before setting it, copy the current
 dots' `claude` wrapper (`~/.config/bash/claude`) sets it only once
 `~/.claude/.claude.json` exists, so that copy is the switch.
 
+### Claude Code: migration says "left alone: session ... differs"
+
+`claude-migrate-projects --apply` found a copy of that session in the new
+project folder that isn't the original or an earlier part of it (it was
+continued in both places, or edited). It never overwrites one. **Fix:**
+keep the copy you want: compare the two `<id>.jsonl` files (old folder vs
+`~/.claude/projects/<name>/`); to take the old one, copy it over, or resume
+the other with `claude --fork-session --resume <id>`.
+
 ### Claude Code: a session or memory is missing on this machine
 
 dots' `claude` wrapper (interactive bash only) names each project folder
