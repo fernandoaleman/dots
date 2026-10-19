@@ -212,9 +212,12 @@ brought over by hand 2026-10-19 (machine-local): its 11 plugins (plus
 `~/Work` paths, `effortLevel`, `editorMode`, `voiceEnabled`; skipped its
 herdr hook and its unused sandbox domains), `team.md`, `personas.md`,
 `team-interview-notes.md`, `jira/team_directory.md` (kim-daily's local
-override); skipped `tasks/`. Next: Syncthing for `~/.claude/projects`
-(ignore `/-*`), shared `AGENTS.md` and `~/.agents/skills`, Mac Studio
-cutover. Other launchers (herdr, editors) bypass the bash wrapper.
+override); skipped `tasks/`. Shared `~/.agents/AGENTS.md` done 2026-10-19
+([agents.md](decisions/agents.md)). Next: Syncthing for
+`~/.claude/projects` (ignore `/-*`) and `~/.agents` (instructions, team
+files, skills), backup or versioning, prove Omarchy <-> MacBook, Mac Studio
+cutover; later slim `AGENTS.md` (1,046 lines) by moving reference sections
+into skills. Other launchers (herdr, editors) bypass the bash wrapper.
 The global `~/.claude/CLAUDE.md`, `team.md` and `personas.md` were copied
 by hand from the Mac Studio to the work Mac (2026-10-13; `CLAUDE.md` points
 at `~/Work/notes`, which isn't there); keep them in step (rsync or

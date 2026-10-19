@@ -288,6 +288,45 @@ install_td_skills() {
   done
 }
 
+# Global agent instructions: one private file, ~/.agents/AGENTS.md (with
+# team.md and personas.md beside it; synced between machines, never in dots),
+# read by every agent. Claude Code imports it from a 3-line ~/.claude/CLAUDE.md
+# (Claude's docs prefer an import to a symlink: its Edit tool won't write
+# through one); Codex, opencode and pi get links (none of them expand @
+# imports). Only missing files are created; a real file in the way is left
+# alone with a warning. Links may dangle until the shared files arrive.
+# Shared by both OSes (docs/decisions/agents.md).
+setup_agent_instructions() {
+  step "Agent instructions: ~/.agents/AGENTS.md for every agent"
+  mkdir -p "$HOME/.agents"
+  local claude_md=$HOME/.claude/CLAUDE.md
+  if [[ -e $claude_md ]]; then
+    ok "Claude Code: ~/.claude/CLAUDE.md already exists"
+  else
+    mkdir -p "${claude_md%/*}"
+    printf '%s\n' '@~/.agents/AGENTS.md' '@~/.agents/team.md' '@~/.agents/personas.md' >"$claude_md"
+    ok "Claude Code: ~/.claude/CLAUDE.md imports ~/.agents/AGENTS.md"
+  fi
+  local link target
+  # link path (relative to $HOME) and its target (relative to the link)
+  for link in .codex/AGENTS.md:../.agents/AGENTS.md \
+    .config/opencode/AGENTS.md:../../.agents/AGENTS.md \
+    .pi/agent/AGENTS.md:../../.agents/AGENTS.md \
+    .claude/team.md:../.agents/team.md \
+    .claude/personas.md:../.agents/personas.md; do
+    target=${link#*:} link=$HOME/${link%%:*}
+    if [[ -L $link && $(readlink "$link") == "$target" ]]; then
+      ok "${link/#$HOME/\~} already links to $target"
+    elif [[ -e $link || -L $link ]]; then
+      warn "${link/#$HOME/\~} exists and isn't our link; left alone"
+    else
+      mkdir -p "${link%/*}"
+      ln -s "$target" "$link"
+      ok "${link/#$HOME/\~} -> $target"
+    fi
+  done
+}
+
 # ~/Work's projects into zoxide, so the sesh picker (tmux prefix k) lists them
 # on a fresh machine too (cache-sesh-dirs, bin package). Shared by both OSes.
 cache_work_dirs() {
@@ -709,6 +748,7 @@ if [[ $DOTS_OS == macos ]]; then
   mise install --yes
   ok "mise tools installed"
   install_td_skills
+  setup_agent_instructions
 
   # Docker on the Mac: Colima runs Docker Engine in a VM (docs/decisions/macos.md).
   # Colima takes a config file as is (unset keys become zero, not defaults),
@@ -1204,6 +1244,7 @@ mise install --yes
 ok "mise tools installed"
 
 install_td_skills
+setup_agent_instructions
 add_nvim_extras
 
 # Omarchy themes (docs/decisions/desktop.md): dots' own in themes/, and

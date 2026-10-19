@@ -28,6 +28,11 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
+- One global instructions file for every coding agent,
+  `~/.agents/AGENTS.md` (private, not in dots): `install.sh` creates a
+  `~/.claude/CLAUDE.md` that imports it (with `team.md` and
+  `personas.md`) and links Codex's, opencode's and pi's `AGENTS.md` to it
+  (both systems).
 - Git aliases from the old setup, for muscle memory, in their own
   section of `~/.config/bash/aliases` (to retire later): `gs`, `ggpur`, `gftf`, `ggpurt`, `grhh`, and `gcm` = `git switch master`
   (replaces Omarchy's `gcm`, `git commit -m`, which is `gcmsg` now).

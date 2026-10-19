@@ -30,4 +30,5 @@ setup has to recreate to "mirror Omarchy, minimally".
 | Bin scripts | [bin.md](bin.md) |
 | Secrets | [secrets.md](secrets.md) |
 | Small dotfiles | [dotfiles.md](dotfiles.md) |
+| Coding agents (instructions, skills) | [agents.md](agents.md) |
 | macOS (in progress) | [macos.md](macos.md) |
