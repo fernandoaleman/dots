@@ -75,8 +75,10 @@ fi
 [[ -d $src ]] || die "no projects folder in $from"
 
 # ── Each old folder: sessions, memory files, the folder it was made in ──
+# Only Claude's path-named folders (they start with "-"); new names never do,
+# so the copies this script made next to them aren't read as sources.
 folders=() sessions=() memories=() paths=()
-for dir in "$src"/*/; do
+for dir in "$src"/-*/; do
   dir=${dir%/} folder=${dir##*/}
   jsonl=("$dir"/*.jsonl)
   mem=0
