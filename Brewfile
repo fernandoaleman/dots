@@ -52,6 +52,8 @@ brew "mysql-client", link: true # keg-only: mysql, mysqldump, mysql_config
 brew "libpq", link: true        # keg-only: psql, pg_dump
 brew "pandoc"
 brew "mkcert"
+brew "gopls"               # Claude Code gopls-lsp plugin
+brew "lua-language-server" # Claude Code lua-lsp plugin
 brew "rsync" # macOS's own rsync is limited
 brew "defaultbrowser"
 brew "syncthing" # Obsidian vaults only

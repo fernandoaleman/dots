@@ -97,6 +97,7 @@ them. `install.sh` runs the same commands, each guarded:
 |---|---|
 | `wget`, `nmap` | **Added**: official repos, installed by `install.sh` via `omarchy-pkg-add` (`PACMAN_PACKAGES`) |
 | `pandoc` (`pandoc-cli`), `mkcert` | **Added** 2026-10-10 (`PACMAN_PACKAGES`; kept from the Mac's tools). `mkcert` uses Omarchy's `nss` so Chrome trusts its local certificates |
+| `gopls`, `lua-language-server` | **Added** 2026-10-19 (`PACMAN_PACKAGES`, Brewfile): the language servers for Claude Code's official `gopls-lsp` and `lua-lsp` plugins, which run them from `PATH`. Neovim keeps its own copies through Mason (`~/.local/share/nvim/mason/bin`, not on `PATH`); the user chose separate installs over adding Mason's folder to `PATH` |
 | `just` | **Added** 2026-10-10 as a mise tool (`config-dots.toml`), the same on every machine |
 | `todoist-cli` (`td`) | **Added** as a mise tool, `npm:@doist/todoist-cli` (not in Arch repos/AUR). The old Todoist "skills" setup was Mac-only; `td-login` → bin scripts section |
 | `bottom`, `htop` | Dropped: Omarchy's **btop** |

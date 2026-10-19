@@ -944,7 +944,9 @@ omarchy-pkg-add git stow
 ok "git and stow installed"
 
 # Extra packages from the official repos that Omarchy doesn't install
-PACMAN_PACKAGES=(wget nmap mariadb-clients pandoc-cli mkcert)
+# gopls and lua-language-server: for the gopls-lsp and lua-lsp Claude Code
+# plugins, which need them on PATH (Mason's copies are Neovim-only).
+PACMAN_PACKAGES=(wget nmap mariadb-clients pandoc-cli mkcert gopls lua-language-server)
 step "Installing packages: ${PACMAN_PACKAGES[*]}"
 omarchy-pkg-add "${PACMAN_PACKAGES[@]}"
 ok "Packages installed"

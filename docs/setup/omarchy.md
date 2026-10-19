@@ -68,7 +68,10 @@ machine's `claude plugin list` has the list.
 
 Public plugins, same way: `claude plugin marketplace add cloudflare/skills`,
 `claude plugin install cloudflare@cloudflare --scope user` (its MCP servers
-ask you to sign in on first use).
+ask you to sign in on first use). From Anthropic's marketplace (already
+known to Claude Code): `claude plugin install gopls-lsp@claude-plugins-official
+--scope user` and `lua-lsp@claude-plugins-official` (their language servers
+come from `install.sh`).
 
 Same on the Mac.
 

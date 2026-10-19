@@ -28,6 +28,8 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
+- `gopls` and `lua-language-server` (both systems), for Claude Code's
+  `gopls-lsp` and `lua-lsp` plugins.
 - `claude-migrate-projects`: copies Claude Code's path-named project
   folders (sessions and memory) to one name per project, the repo name
   from its git remote or else the folder's name, for syncing across
