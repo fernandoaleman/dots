@@ -217,7 +217,9 @@ override); skipped `tasks/`. Shared `~/.agents/AGENTS.md` done 2026-10-19
 `~/.claude/projects` (ignore `/-*`) and `~/.agents` (instructions, team
 files, skills), backup or versioning, prove Omarchy <-> MacBook, Mac Studio
 cutover; later slim `AGENTS.md` (1,046 lines) by moving reference sections
-into skills. Other launchers (herdr, editors) bypass the bash wrapper.
+into skills. Also (user, 2026-10-19): get `team.md` and `personas.md` to
+Codex, opencode and pi too (they don't expand `@` imports; only Claude
+loads them now). Other launchers (herdr, editors) bypass the bash wrapper.
 The global `~/.claude/CLAUDE.md`, `team.md` and `personas.md` were copied
 by hand from the Mac Studio to the work Mac (2026-10-13; `CLAUDE.md` points
 at `~/Work/notes`, which isn't there); keep them in step (rsync or
