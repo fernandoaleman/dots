@@ -6,6 +6,7 @@
 
 source ~/.config/bash/aliases
 source ~/.config/bash/completions
+source ~/.config/bash/claude
 
 # Vi mode, then re-apply Omarchy's inputrc to the vi keymaps (it only targets emacs by default)
 if [[ $- == *i* ]]; then

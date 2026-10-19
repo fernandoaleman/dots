@@ -195,6 +195,15 @@ Prior art (none fits Syncthing + different homes): `VirelNode/session-roam`
 `tawanorg/claude-sync` (S3/R2/WebDAV, rewrites paths inside transcripts),
 `NeoAcar/claude-handoff` (export/import one session), anthropics/claude-code
 #31992 and #25739 (open feature requests).
+Agreed 2026-10-18: names are the repo name (from the git remote; else the
+repo's or folder's name; no personal/work prefix, everything syncs
+everywhere). Done: `claude-project-name`, the `claude` wrapper (off until
+`~/.claude/.claude.json` exists), `claude-migrate-projects` (dry run; Mac
+Studio mapping reviewed, overrides in `~/.config/dots/claude-projects`).
+Next: the migration's apply step (copies, idempotent by session ID; dots on
+Omarchy is the master), switching on, Syncthing for `~/.claude/projects`
+(ignore `/-*`), shared `AGENTS.md` and `~/.agents/skills`, Mac Studio
+cutover. Other launchers (herdr, editors) bypass the bash wrapper.
 The global `~/.claude/CLAUDE.md`, `team.md` and `personas.md` were copied
 by hand from the Mac Studio to the work Mac (2026-10-13; `CLAUDE.md` points
 at `~/Work/notes`, which isn't there); keep them in step (rsync or

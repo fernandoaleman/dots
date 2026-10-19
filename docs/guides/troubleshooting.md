@@ -1123,6 +1123,19 @@ trusted folders, MCP servers). Found testing 2026-10-18 (v2.1.288): with no
 file there it restored an old backup from `~/.claude/backups/` and showed the
 first-run theme picker. **Fix:** before setting it, copy the current
 `~/.claude.json` there, then always launch with it set (two copies drift).
+dots' `claude` wrapper (`~/.config/bash/claude`) sets it only once
+`~/.claude/.claude.json` exists, so that copy is the switch.
+
+### Claude Code: a session or memory is missing on this machine
+
+dots' `claude` wrapper (interactive bash only) names each project folder
+after the repo (`claude-project-name` in a folder prints it), so every
+machine uses one folder. Claude started another way (a script, an editor,
+`/usr/bin/env claude`, another shell) or in a folder whose override is
+`-` uses Claude's own path-named folder (`-home-...`), which isn't synced.
+**Fix:** start it from bash with `claude`/`cx`; find where a session went
+with `ls -d ~/.claude/projects/*/<session id>.jsonl`; `claude --resume
+<id>` finds it in any project folder.
 
 ### Claude Code: memory "needs permission" in a symlinked project folder
 

@@ -79,7 +79,7 @@ make ssh
 
 | Package | Installs | What it does |
 |---|---|---|
-| `bash` | `~/.bashrc.dots`, `~/.config/bash/` (+ one line in Omarchy's `~/.bashrc`) | vi mode, a few aliases and git completion for `g` |
+| `bash` | `~/.bashrc.dots`, `~/.config/bash/` (+ one line in Omarchy's `~/.bashrc`) | vi mode, a few aliases, git completion for `g`, and the `claude` wrapper (one project name per repo on every machine) |
 | `macos` | `~/.bash_profile`, `~/.config/bash/macos-env`, `~/.config/bash/macos`, `~/.config/ghostty/config.dots`, `~/.config/nvim/lua/plugins/theme.dots.lua`, `~/.config/nvim/lua/config/options.dots.lua` (macOS only; + one line each in Omarchy's Ghostty `config` and Neovim `options.lua`) | the environment Omarchy's bash defaults expect (Homebrew, `OMARCHY_PATH`, `EDITOR`), Mac replacements for their Linux-only parts (and a `tailscale` alias), Ghostty's Option as Alt, font size and OneDark "dark" theme (`themes/onedark-dark`), OneDark "dark" and the macOS clipboard in Neovim |
 | `nvim` | `~/.config/nvim/lua/plugins/*.dots.lua` (+ LazyVim Extras merged into Omarchy's `lazyvim.json`) | Omarchy's LazyVim plus super-tab completion keys, grug-far hidden/ignored toggles, and language Extras |
 | `tmux` | `~/.config/tmux/tmux.dots.conf` (+ one line in Omarchy's `~/.config/tmux/tmux.conf`) | `Ctrl+h/j/k/l` nvim-aware pane movement, `prefix k` sesh picker, `prefix L` sesh last, `prefix =` synchronize panes, undercurl, resurrect + continuum (pinned clones), `themes/<slug>.conf`: a bar per Omarchy theme (Moonlight's Macchiato bar) |
@@ -88,7 +88,7 @@ make ssh
 | `omarchy` | `~/.config/omarchy/hooks/post-update.d/dots.hook`, `hooks/theme-set.d/dots-tmux.hook` | after every `omarchy update`: re-add include lines, report drift (same as `make doctor`); after every theme switch: reload tmux, so its bar follows the theme |
 | `hypr` | `~/.config/hypr/monitors.dots.lua`, `hyprland.dots.lua` (+ one line each in Omarchy's `monitors.lua`, `hyprland.lua`) | desk monitors matched by description, workspaces 1–3/4–6/7–9 per monitor, apps pinned to workspaces (Chrome 1, tmux 4, Slack/Teams 7, Outlook 8, Spotify 9) |
 | `git` | `~/.config/git/config.dots`, `~/.config/git/ignore` (+ one line in Omarchy's `~/.config/git/config`) | `fetch.prune`, `zdiff3` conflicts, gh as the GitHub HTTPS credential helper, a lean global gitignore |
-| `bin` | `~/.local/bin/aws-role-login`, `generate-ssh-config`, `gh-role-login`, `cache-sesh-dirs`, `claude-migrate-projects` | the daily AWS MFA session, SSH hosts from AWS, signing `gh` in to GitHub over HTTPS as the machine's profile allows, `~/Work`'s projects in the sesh picker, and planning Claude Code's move to synced project names |
+| `bin` | `~/.local/bin/aws-role-login`, `generate-ssh-config`, `gh-role-login`, `cache-sesh-dirs`, `claude-project-name`, `claude-migrate-projects` | the daily AWS MFA session, SSH hosts from AWS, signing `gh` in to GitHub over HTTPS as the machine's profile allows, `~/Work`'s projects in the sesh picker, and Claude Code's project names for syncing (the name for a folder; planning the move) |
 | `ssh` | `~/.ssh/config` | includes the generated `~/.ssh/aws` and a machine-local `config.local`, your machines by Tailscale address, `TERM` for servers, new host keys accepted (changed ones refused) |
 
 ## Repository layout

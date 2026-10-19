@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+#
+# claude-project-name: print the name Claude Code's project folder gets for a
+# directory (default: the current one), the same on every machine so its
+# sessions and memory can sync: the repo name from its git remote, else the
+# git repo's or the directory's own name ("home" for ~). An override in
+# ~/.config/dots/claude-projects wins: one "<path glob> <name>" per line, the
+# glob matched against the path with ~ for home ("-" means none).
+# Used by the claude wrapper (~/.config/bash/claude) and, sourced, by
+# claude-migrate-projects.
+
+CLAUDE_PROJECTS_OVERRIDES=${XDG_CONFIG_HOME:-$HOME/.config}/dots/claude-projects
+
+# Names for CLAUDE_CODE_PROJECT_DIR_NAME are 1-64 of A-Z a-z 0-9 _ -. New
+# names never start with "-", so they can't be mistaken for (or synced like)
+# Claude's own path-named folders.
+claude_project_sanitize() {
+  local LC_ALL=C s=${1//[^A-Za-z0-9_-]/-}
+  s=${s#"${s%%[!-]*}"}
+  printf '%s' "${s:0:64}"
+}
+
+# The first override whose glob matches KEY (a path with ~ for home, or an
+# old folder name) -> REPLY, REPLY_HOW.
+claude_project_override() {
+  local key=$1 line pattern
+  [[ -r $CLAUDE_PROJECTS_OVERRIDES ]] || return 1
+  while read -r line; do
+    [[ $line && $line != \#* ]] || continue
+    pattern=${line%%[[:space:]]*}
+    # shellcheck disable=SC2053 # the pattern is a glob on purpose
+    if [[ $key == $pattern ]]; then
+      REPLY=${line##*[[:space:]]} REPLY_HOW="your override ($pattern)"
+      return 0
+    fi
+  done <"$CLAUDE_PROJECTS_OVERRIDES"
+  return 1
+}
+
+# Name for a directory from what's known about it: REMOTE (git remote URL or
+# empty), TOP (git top level or empty), DIR, HOME_DIR (home on the machine
+# the directory is on) -> REPLY, REPLY_HOW, REPLY_ID (what tells apart
+# different projects that end up with one name).
+claude_project_name_for() {
+  local remote=$1 top=$2 dir=$3 home=$4 key=$3 url repo rest owner
+  [[ $dir == "$home" || $dir == "$home"/* ]] && key="~${dir#"$home"}"
+  if claude_project_override "$key"; then
+    REPLY_ID=override
+    return 0
+  fi
+  if [[ $remote ]]; then
+    url=${remote%/} url=${url%.git}
+    repo=${url##*/} rest=${url%/*} owner=${rest##*[/:]}
+    REPLY=$(claude_project_sanitize "$repo") REPLY_HOW="git remote"
+    REPLY_ID=${owner,,}/${repo,,}
+  elif [[ ${top:-$dir} == "$home" ]]; then
+    REPLY=home REPLY_HOW="home folder" REPLY_ID=path:$home
+  else
+    dir=${top:-$dir}
+    REPLY=$(claude_project_sanitize "${dir##*/}") REPLY_ID=path:$dir
+    if [[ $top ]]; then REPLY_HOW="git repo name (no remote)"; else REPLY_HOW="folder name"; fi
+  fi
+}
+
+# Run as a command: print the name for DIR (nothing if an override says "-").
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  set -uo pipefail
+  dir=$(cd "${1:-.}" && pwd -P) || exit 1
+  # The main repo, also from a worktree (its common .git dir's parent).
+  top=$(git -C "$dir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || top=""
+  if [[ $top == */.git ]]; then
+    top=${top%/.git}
+  else
+    top=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || top=""
+  fi
+  remote=""
+  if [[ $top ]]; then
+    remote=$(git -C "$dir" remote get-url origin 2>/dev/null) ||
+      remote=$(git -C "$dir" remote get-url "$(git -C "$dir" remote | head -n1)" 2>/dev/null) ||
+      remote=""
+  fi
+  claude_project_name_for "$remote" "$top" "$dir" "$(cd ~ && pwd -P)"
+  [[ $REPLY == - ]] || printf '%s\n' "$REPLY"
+fi

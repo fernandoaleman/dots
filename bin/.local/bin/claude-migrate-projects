@@ -13,20 +13,22 @@
 #   --machine  label for memory staged for a merge (default --host or this
 #              machine's short hostname)
 #
-# Naming: the repo name from the folder's git remote, else the folder's own
-# name (home is "home"). Different repos or folders that end up with one
-# name, and folders that no longer exist, are flagged for your call; set
-# their name in ~/.config/dots/claude-projects, one "<path glob> <name>" per
-# line, where the glob matches the folder's path on --host with ~ for its
-# home (or the old folder name when the path is unknown) and the name "-"
-# leaves the folder out.
+# Naming is claude-project-name's, as the claude wrapper uses: the repo name
+# from the folder's git remote, else the repo's or folder's own name (home is
+# "home"). Different repos or folders that end up with one name, and folders
+# that no longer exist, are flagged for your call; set their name in
+# ~/.config/dots/claude-projects, one "<path glob> <name>" per line, where
+# the glob matches the folder's path on --host with ~ for its home (or the
+# old folder name when the path is unknown) and the name "-" leaves the
+# folder out.
 set -euo pipefail
 shopt -s nullglob
 
-OVERRIDES=${XDG_CONFIG_HOME:-$HOME/.config}/dots/claude-projects
+# shellcheck source=claude-project-name
+source "$(dirname "$(readlink -f "$0")")/claude-project-name"
 LOCAL_PROJECTS=${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects
 
-usage() { sed -n '3,23p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '3,24p' "$0" | sed 's/^# \{0,1\}//'; }
 die() { echo "claude-migrate-projects: $*" >&2; exit 1; }
 
 from=$HOME/.claude host="" machine=""
@@ -42,15 +44,8 @@ done
 machine=${machine:-${host:-$(hostname -s)}}
 
 # Claude Code names a project folder after its path, every character other
-# than A-Z a-z 0-9 replaced by "-"; names for CLAUDE_CODE_PROJECT_DIR_NAME
-# are 1-64 of A-Z a-z 0-9 _ -. New names never start with "-", so they
-# can't be mistaken for (or synced like) the old path-named folders.
+# than A-Z a-z 0-9 replaced by "-".
 encode() { local LC_ALL=C; printf '%s' "${1//[^A-Za-z0-9]/-}"; }
-sanitize() {
-  local LC_ALL=C s=${1//[^A-Za-z0-9_-]/-}
-  s=${s#"${s%%[!-]*}"}
-  printf '%s' "${s:0:64}"
-}
 
 # ── Source: a .claude folder, or the projects in a backup ──────────────
 if [[ -f $from ]]; then
@@ -112,14 +107,16 @@ while IFS=$'\037' read -r folder path; do
     fi
   fi
   if [ ! -d "$path" ]; then printf '%s\037%s\037missing\037\n' "$folder" "$path"; continue; fi
-  remote=""
-  if git -C "$path" rev-parse --git-dir >/dev/null 2>&1; then
+  remote="" top=""
+  if top=$(git -C "$path" rev-parse --path-format=absolute --git-common-dir 2>/dev/null); then
+    case $top in */.git) top=${top%/.git} ;; *) top=$(git -C "$path" rev-parse --show-toplevel 2>/dev/null) ;; esac
     remote=$(git -C "$path" remote get-url origin 2>/dev/null) ||
       remote=$(git -C "$path" remote get-url "$(git -C "$path" remote | head -n1)" 2>/dev/null) ||
       remote=""
-    [ -n "$remote" ] || status=$status-git
+  else
+    top=""
   fi
-  printf '%s\037%s\037%s\037%s\n' "$folder" "$path" "$status" "$remote"
+  printf '%s\037%s\037%s\037%s\037%s\n' "$folder" "$path" "$status" "$remote" "$top"
 done <<'EOF_DATA'
 EOS
   local i
@@ -133,11 +130,11 @@ else
   resolved=$(resolver | bash -s) || die "lookup failed"
 fi
 
-declare -A status remote
+declare -A status remote top
 src_home=""
-while IFS=$'\037' read -r folder path st rem; do
+while IFS=$'\037' read -r folder path st rem tl; do
   if [[ $folder == HOME ]]; then src_home=$path; continue; fi
-  status[$folder]=$st remote[$folder]=$rem
+  status[$folder]=$st remote[$folder]=$rem top[$folder]=$tl
   for i in "${!folders[@]}"; do
     if [[ ${folders[i]} == "$folder" ]]; then paths[i]=$path; fi
   done
@@ -146,41 +143,21 @@ done <<<"$resolved"
 tilde() { [[ $1 == "$src_home" || $1 == "$src_home"/* ]] && printf '~%s' "${1#"$src_home"}" || printf '%s' "$1"; }
 
 # ── Name each folder ────────────────────────────────────────────────────
-overrides=()
-if [[ -f $OVERRIDES ]]; then
-  while read -r line; do
-    if [[ $line && $line != \#* ]]; then overrides+=("$line"); fi
-  done <"$OVERRIDES"
-fi
-
 # ids tell apart what shares a name: the remote's owner/repo, or the path.
 names=() hows=() calls=() ids=()
 for i in "${!folders[@]}"; do
   folder=${folders[i]} path=${paths[i]} st=${status[${folders[i]}]:-unresolved}
-  rem=${remote[$folder]:-}
-  key=$folder
-  if [[ $path ]]; then key=$(tilde "$path"); fi
-  name="" how="" call="" id=""
-  for line in "${overrides[@]}"; do
-    pattern=${line%%[[:space:]]*} value=${line##*[[:space:]]}
-    # shellcheck disable=SC2053 # the pattern is a glob on purpose
-    if [[ $key == $pattern ]]; then name=$value how="your override ($pattern)" id=override; break; fi
-  done
-  if [[ -z $name && -n $rem ]]; then
-    url=${rem%/} url=${url%.git}
-    repo=${url##*/} rest=${url%/*} owner=${rest##*[/:]}
-    name=$(sanitize "$repo") how="git remote" id=${owner,,}/${repo,,}
-  fi
-  if [[ -z $name ]]; then
-    case $st in
-    unresolved) name="?" call="can't tell which folder this was" ;;
-    missing) how="folder name" call="folder no longer exists" ;;
-    *) how="folder name (no git remote)" ;;
-    esac
-    if [[ $name != "?" ]]; then
-      if [[ $path == "$src_home" ]]; then name=home; else name=$(sanitize "${path##*/}"); fi
-      id=path:$path
+  call=""
+  if [[ -z $path ]]; then
+    if claude_project_override "$folder"; then
+      name=$REPLY how=$REPLY_HOW id=override
+    else
+      name="?" how="" id="" call="can't tell which folder this was"
     fi
+  else
+    claude_project_name_for "${remote[$folder]:-}" "${top[$folder]:-}" "$path" "$src_home"
+    name=$REPLY how=$REPLY_HOW id=$REPLY_ID
+    if [[ $st == missing && $id != override ]]; then call="folder no longer exists"; fi
   fi
   [[ $name == - || $name =~ ^[A-Za-z0-9_][A-Za-z0-9_-]{0,63}$ || $name == "?" ]] ||
     call="name \"$name\" isn't 1-64 of A-Z a-z 0-9 _ - (not starting with -)"
@@ -260,6 +237,6 @@ echo "${bold}Summary${reset}"
 echo "  ${#folders[@]} folders -> $(printf '%s\n' "${targets[@]}" | grep -cv '^[-?]$') project names"
 echo "  sessions to copy: $total_new (already here: $total_have); memory files: $total_mem"
 if ((needs)); then
-  echo "  ${yellow}$needs need your call: set names in $OVERRIDES${reset}"
+  echo "  ${yellow}$needs need your call: set names in $CLAUDE_PROJECTS_OVERRIDES${reset}"
 fi
 echo "  Dry run: nothing was written."

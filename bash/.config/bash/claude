@@ -1,0 +1,23 @@
+# Claude Code: one project folder name per project on every machine (the
+# repo name; see claude-project-name), so ~/.claude/projects can sync and a
+# session started on one machine resumes on another.
+#
+# On only once ~/.claude/.claude.json exists: with CLAUDE_CONFIG_DIR set,
+# Claude keeps its state file there instead of ~/.claude.json, and without
+# it starts its first-run setup. Switch on with: cp ~/.claude.json ~/.claude/
+if [[ -f ~/.claude/.claude.json ]]; then
+  export CLAUDE_CONFIG_DIR=$HOME/.claude
+
+  # Claude reads CLAUDE_CODE_PROJECT_DIR_NAME only from the environment and
+  # only while CLAUDE_CONFIG_DIR is set. No name (an override of "-", or no
+  # claude-project-name yet) keeps Claude's own path-named folder.
+  claude() {
+    local name
+    name=$(claude-project-name 2>/dev/null)
+    if [[ $name ]]; then
+      CLAUDE_CODE_PROJECT_DIR_NAME=$name command claude "$@"
+    else
+      command claude "$@"
+    fi
+  }
+fi

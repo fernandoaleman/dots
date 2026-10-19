@@ -46,5 +46,5 @@ hooks = [
   { id = "shellcheck", name = "shellcheck", language = "system", entry = "shellcheck", types = [
     "shell",
   ] },
-  { id = "shellcheck-bash-config", name = "shellcheck (bash config)", language = "system", entry = "shellcheck", files = "^bash/(\\.bashrc\\.dots|\\.config/bash/(aliases|completions))$" },
+  { id = "shellcheck-bash-config", name = "shellcheck (bash config)", language = "system", entry = "shellcheck", files = "^bash/(\\.bashrc\\.dots|\\.config/bash/(aliases|completions|claude))$" },
 ]
