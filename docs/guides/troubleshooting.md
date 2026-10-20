@@ -687,6 +687,15 @@ created (`~/.local/bin/env`, `env.fish` and `prek`, `~/.config/prek`, plus
 `~/.profile`, `~/.zshrc`, `~/.config/fish` if they hold only that line),
 then re-run `install.sh`. Run `make setup` from a normal terminal.
 
+### A link to a file dots no longer has (after `install.sh`)
+
+**Why:** `stow --restow` removes links to deleted package files only in
+folders the package still has; when a whole folder goes (e.g.
+`macos/.config/ghostty/themes/`, 2026-10-19), its links stay, pointing
+nowhere. Harmless, but untidy. **Fix:** find and delete them:
+`find ~/.config ~/.local -type l ! -exec test -e {} \; -print | xargs ls -l | grep Work/dots`,
+then `rm` each (and `rmdir` the empty folder).
+
 ### Mac: want OneDark back
 
 **Why:** the Mac moved to the Moonlight theme on 2026-10-19
