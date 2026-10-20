@@ -1428,6 +1428,27 @@ for name in Slack Todoist; do
     omarchy-webapp-remove "$name" >/dev/null && ok "$name web app removed (native app instead)"
   fi
 done
+# Notifications from every web app above: Chrome drops a site's notifications
+# until it's allowed (Teams asked; Outlook never did), so Chrome's
+# NotificationsAllowedForUrls policy allows the WEBAPPS URLs. Its own
+# root-owned file beside Omarchy's color.json (Omarchy's browser-policy
+# helper removes only files not owned by root); Linux policies are mandatory.
+chrome_policy=/etc/opt/chrome/policies/managed/dots-notifications.json
+want=$(for webapp in "${WEBAPPS[@]}"; do
+  IFS='|' read -r _ url _ <<<"$webapp"
+  printf '%s\n' "$url"
+done | jq -R . | jq -sc '{NotificationsAllowedForUrls: .}')
+if [[ ! -d ${chrome_policy%/*} ]]; then
+  warn "No ${chrome_policy%/*} (Omarchy's browser policy); skipping web app notifications"
+elif [[ $(jq -c . "$chrome_policy" 2>/dev/null) == "$want" ]]; then
+  ok "Chrome allows web app notifications"
+else
+  tmp=$(mktemp)
+  printf '%s\n' "$want" >"$tmp"
+  sudo install -m 644 -o root -g root "$tmp" "$chrome_policy"
+  rm -f "$tmp"
+  ok "Chrome allows web app notifications (${chrome_policy}; chrome://policy to check)"
+fi
 
 get_dots
 link_dots

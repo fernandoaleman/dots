@@ -423,6 +423,16 @@ the Todoist block and `Todoist` from the web-app removal loop there, then
 `omarchy-pkg-drop todoist-appimage appimagelauncher`,
 `rm ~/.local/share/applications/todoist.desktop` and re-run `install.sh`.
 
+### Outlook (or another web app) shows no desktop notifications
+
+**Why:** Chrome drops a site's notifications until it's allowed, and Outlook
+never asked (Teams did). `install.sh` allows every `WEBAPPS` URL with a
+Chrome policy (`chrome://policy` shows `NotificationsAllowedForUrls`). Also
+set Outlook's Settings, General, Notifications, Mail and Calendar, to
+**Browser**, and keep its window open (web apps notify only while open).
+**Check:** Chrome's `chrome://settings/content/notifications` lists the site
+under "Allowed".
+
 ### A web app was created without an icon / "Could not install the X web app"
 
 **Why:** `omarchy-webapp-install` fetches the site's icon automatically and

@@ -47,6 +47,8 @@ by a clean install; macOS support comes in later `1.x` releases.
   missing (project and board from 1Password), on both systems.
 - Git aliases `gaa` (`git add -A`), `glo` (last 10 commits, one line
   each) and `gloo` (all commits, one line each), as on the Mac Studio.
+- Desktop notifications from the Outlook and Teams web apps: `install.sh`
+  allows their sites with Chrome's `NotificationsAllowedForUrls` policy.
 - `install.sh` deletes links to files dots no longer has (broken links
   into dots that re-stowing leaves behind when a folder is dropped).
 - `private words` git hook (prek): fails a commit or `make lint` when a
