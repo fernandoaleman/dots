@@ -6,27 +6,21 @@ its outcome goes in `docs/decisions/` and the item is removed here.
 
 ## After dots
 
-### Snippets: espanso (in progress)
+### Snippets: espanso follow-ups
 
-Bookmarks are done (Raindrop.io,
-[desktop.md](decisions/desktop.md#bookmarks-raindropio-with-the-raindrop-bookmarks-picker)).
-Snippets move from Raycast (export of 2026-10-20: 306 snippets, 83 with a
-keyword, 60 with `{argument}` fields, a few that look like secrets) to
-**espanso** on Omarchy and the Macs, with the catalog's espanso bar widget
-(`io.github.taisau.espanso`) on Omarchy. Agreed 2026-10-20:
+espanso is set up on Omarchy
+([desktop.md](decisions/desktop.md#text-snippets-espanso-capslockj-xcompose-for-nameemail)).
+Left:
 
-- `install.sh` installs espanso itself (`omarchy-pkg-aur-add
-  espanso-wayland`; the plugin's own install button falls back to `yay`).
-- The match files live in a **Syncthing folder** (personal and work text,
-  so never in dots). Both systems can use `~/.config/espanso`: espanso
-  checks it before macOS's `~/Library/Application Support/espanso`
-  (`espanso/src/path/mod.rs`, `get_config_dir`), and loads
-  `match/**/[!_]*.yml`.
-
-Still to settle: converting the export (espanso needs a trigger on every
-match; `{argument}` becomes a form `[[name]]`), the secret-looking ones
-(1Password instead), the search shortcut, and the 4 quicklinks with a
-query argument plus 5 that aren't web links.
+- **Macs:** espanso cask, share the `espanso` Syncthing folder (start
+  espanso only after the folder has synced, or its own fresh
+  `default.yml`/`base.yml` become sync conflicts), CapsLock+J (see the Mac
+  CapsLock entry below).
+- **Name/email** from Compose (Right Alt, Space, `n`/`e`) to espanso
+  triggers, so the Mac has them too.
+- The 4 Raycast quicklinks with a query argument and the 5 that aren't web
+  links: espanso forms or Raindrop?
+- The bar widget, if upstream stops rebuilding its list every 10 s.
 
 ### Meeting recording on Omarchy (Plaud)
 

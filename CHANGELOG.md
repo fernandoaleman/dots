@@ -49,6 +49,11 @@ by a clean install; macOS support comes in later `1.x` releases.
   each) and `gloo` (all commits, one line each), as on the Mac Studio.
 - Desktop notifications from the Outlook and Teams web apps: `install.sh`
   allows their sites with Chrome's `NotificationsAllowedForUrls` policy.
+- espanso text snippets on Omarchy (AUR `espanso-wayland`, user service on):
+  CapsLock+J opens its search as a floating, centered box, and
+  `~/.config/espanso` is a Syncthing folder (snippets never go in dots).
+  The catalog's espanso bar widget is removed if present: it kept the bar at
+  100% CPU with a few hundred snippets.
 - `install.sh` deletes links to files dots no longer has (broken links
   into dots that re-stowing leaves behind when a folder is dropped).
 - `private words` git hook (prek): fails a commit or `make lint` when a

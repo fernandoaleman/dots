@@ -286,29 +286,62 @@ search and refreshes on open when that is over 5 minutes old.
 - **Mac:** no picker (Raycast is gone); the Raindrop app or browser
   extension.
 
-## Text snippets: Omarchy's XCompose; espanso dropped
+## Text snippets: espanso (CapsLock+J); XCompose for name/email
 
-The old setup installed **espanso** (AUR `espanso-wayland`); its config held
-only espanso's stock examples plus `search_shortcut: SHIFT+ALT+SPACE`, so
-nothing personal is lost. **Dropped** (2026-10-04).
+**espanso** is back (2026-10-20), replacing the Mac Studio's Raycast
+snippets on Omarchy and, later, the Macs. It was dropped on 2026-10-04 when
+its config held only stock examples; the Raycast export (306 snippets) is
+what changed.
 
-Omarchy already has text snippets via the **Compose key** (CapsLock by
-default; **Right Alt** in dots since 2026-10-20, see below):
-`~/.XCompose` includes Omarchy's emoji table
-(`/usr/share/omarchy/default/xcompose`) and two identity snippets,
-Compose, Space, `n` (name) and Compose, Space, `e` (email). Omarchy's
-installer (`install/user/xcompose.sh`) writes them from
-`$OMARCHY_USER_NAME` / `$OMARCHY_USER_EMAIL`, which can be blank, leaving
-`""`. `install.sh` fills **only empty** entries from the git identity
-(`git config --global user.name` / `user.email`), then runs
-`omarchy-restart-xcompose`. `~/.XCompose` stays Omarchy's real file and
-nothing personal is in the repo. Add more snippets to `~/.XCompose`
-directly (it's machine-local).
+- **Install:** `install.sh` runs `omarchy-pkg-aur-add espanso-wayland`
+  (AUR package base `espanso`, 2.4.1). Its install hook gives the binary
+  `cap_dac_override` (`setcap`), which espanso's evdev backend needs to read
+  keyboards on Wayland, and it ships `espanso.service`, which `install.sh`
+  enables (`systemctl --user enable --now`).
+- **Snippets are not in dots.** `~/.config/espanso` (config and match
+  files, personal and work text) is a **Syncthing folder**, `espanso`, set
+  up by `setup_syncthing_agents` like `~/.agents` (staggered versions on
+  Omarchy, 365 days). espanso checks `~/.config/espanso` before macOS's
+  `~/Library/Application Support/espanso` (`espanso/src/path/mod.rs`), so
+  both systems use the same path.
+- **Converted from Raycast** (2026-10-20) into `match/raycast.yml`: 305
+  snippets. The 83 with a Raycast keyword keep it as their trigger; the
+  other 222 have **no trigger** and are found by label in espanso's search
+  (espanso allows a match without a trigger, `MatchCause::None`, and its
+  search lists every match). `{argument name="x"}` became a form field
+  `[[x]]` (names reduced to letters, digits and `_`, espanso's field
+  regex), `{cursor}` became `$|$`, `{date}` a date variable. One snippet of
+  production credentials was dropped (user's call). The converter is kept
+  outside dots with the export.
+- **Search:** CapsLock+J runs `espanso cmd search` (`hyprland.dots.lua`). Its
+  search bar and forms are ordinary windows (class `espanso`) that Hyprland
+  would tile at half the screen; a window rule floats them centered, like
+  Omarchy's pickers (`o.window`, as `apps/localsend.lua` does).
+- **Keyboard layout:** on Wayland espanso can't detect the layout and logs a
+  warning, so `config/default.yml` sets `keyboard_layout: { layout: "us" }`
+  (Hyprland's `input:kb_layout`). It's read only by the Linux evdev
+  backend, so the synced file is fine on the Mac. It lives in the Syncthing
+  folder, so a new machine gets it with the folder.
+- **No bar widget.** The catalog's espanso widget (`io.github.taisau.espanso`
+  1.0.14: status, toggle, snippet list) was tried and dropped: it re-reads
+  every snippet every 10 s and rebuilds its list, which kept Quickshell at
+  100% CPU with ~300 snippets, so CapsLock+H/K pickers lagged and missed
+  keys ([troubleshooting](../guides/troubleshooting.md)). `install.sh`
+  removes it if present. Without it: `espanso status`, `espanso cmd
+  toggle`.
 
-A picker-style snippets/bookmarks plugin shared with Raycast on the Mac is
-a post-dots idea ([TODO](../TODO.md)).
+Omarchy's **Compose key** (Right Alt in dots, see below) still has the
+emoji table (`/usr/share/omarchy/default/xcompose`) and two identity
+snippets, Compose, Space, `n` (name) and `e` (email). Omarchy's installer
+(`install/user/xcompose.sh`) writes them from `$OMARCHY_USER_NAME` /
+`$OMARCHY_USER_EMAIL`, which can be blank; `install.sh` fills **only
+empty** entries from the git identity, then runs `omarchy-restart-xcompose`.
+`~/.XCompose` stays Omarchy's real file. Moving name/email to espanso is a
+[TODO](../TODO.md).
 
-**Mac:** no Compose key; Raycast snippets (free tier) cover this.
+**Mac:** espanso cask, same Syncthing folder; its own menu-bar icon covers
+what the widget did. CapsLock+J via Hyperkey + Hammerspoon
+([TODO](../TODO.md)).
 
 ## CapsLock is Hyper (CapsLock+letter keys); Compose on Right Alt
 
@@ -316,7 +349,7 @@ Decided 2026-10-20 (user's call). Omarchy makes CapsLock the Compose key
 (`compose:caps` in `default/hypr/input.lua`). dots makes it **Hyper**
 instead, for the CapsLock+letter keys the Mac Studio has (Raycast's Hyper
 key there), and moves Compose to **Right Alt**, so accents, symbols and
-Omarchy's Compose emoji still work (espanso takes over the name/email
+Omarchy's Compose emoji still work (espanso may take over the name/email
 snippets later). Caps Lock itself stays on both Shifts (Omarchy's
 `shift:both_capslock_cancel`).
 
@@ -331,7 +364,7 @@ snippets later). Caps Lock itself stays on both Shifts (Omarchy's
   | Key | Opens |
   |---|---|
   | CapsLock+H | Omarchy's clipboard manager (also Super+Ctrl+V) |
-  | CapsLock+J | espanso search (when espanso is set up) |
+  | CapsLock+J | espanso search (floating, centered) |
   | CapsLock+K | Omarchy's emoji picker (also Super+Ctrl+E) |
   | CapsLock+L | Raindrop bookmarks (also Super+Shift+R) |
 

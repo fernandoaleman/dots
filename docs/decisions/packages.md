@@ -221,4 +221,4 @@ syncs repos; Syncthing is for notes and documents.
 
 - **Group A**: done. (`tmux-ssh` moves to the bin scripts
   section.)
-- **Group D** (not installed): `yarn` (done: mise), `rclone` (not set up; see [rclone guide](../guides/rclone.md)), `awsvpnclient` (not via dots; see [desktop.md](desktop.md)), `espanso` (dropped; see [desktop.md](desktop.md)).
+- **Group D** (not installed): `yarn` (done: mise), `rclone` (not set up; see [rclone guide](../guides/rclone.md)), `awsvpnclient` (not via dots; see [desktop.md](desktop.md)), `espanso` (installed since 2026-10-20 as `espanso-wayland`; see [desktop.md](desktop.md)).

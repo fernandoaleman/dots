@@ -313,17 +313,20 @@ setup_syncthing_vaults() {
 # itself. Omarchy, the hub, keeps old versions: trash can, 30 days, for
 # sessions (staggered would keep hundreds of copies of each growing session
 # file), outside ~/.claude/projects so Claude doesn't see them; staggered,
-# 365 days, for ~/.agents. Runs after setup_syncthing_vaults (hub added).
+# 365 days, for ~/.agents and ~/.config/espanso. Runs after
+# setup_syncthing_vaults (hub added).
 setup_syncthing_agents() {
   local st=syncthing key gui spec folder dir label type body
-  step "Syncthing: coding agents"
+  step "Syncthing: coding agents and espanso"
   if ! $st cli show system &>/dev/null; then
     warn "Syncthing isn't answering; re-run install.sh later"
     return
   fi
   key=$($st cli config gui apikey get)
   gui=http://$($st cli config gui raw-address get)
-  for spec in "claude-projects:.claude/projects:Claude projects:trashcan" "agents:.agents:Agents:staggered"; do
+  # espanso's snippets ride along: private text, so a Syncthing folder, not dots
+  for spec in "claude-projects:.claude/projects:Claude projects:trashcan" "agents:.agents:Agents:staggered" \
+    "espanso:.config/espanso:espanso:staggered"; do
     IFS=: read -r folder dir label type <<<"$spec"
     dir=$HOME/$dir
     mkdir -p "$dir"
@@ -332,6 +335,7 @@ setup_syncthing_agents() {
       claude-projects) printf '%s\n' "// Claude's old path-named project folders stay on their machine" '/-*' ;;
       agents) printf '%s\n' "// Skills each machine installs itself (Omarchy's links, td skill install)" \
         /skills/omarchy /skills/diagnose-crash /skills/todoist-cli ;;
+      espanso) printf '%s\n' "// Nothing ignored: config/ and match/ are the same on every machine" ;;
       esac >"$dir/.stignore"
       ok "${dir/#$HOME/\~}/.stignore written"
     fi
@@ -359,7 +363,7 @@ setup_syncthing_agents() {
       ok "Versioning on $folder: $type"
     fi
   done
-  ok "Agent folders set up (approve each new machine's share on Omarchy: docs/setup)"
+  ok "Agent and espanso folders set up (approve each new machine's share on Omarchy: docs/setup)"
 }
 
 # Todoist CLI (td, a mise tool) agent skills: claude-code -> ~/.claude/skills
@@ -1400,6 +1404,28 @@ if omarchy plugin list | grep "^$RAINDROP_PLUGIN_ID " >/dev/null; then
   ok "Raindrop Bookmarks plugin already added"
 else
   omarchy plugin add https://github.com/treramey/omarchy-raindrop-bookmarks.git --enable --yes
+fi
+
+# espanso: snippets (desktop.md). espanso-wayland's install hook gives the
+# binary cap_dac_override (it reads input devices on Wayland) and ships the
+# user service. Its match files (~/.config/espanso) are a Syncthing folder,
+# never dots. CapsLock+J (hyprland.dots.lua) opens espanso's search. The
+# catalog's bar widget (io.github.taisau.espanso 1.0.14) was dropped: it
+# rebuilds its snippet list every 10 s and kept Quickshell at 100% CPU with
+# ~300 snippets (troubleshooting.md), so a machine that has it loses it.
+ESPANSO_WIDGET_ID=io.github.taisau.espanso
+if omarchy-pkg-missing espanso-wayland; then
+  omarchy-pkg-aur-add espanso-wayland
+else
+  ok "espanso already installed"
+fi
+if systemctl --user is-enabled --quiet espanso.service; then
+  ok "espanso service enabled"
+else
+  systemctl --user enable --now espanso.service
+fi
+if omarchy plugin list | grep "^$ESPANSO_WIDGET_ID " >/dev/null; then
+  omarchy plugin remove "$ESPANSO_WIDGET_ID" --yes
 fi
 
 # Web apps (Chrome app windows), created with Omarchy's installer:

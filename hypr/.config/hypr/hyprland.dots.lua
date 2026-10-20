@@ -35,6 +35,10 @@ o.bind("SUPER + SHIFT + R", "Raindrop bookmarks", "omarchy-shell shell toggle io
 -- itself stays on both Shifts.
 hl.config({ input = { kb_options = "caps:hyper,compose:ralt,shift:both_capslock_cancel" } })
 o.bind("MOD3 + H", "Clipboard manager", "omarchy-shell shell toggle omarchy.clipboard")
+o.bind("MOD3 + J", "Snippets (espanso search)", "espanso cmd search")
+-- espanso's search bar and forms are ordinary windows (class espanso) that
+-- Hyprland would tile; float them centered like Omarchy's pickers
+o.window("^(espanso)$", { float = true, center = true })
 o.bind("MOD3 + K", "Emojis", "omarchy-shell shell toggle omarchy.emojis")
 o.bind("MOD3 + L", "Raindrop bookmarks", "omarchy-shell shell toggle io.github.treramey.raindrop-bookmarks '{}'")
 

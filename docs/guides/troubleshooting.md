@@ -461,21 +461,55 @@ the [rclone guide](rclone.md) to bring them back.
 AWS). It's installed separately on Omarchy; see
 [desktop.md](../decisions/desktop.md).
 
-### No espanso / `:date`-style expansions or Shift+Alt+Space search
+### espanso: a snippet doesn't expand, or CapsLock+J does nothing
 
-**Why:** espanso was dropped (its config had only stock examples;
-[desktop.md](../decisions/desktop.md)). Omarchy's Compose key covers
-name/email: CapsLock, Space, `n` / `e` (filled from git by `install.sh`).
-Add your own lines to `~/.XCompose`, then `omarchy-restart-xcompose`:
+**Check:** `espanso status` (should say running; start it with
+`systemctl --user start espanso`), then `espanso log` for load errors and
+`espanso match list | grep <trigger>`. Snippets live in
+`~/.config/espanso/match/` (a Syncthing folder, not dots); espanso reloads
+on save. Snippets converted from Raycast without a keyword have **no
+trigger**: find them with CapsLock+J by name.
 
+**"unable to determine keyboard layout automatically"** in `espanso log`:
+espanso can't read the layout on Wayland. Set it in
+`~/.config/espanso/config/default.yml` (match Hyprland's
+`hyprctl getoption input:kb_layout`):
+
+```yaml
+keyboard_layout:
+  layout: "us"
 ```
-<Multi_key> <space> <s> : "Some text"
-```
 
-**Bring espanso back:** add `omarchy-pkg-aur-add espanso-wayland` to
-`install.sh`, then finish the setup per espanso's Wayland instructions
-(https://espanso.org/docs/install/linux/). The old config was stock, so
-there's nothing to restore.
+**Form fails with "missing variable":** espanso treats `{{name}}` in a
+snippet as a variable. To type it literally, add an `echo` variable with
+`inject_vars: false` whose `echo` is the literal text (see "ansible
+managed" in `raycast.yml`).
+
+### espanso's search box (CapsLock+J) opens at half the screen
+
+**Why:** its search bar and forms are ordinary windows (class `espanso`),
+so Hyprland tiles them. `hyprland.dots.lua` floats and centers them
+(`o.window("^(espanso)$", { float = true, center = true })`); if it's
+tiled again, run `hyprctl reload` and check the rule with `hyprctl clients
+-j | jq '.[] | select(.class=="espanso")'`.
+
+### Bar and CapsLock+H/K pickers are sluggish; arrows or CapsLock+K stop working
+
+**Seen 2026-10-20** with the catalog's espanso bar widget
+(`io.github.taisau.espanso` 1.0.14) and ~300 snippets: Quickshell (the bar
+and Omarchy's pickers) sat at **100% CPU**, so pickers opened slowly and
+missed keys (Up arrow, CapsLock+K). The widget re-reads every snippet every
+10 s and rebuilds its whole list. dots dropped it; `install.sh` removes it.
+
+**Check:** `top -b -n1 -p $(pgrep -d, quickshell)`; a plugin at fault shows
+up as Quickshell near 100%. `omarchy plugin disable <id>` and watch it
+drop. A shell that has been up for days and won't answer (`omarchy-shell
+shell ping` says not responding) is fixed with `omarchy-restart-shell`.
+
+**Don't launch the shell twice:** if Hyprland is busy, `hyprctl dispatch`
+requests queue and run later, so two launches give two stacked bars
+(`pgrep -a quickshell` shows two). `quickshell kill -p
+/usr/share/omarchy/shell --any-display` stops one (the oldest).
 
 ### `jira sprint list`: "No result found for given query in project \"\""
 
@@ -1145,6 +1179,17 @@ for how to bring it back (`omarchy-pkg-add git-delta`; Omarchy's
 `[alias] pf = push --force-with-lease`.
 
 ## dots itself
+
+### `install.sh`: "1Password account … can't be read; skipping it"
+
+**Why:** the 1Password app was **locked** when the secrets step ran. The
+check (`op vault list` with stdin closed) can't show an unlock prompt, so it
+skips the account, and with none readable it skips the whole step. Nothing
+is changed: installed keys, tokens and configs stay as they were.
+
+**Fix:** unlock 1Password (and keep Settings > Developer > Integrate with
+1Password CLI on), then re-run `install.sh`. Check with `op --account <id>
+vault list`.
 
 ### `op` can't find an item that's in 1Password (two accounts)
 
