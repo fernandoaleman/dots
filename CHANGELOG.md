@@ -113,6 +113,9 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Fixed
 
+- `install.sh` no longer fails now and then with Syncthing's "folder has
+  duplicate ID": its "already set up?" checks piped into `grep -q`, which
+  under `pipefail` could read as "not found".
 - `make setup`'s last-resort prek installer no longer adds a PATH line to
   every shell startup file (on a Mac, dots' own `.bash_profile`, which then
   stopped `install.sh` from updating dots).

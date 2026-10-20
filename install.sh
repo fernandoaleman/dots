@@ -13,6 +13,10 @@
 # The macOS bootstrap below runs under macOS's bash 3.2: keep everything up
 # to its `exec` bash-3.2 safe (no associative arrays, ${var,,}, mapfile...).
 set -euo pipefail
+# With pipefail, never pipe into `grep -q`: it exits at the first match, the
+# command before it can die of SIGPIPE, and the check then reads as "not
+# found" (seen 1 run in 40 on `syncthing cli … list`). Use
+# `grep … >/dev/null`, which reads all of its input.
 
 REPO_URL="https://github.com/fernandoaleman/dots.git"
 DOTS_DIR="$HOME/Work/dots"
@@ -268,7 +272,7 @@ setup_syncthing_vaults() {
       $st cli config devices "$id" name set "$model"
       ok "Device name: $model"
     fi
-    if ! $st cli config devices list | grep -qx "$SYNCTHING_HUB_ID"; then
+    if ! $st cli config devices list | grep -x "$SYNCTHING_HUB_ID" >/dev/null; then
       $st cli config devices add --device-id "$SYNCTHING_HUB_ID" --name Omarchy \
         --addresses "$SYNCTHING_HUB_ADDRESS" --addresses dynamic
       ok "Added Omarchy (approve this Mac in Omarchy's Syncthing: http://localhost:8384)"
@@ -283,12 +287,12 @@ setup_syncthing_vaults() {
     [[ -f $HOME/Obsidian/$vault/.stignore ]] ||
       printf '%s\n' "// Obsidian rewrites its window layout constantly; each machine keeps its own" \
         ".obsidian/workspace*.json" >"$HOME/Obsidian/$vault/.stignore"
-    if ! $st cli config folders list | grep -qx "$folder"; then
+    if ! $st cli config folders list | grep -x "$folder" >/dev/null; then
       $st cli config folders add --id "$folder" --label "$vault" --path "$HOME/Obsidian/$vault"
       ok "Folder $folder at ~/Obsidian/$vault"
     fi
     if [[ $DOTS_OS == macos ]] &&
-      ! $st cli config folders "$folder" devices list | grep -qx "$SYNCTHING_HUB_ID"; then
+      ! $st cli config folders "$folder" devices list | grep -x "$SYNCTHING_HUB_ID" >/dev/null; then
       $st cli config folders "$folder" devices add --device-id "$SYNCTHING_HUB_ID"
       ok "Sharing $folder with Omarchy"
     fi
@@ -331,12 +335,12 @@ setup_syncthing_agents() {
       esac >"$dir/.stignore"
       ok "${dir/#$HOME/\~}/.stignore written"
     fi
-    if ! $st cli config folders list | grep -qx "$folder"; then
+    if ! $st cli config folders list | grep -x "$folder" >/dev/null; then
       $st cli config folders add --id "$folder" --label "$label" --path "$dir"
       ok "Folder $folder at ${dir/#$HOME/\~}"
     fi
     if [[ $DOTS_OS == macos ]] &&
-      ! $st cli config folders "$folder" devices list | grep -qx "$SYNCTHING_HUB_ID"; then
+      ! $st cli config folders "$folder" devices list | grep -x "$SYNCTHING_HUB_ID" >/dev/null; then
       $st cli config folders "$folder" devices add --device-id "$SYNCTHING_HUB_ID"
       ok "Sharing $folder with Omarchy"
     fi
@@ -611,7 +615,7 @@ install_secrets() {
     while IFS=$'\t' read -r acct id vault title; do
       safe_name "$title" && [[ $title == *.ovpn ]] || { warn "Skipping VPN profile with an unusable title: $title"; continue; }
       op --account "$acct" document get "$id" --vault "$vault" | put_secret "$vpn_profiles/$title" 600
-      if omarchy-aws-vpn-client list | grep -qw -- "${title%.ovpn}"; then
+      if omarchy-aws-vpn-client list | grep -w -- "${title%.ovpn}" >/dev/null; then
         ok "VPN profile ${title%.ovpn} already registered"
       else
         omarchy-aws-vpn-client add "$vpn_profiles/$title" --name "${title%.ovpn}" --link
@@ -636,7 +640,7 @@ install_secrets() {
     local pubkey
     pubkey=$(op --account "$DOTS_OP_PERSONAL" read "op://Private/id_ed25519/public key" | awk '{print $1, $2}')
     if systemctl is-active --quiet sshd && [[ -f /etc/ssh/sshd_config.d/10-omarchy-hardening.conf ]] &&
-      awk '{print $1, $2}' "$HOME/.ssh/authorized_keys" 2>/dev/null | grep -qxF "$pubkey"; then
+      awk '{print $1, $2}' "$HOME/.ssh/authorized_keys" 2>/dev/null | grep -xF "$pubkey" >/dev/null; then
       ok "sshd already set up (key authorized, passwords off)"
     else
       omarchy-setup-security-sshd --key="$pubkey"
@@ -683,7 +687,7 @@ github_https() {
   step "GitHub over HTTPS"
   local from rc=0
   for from in git@github.com: ssh://git@github.com/; do
-    if git config --global --get-all url."https://github.com/".insteadOf | grep -qxF "$from"; then
+    if git config --global --get-all url."https://github.com/".insteadOf | grep -xF "$from" >/dev/null; then
       ok "$from already rewritten to HTTPS"
     else
       git config --global --add url."https://github.com/".insteadOf "$from"
@@ -1034,7 +1038,7 @@ if [[ $DOTS_OS == macos ]]; then
   if [[ ! -d /Applications/Tailscale.app ]]; then
     warn "Tailscale app not installed; skipping"
   elif osascript -e 'tell application "System Events" to get the name of every login item' 2>/dev/null |
-    tr ',' '\n' | grep -qx ' *Tailscale'; then
+    tr ',' '\n' | grep -x ' *Tailscale' >/dev/null; then
     ok "Already in Login Items"
   elif osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/Tailscale.app", hidden:false}' >/dev/null; then
     ok "Added to Login Items"
@@ -1380,7 +1384,7 @@ if omarchy-pkg-missing openlawsvpn-daemon; then
 else
   ok "openlawsvpn-daemon already installed"
 fi
-if omarchy plugin list | grep -q "^$VPN_PLUGIN_ID "; then
+if omarchy plugin list | grep "^$VPN_PLUGIN_ID " >/dev/null; then
   ok "AWS VPN plugin already added"
 else
   omarchy plugin add https://github.com/fernandoaleman/omarchy-aws-vpn-client --enable --yes
@@ -1392,7 +1396,7 @@ fi
 # hyprland.dots.lua. Its README's packages, with Omarchy's installer.
 RAINDROP_PLUGIN_ID=io.github.treramey.raindrop-bookmarks
 omarchy-pkg-add jq imagemagick python # installs only what's missing
-if omarchy plugin list | grep -q "^$RAINDROP_PLUGIN_ID "; then
+if omarchy plugin list | grep "^$RAINDROP_PLUGIN_ID " >/dev/null; then
   ok "Raindrop Bookmarks plugin already added"
 else
   omarchy plugin add https://github.com/treramey/omarchy-raindrop-bookmarks.git --enable --yes

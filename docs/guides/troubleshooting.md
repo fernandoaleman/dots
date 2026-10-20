@@ -367,6 +367,15 @@ Compose is **Right Alt** now (Right Alt, Space, n types your name).
 (`hyprctl devices` shows the old ones on `hl-virtual-keyboard-fcitx5`).
 **Fix:** `omarchy-restart-xcompose` (`install.sh` does it when they differ).
 
+### `install.sh`: `syncthing: … 400 Bad Request … folder has duplicate ID` (or another "already done" step redone)
+
+**Why:** a check like `cmd | grep -q x` under `set -o pipefail` failed now
+and then: `grep -q` exits at the first match, `cmd` can then die of SIGPIPE,
+and pipefail makes the whole check false, so `install.sh` tried to add a
+Syncthing folder that was already there (1 run in 40 when tested,
+2026-10-20). **Fix:** every such check now uses `grep … >/dev/null`, which
+reads all of its input; re-run `install.sh`. Write new checks the same way.
+
 ### A new dots key binding does nothing (e.g. Super+Shift+R)
 
 **Why:** Hyprland didn't reload on its own after `hyprland.dots.lua` (a

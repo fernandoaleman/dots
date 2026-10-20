@@ -65,7 +65,7 @@ if [[ -f $from ]]; then
   trap 'rm -rf "$tmp"' EXIT
   # macOS tar stores metadata as ._ files and xattr headers GNU tar warns about.
   quiet=()
-  tar --version 2>/dev/null | grep -q 'GNU tar' && quiet=(--warning=no-unknown-keyword)
+  tar --version 2>/dev/null | grep 'GNU tar' >/dev/null && quiet=(--warning=no-unknown-keyword)
   tar -xzf "$from" "${quiet[@]}" --exclude='._*' -C "$tmp" .claude/projects ||
     die "can't unpack .claude/projects from $from"
   src=$tmp/.claude/projects
