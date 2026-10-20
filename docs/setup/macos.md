@@ -140,6 +140,13 @@ Alt+arrows) ([tmux.md](../decisions/tmux.md)). Use Ghostty, not Terminal:
 Terminal would need Settings > Profiles > Keyboard > **Use Option as Meta
 key** by hand.
 
+When `install.sh` sets the wallpaper (the Moonlight theme's fisherman),
+macOS asks once whether the terminal may control **System Events**: allow
+it. If you refused, allow it in System Settings > Privacy & Security >
+Automation and re-run, or pick the picture in System Settings > Wallpaper
+(`~/Work/omarchy-moonlight-theme/backgrounds/`). Other Spaces keep their
+own wallpaper.
+
 ## 8. Small settings
 
 - **Work Mac: firewall on** (System Settings > Network > Firewall); IT

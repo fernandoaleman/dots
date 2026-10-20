@@ -9,10 +9,15 @@ macos-option-as-alt = true
 # Omarchy's 9 is sized for its Linux desktop; 13 matches the Mac's scaling
 font-size = 13
 
-# OneDark "dark" (themes/onedark-dark, from onedark.nvim). Omarchy's config
-# loads its current theme from ~/.local/state/omarchy, which the Mac doesn't
-# have (that line is optional, so it's skipped).
-theme = onedark-dark
+# Moonlight, the Omarchy theme (fernandoaleman/omarchy-moonlight-theme):
+# Ghostty's own Catppuccin Mocha, the palette its colors.toml and foot.ini
+# copy, with the background at 0.9 opacity as there (text stays solid) and
+# blurred (macOS only). Omarchy's config loads its current theme from
+# ~/.local/state/omarchy, which the Mac doesn't have (that line is optional,
+# so it's skipped). Neovim, tmux and the wallpaper follow in install.sh.
+theme = Catppuccin Mocha
+background-opacity = 0.9
+background-blur = true
 
 # Machine-local overrides, not stored in dots (skipped if missing)
 config-file = ?"~/.config/ghostty/config.local"

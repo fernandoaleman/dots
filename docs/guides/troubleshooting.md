@@ -674,6 +674,24 @@ its default theme
 **Fix (optional):** pick a built-in theme in btop's menu (Esc > Options),
 or put a `.theme` file in `~/.config/btop/themes/current.theme`.
 
+### Mac: want OneDark back
+
+**Why:** the Mac moved to the Moonlight theme on 2026-10-19
+([macos.md](../decisions/macos.md#theme-moonlight)); OneDark "dark"
+(Ghostty's `onedark-dark`, onedark.nvim) was dropped. **Fix:** in
+`~/.config/ghostty/config.local`, `theme = Atom One Dark` (bundled with
+Ghostty; close to it) and `background-opacity = 1`; for Neovim, restore
+`macos/.config/nvim/lua/plugins/theme.dots.lua` from git history
+(`git log --diff-filter=D -- macos/`) and remove the `theme.lua` link.
+
+### Mac: the wallpaper isn't the fisherman / "Could not set the wallpaper"
+
+**Why:** System Events sets the wallpaper of the current Space only, and
+needs the terminal to be allowed to control it. **Fix:** allow it in
+System Settings > Privacy & Security > Automation and re-run `install.sh`,
+or pick `~/Work/omarchy-moonlight-theme/backgrounds/1-moonlit-fisherman.png`
+in System Settings > Wallpaper (on each Space).
+
 ### Claude Code on a Mac has no Todoist skill
 
 **Why:** before 2026-10-13, `install.sh` ran the Todoist skill step on

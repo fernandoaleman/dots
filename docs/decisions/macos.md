@@ -119,7 +119,7 @@ Brave, Helium, TablePlus, Bazecor, Pixelmator Pro, TickTick).
 | Tailscale | cask `tailscale-app` only | both | not the `tailscale` formula too (two Tailscale setups on one Mac). The app ships the CLI: try `tailscale set --accept-dns=false` from `install.sh` on the fresh Mac; checklist step until then |
 | Moonlight | cask `moonlight` | both | updates via `brew upgrade` (cask isn't self-updating). Try setting "Capture system keyboard shortcuts: in fullscreen" with `defaults write` on the fresh Mac; checklist step until then |
 | AWS VPN Client | cask `aws-vpn-client` | both | profile imported by hand (checklist). `aws-vpn-cli` (third-party `jlars22/tools` wrapper; needs the official app; optional sudoers change) dropped |
-| Ghostty | cask `ghostty` + `font-jetbrains-mono-nerd-font` | both | mirrors Omarchy's terminal: Omarchy's `config/ghostty/config` (v4.0.4) stays the real `~/.config/ghostty/config` with an include line for our `config.dots` (Ghostty's optional `config-file = ?path`): `macos-option-as-alt = true` (tmux Alt keys), a larger font (start at 13; Omarchy's 9 suits its 1.6 scaling), Linux-only `async-backend = epoll` neutralized. Colors: **OneDark "dark"** (user's choice): a Ghostty theme `onedark-dark` generated from [onedark.nvim](https://github.com/navarasu/onedark.nvim)'s `palette.lua` (`dark` style) and its `terminal.lua` color mapping, kept in dots; `config.dots` sets `theme = onedark-dark` (Omarchy's optional theme include finds nothing on a Mac) |
+| Ghostty | cask `ghostty` + `font-jetbrains-mono-nerd-font` | both | mirrors Omarchy's terminal: Omarchy's `config/ghostty/config` (v4.0.4) stays the real `~/.config/ghostty/config` with an include line for our `config.dots` (Ghostty's optional `config-file = ?path`): `macos-option-as-alt = true` (tmux Alt keys), a larger font (start at 13; Omarchy's 9 suits its 1.6 scaling), Linux-only `async-backend = epoll` neutralized. Colors: the **Moonlight** Omarchy theme (since 2026-10-19; OneDark "dark" before): Ghostty's built-in `Catppuccin Mocha`, 0.9 background opacity, blurred ([Theme](#theme-moonlight)) |
 | Raycast | dropped | n/a | moving to Omarchy (Pro not renewed); macOS 27's Spotlight has clipboard history, so Spotlight keeps Cmd+Space. Quicklinks: find a replacement later ([TODO](../TODO.md)) |
 | Slack | cask `slack` (desktop app) | both | on a Mac the native app is better than Omarchy's web app: drawing on a shared screen in huddles works only in the Mac/Windows desktop app |
 | Microsoft Teams | Chrome web app (manual: "Install page as app") | both | like Omarchy (`teams.cloud.microsoft`); enough for occasional chats and calls (chat, audio/video, screen sharing in Chrome); the native app (cask `microsoft-teams`) was first chosen, then replaced. Chrome creates real apps in `~/Applications/Chrome Apps/` (own window, Dock icon, found by Spotlight); macOS has no script for it (Chrome's force-install policy needs an MDM), so it's a checklist step |
@@ -244,15 +244,9 @@ wireplumber, xournalpp, autostart).
   default, so `ghostty +show-config` only lists it with
   `--changes-only=false`). Omarchy's Linux-only lines (`async-backend =
   epoll`, `gtk-toolbar-style`) pass `ghostty +validate-config` on macOS.
-- **Ghostty theme: OneDark "dark"** (`~/.config/ghostty/themes/onedark-dark`,
-  `theme = onedark-dark` in `config.dots`), copied from
-  [onedark.nvim](https://github.com/navarasu/onedark.nvim) (MIT) at a
-  recorded commit: `palette.lua`'s `dark` colors mapped to the 16 terminal
-  colors as its `terminal.lua` does, plus its `Normal`, `Cursor` (reverse)
-  and `Visual` highlights for background, cursor and selection. Omarchy's
+- **Ghostty theme: Moonlight** (see [Theme](#theme-moonlight)). Omarchy's
   theme include (`~/.local/state/omarchy/current/theme/ghostty.conf`) is
-  optional and absent on the Mac. Making it an Omarchy theme too stays in
-  TODO.
+  optional and absent on the Mac.
 - **tmux `prefix ?`** calls `omarchy-menu-tmux-keybindings`; its `--print`
   mode needs only tmux and awk, so that one script is copied from the same
   download into `~/.local/share/omarchy/bin` (on PATH via `macos-env`).
@@ -292,11 +286,9 @@ Extras as on Omarchy (`add_nvim_extras`, shared by both systems).
   downloads the plugins on the first `nvim` start (latest commits, as
   Omarchy's own update check does) and Mason installs Mac builds of its
   tools. Neovim and `tree-sitter` come from the `Brewfile`.
-- **Theme:** no Omarchy themes on the Mac, so no `theme.lua` link (it
-  would point nowhere). The `macos` package adds
-  `lua/plugins/theme.dots.lua`: [onedark.nvim](https://github.com/navarasu/onedark.nvim)
-  with `style = "dark"`, the palette Ghostty's `onedark-dark` theme is built
-  from, in the same shape as Omarchy's theme specs. Omarchy's
+- **Theme:** `lua/plugins/theme.lua` links to the Moonlight repo's
+  `neovim.lua` (catppuccin Macchiato, transparent), as Omarchy links it to
+  the current theme's; see [Theme](#theme-moonlight). Omarchy's
   `omarchy-theme-hotreload.lua` stays, idle (it only acts on theme
   switches).
 - **Clipboard: Neovim's own `pbcopy`/`pbpaste` outside SSH.** Omarchy's
@@ -610,3 +602,31 @@ Tailscale, Voxtype's privacy permissions, the firewall (IT's), importing
 the AWS VPN profile (the client has no import command; its internal files
 are undocumented), pairing Moonlight (PIN) and approving a new Mac in
 Syncthing on Omarchy.
+
+## Theme: Moonlight
+
+Decided 2026-10-19 (user's choice), replacing OneDark "dark": the Mac uses
+the Moonlight Omarchy theme
+([desktop.md](desktop.md#theme-moonlight-the-mac-studios-catppuccin-look-its-own-repo)),
+from its own repo, not a copy in dots. A Mac has no Omarchy theme switcher,
+so each app is pointed at it directly:
+
+| App | How |
+|---|---|
+| Ghostty | `config.dots`: `theme = Catppuccin Mocha` (bundled with Ghostty, checked in 1.3.1), the palette Moonlight's `colors.toml` and `foot.ini` copy; `background-opacity = 0.9` as Moonlight's `foot.ini`; `background-blur = true` (macOS only, user's choice) |
+| Neovim | `install.sh` (`setup_mac_theme`) clones the repo to `~/Work/omarchy-moonlight-theme`, as Omarchy's run does, and links `~/.config/nvim/lua/plugins/theme.lua` to its `neovim.lua` (Macchiato, transparent background) |
+| tmux | `tmux.dots.conf` loads `themes/moonlight.conf` (the Macchiato bar) on macOS, where there's no Omarchy theme name to read |
+| Wallpaper | `setup_mac_theme` sets the repo's `backgrounds/1-moonlit-fisherman.png` (6000x4000) on every display through System Events (`osascript`), skipped when already set |
+
+- **Transparency shows through tmux and Neovim:** tmux on the Mac keeps
+  `window-style default` (only Omarchy's `omarchy-theme-set-tmux` paints
+  panes in the theme color), and Moonlight's Neovim has a transparent
+  background.
+- **Wallpaper limits:** System Events sets the current Space only, and
+  macOS asks once to let the terminal control System Events (Automation).
+  If that's refused, `install.sh` warns and the picture can be picked in
+  System Settings > Wallpaper.
+- **btop** keeps its default colors, as before.
+- **Dropped:** `themes/onedark-dark` (Ghostty) and `theme.dots.lua`
+  (onedark.nvim). Omarchy's own `one-dark` theme stays
+  ([troubleshooting](../guides/troubleshooting.md#mac-want-onedark-back)).

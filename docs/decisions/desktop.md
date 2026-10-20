@@ -570,8 +570,9 @@ Chromium, ...) from its `colors.toml` through
   `background-opacity = 0.9`); no visible difference with this wallpaper.
 - **Not set by `install.sh`:** choosing the theme stays a user action
   (`omarchy theme set "One Dark"`), so a re-run never switches themes.
-- **Mac:** unchanged (Ghostty's `onedark-dark`, same palette). Later, the
-  Mac's Ghostty colors could be generated from this `colors.toml`.
+- **Mac:** used OneDark "dark" (Ghostty's `onedark-dark`, same palette)
+  until 2026-10-19; it now uses Moonlight
+  ([macos.md](macos.md#theme-moonlight)).
 
 ## Theme: Moonlight, the Mac Studio's Catppuccin look (its own repo)
 
@@ -671,7 +672,9 @@ Neovim, and no warm wallpaper showing through.
   `tmux.conf` (and `tmux.dots.conf`) append to them, so every reload added
   the same entries again (seen: 12 and 36 entries instead of 2 and 6). Checked: switching to
   One Dark and back restores each bar, continuum stays hooked in. **Mac:**
-  no Omarchy theme there, so nothing is loaded.
+  no Omarchy theme name there, so `tmux.dots.conf` loads Moonlight's bar
+  on macOS (the Mac uses Moonlight since 2026-10-19,
+  [macos.md](macos.md#theme-moonlight)).
 
 ## Homebrew and Rosetta: Mac phase
 

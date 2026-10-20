@@ -626,6 +626,62 @@ github_https() {
   esac
 }
 
+# Omarchy themes published in their own repos, "theme slug|repo URL" (public;
+# HTTPS like the rest of GitHub here), cloned into ~/Work on both OSes:
+# Omarchy links each as a theme, the Mac uses Moonlight's files directly.
+THEME_REPOS=(
+  "moonlight|https://github.com/fernandoaleman/omarchy-moonlight-theme"
+)
+clone_theme_repo() { # <repo URL>; fails if it isn't there and can't be cloned
+  local repo_dir="$HOME/Work/${1##*/}"
+  [[ -d $repo_dir/.git ]] || git clone --quiet "$1" "$repo_dir"
+}
+
+# The Mac's look is the Moonlight Omarchy theme (docs/decisions/macos.md).
+# Ghostty's colors and the tmux bar are set in config.dots and
+# tmux.dots.conf; this clones the theme, links Neovim's theme.lua to its
+# neovim.lua (as Omarchy links the current theme's) and sets its fisherman
+# background as the wallpaper of every display. System Events sets only the
+# current Space's; macOS asks once to let the terminal control it.
+MAC_WALLPAPER=1-moonlit-fisherman.png
+setup_mac_theme() {
+  step "Theme: Moonlight"
+  local entry repo_url="" theme_dir nvim_theme wallpaper current others
+  for entry in "${THEME_REPOS[@]}"; do
+    [[ $entry == moonlight\|* ]] && repo_url=${entry#*|}
+  done
+  theme_dir="$HOME/Work/${repo_url##*/}"
+  if ! clone_theme_repo "$repo_url"; then
+    warn "Could not clone the Moonlight theme ($repo_url)"
+    return 0
+  fi
+  ok "Theme in ${theme_dir/#$HOME/\~}"
+
+  nvim_theme="$HOME/.config/nvim/lua/plugins/theme.lua"
+  if [[ -L $nvim_theme && $(readlink "$nvim_theme") == "$theme_dir/neovim.lua" ]]; then
+    ok "Neovim already uses it"
+  elif [[ -e $nvim_theme && ! -L $nvim_theme ]]; then
+    warn "${nvim_theme/#$HOME/\~} is a real file; leaving it (Neovim keeps its colors)"
+  else
+    ln -sfn "$theme_dir/neovim.lua" "$nvim_theme"
+    ok "Neovim linked to its neovim.lua"
+  fi
+
+  wallpaper="$theme_dir/backgrounds/$MAC_WALLPAPER"
+  # One picture per display, comma-separated: set when any isn't this one
+  current=$(osascript -e 'tell application "System Events" to get picture of every desktop' 2>/dev/null || true)
+  others=${current//"$wallpaper"/}
+  if [[ -n $current && -z ${others//, /} ]]; then
+    ok "Wallpaper already set"
+  elif osascript -e 'on run argv' \
+    -e 'tell application "System Events" to tell every desktop to set picture to (item 1 of argv)' \
+    -e 'end run' "$wallpaper" >/dev/null; then
+    ok "Wallpaper set to $MAC_WALLPAPER"
+  else
+    warn "Could not set the wallpaper: allow the terminal to control System Events (System Settings > Privacy & Security > Automation) and re-run, or pick ${wallpaper/#$HOME/\~} in System Settings > Wallpaper"
+  fi
+}
+
 # macOS. The Mac run stops at the end of this block; what follows is
 # Omarchy's.
 if [[ $DOTS_OS == macos ]]; then
@@ -674,9 +730,9 @@ if [[ $DOTS_OS == macos ]]; then
   # Omarchy's Neovim config, seeded once if missing: what the omarchy-nvim
   # package builds (LazyVim's starter plus Omarchy's files), from the same
   # pinned sources. Not the package itself: its plugin cache is built for
-  # Linux, so lazy.nvim downloads the plugins on the first nvim start. No
-  # theme.lua link (no Omarchy themes here): the macos package's
-  # theme.dots.lua sets the colorscheme (docs/decisions/macos.md).
+  # Linux, so lazy.nvim downloads the plugins on the first nvim start. Its
+  # theme.lua is linked to Moonlight's by setup_mac_theme (no Omarchy themes
+  # here; docs/decisions/macos.md).
   step "Seeding Omarchy's Neovim config"
   nvim_dir="$HOME/.config/nvim"
   if [[ -e $nvim_dir ]]; then
@@ -698,6 +754,7 @@ if [[ $DOTS_OS == macos ]]; then
   link_dots
   check_git_identity
   add_nvim_extras
+  setup_mac_theme
   install_tmux_plugins
   install_tmux_ssh
 
@@ -1335,14 +1392,10 @@ for theme in "$DOTS_DIR"/themes/*/; do
   theme=${theme%/}
   link_theme "$theme" "${theme##*/}"
 done
-# "theme slug|repo URL" (public; HTTPS like the rest of GitHub here)
-THEME_REPOS=(
-  "moonlight|https://github.com/fernandoaleman/omarchy-moonlight-theme"
-)
 for entry in "${THEME_REPOS[@]}"; do
   IFS='|' read -r slug repo_url <<<"$entry"
   repo_dir="$HOME/Work/${repo_url##*/}"
-  if [[ ! -d $repo_dir/.git ]] && ! git clone --quiet "$repo_url" "$repo_dir"; then
+  if ! clone_theme_repo "$repo_url"; then
     warn "Could not clone the $slug theme ($repo_url)"
     continue
   fi

@@ -197,6 +197,7 @@ panes; decided with its tmux half in [tmux.md](tmux.md).
 ## Mac notes
 
 The `.dots` files and Extras are shared. The Mac seeds `~/.config/nvim`
-from the omarchy-nvim package's sources at pinned commits and sets OneDark
-"dark" in `theme.dots.lua` (no Omarchy themes there); see
+from the omarchy-nvim package's sources at pinned commits and links
+`theme.lua` to the Moonlight theme's `neovim.lua` (no Omarchy themes
+there); see
 [macos.md](macos.md#neovim-omarchys-lazyvim-rebuilt-from-its-sources).

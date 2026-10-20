@@ -11,6 +11,10 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Changed
 
+- The Mac uses the Moonlight theme instead of OneDark "dark": Ghostty's
+  Catppuccin Mocha at 0.9 opacity with blur, Moonlight's Neovim colors and
+  tmux bar, and its fisherman background as the wallpaper (`install.sh`
+  clones the theme repo and sets them).
 - The docs refer to the employer as "work", and the git history was
   rewritten to match (all commit IDs before this release changed).
 - Desk monitors at scale 1.25 instead of 1.6 (more room; tried since
