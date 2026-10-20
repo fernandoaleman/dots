@@ -26,6 +26,9 @@ o.window({ initial_class = "^Spotify$" }, { workspace = "9" })
 -- bindings.lua); Super+Shift+V was free
 o.bind("SUPER + SHIFT + V", "AWS VPN", "omarchy-shell fernandoaleman.aws-vpn-client toggle")
 
+-- Raindrop Bookmarks picker (the plugin's README key); Super+Shift+R was free
+o.bind("SUPER + SHIFT + R", "Raindrop bookmarks", "omarchy-shell shell toggle io.github.treramey.raindrop-bookmarks '{}'")
+
 -- Machine-local overrides, not stored in dots (skipped if missing)
 do
   local f = os.getenv("HOME") .. "/.config/hypr/hyprland.local.lua"

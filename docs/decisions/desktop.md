@@ -258,6 +258,34 @@ isn't in the plugin catalog yet:
 Each step is skipped when already done. **Mac:** AWS VPN client via
 Homebrew; the profile imported by hand (Mac phase).
 
+## Bookmarks: Raindrop.io, with the Raindrop Bookmarks picker
+
+Decided 2026-10-20. Raycast's quicklinks move to **Raindrop.io** (already
+paid for). On Omarchy, the catalog plugin
+[Raindrop Bookmarks](https://github.com/treramey/omarchy-raindrop-bookmarks)
+(`io.github.treramey.raindrop-bookmarks`, a Quickshell overlay; checked at
+1.2.1, commit `657d100`) fuzzy-searches titles, domains, tags and URLs and
+opens the pick with `xdg-open`. It keeps the last download for offline
+search and refreshes on open when that is over 5 minutes old.
+
+- **`install.sh`** (Omarchy): `omarchy-pkg-add jq imagemagick python` (its
+  README's packages; only missing ones are installed), then `omarchy plugin
+  add <repo> --enable --yes`, skipped when the plugin is listed.
+- **Key:** Super+Shift+R (the README's suggestion; free in Omarchy's
+  bindings), in `hyprland.dots.lua`, running `omarchy-shell shell toggle
+  io.github.treramey.raindrop-bookmarks '{}'`.
+- **Token:** a Raindrop *test token* (Settings, Integrations, an app's
+  "Create test token"), stored as field `RAINDROP_TOKEN` in the Raindrop
+  item, tag `dots/token` ([secrets.md](secrets.md#api-tokens-dotstoken-done)).
+  The plugin reads a file, so the secrets step also writes it to
+  `~/.config/raindrop/token` (600, the plugin's format: the token and a
+  newline) from `~/.config/dots/env`; the picker then never asks.
+- **Catalog status:** its latest update is "unverified" in the marketplace
+  (a maintainer reviewed 1.2.0-era commit `9708884`). Omarchy plugins run
+  unsandboxed; its README states the token goes only to `api.raindrop.io`.
+- **Mac:** no picker (Raycast is gone); the Raindrop app or browser
+  extension.
+
 ## Text snippets: Omarchy's XCompose; espanso dropped
 
 The old setup installed **espanso** (AUR `espanso-wayland`); its config held

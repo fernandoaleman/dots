@@ -6,39 +6,27 @@ its outcome goes in `docs/decisions/` and the item is removed here.
 
 ## After dots
 
-### Snippets and bookmarks pickers (Omarchy + Raycast)
+### Snippets: espanso (in progress)
 
-Export Raycast's snippets and quicklinks (Mac) to JSON as the single
-source, then use them on both machines with the **same keybindings**:
+Bookmarks are done (Raindrop.io,
+[desktop.md](decisions/desktop.md#bookmarks-raindropio-with-the-raindrop-bookmarks-picker)).
+Snippets move from Raycast (export of 2026-10-20: 306 snippets, 83 with a
+keyword, 60 with `{argument}` fields, a few that look like secrets) to
+**espanso** on Omarchy and the Macs, with the catalog's espanso bar widget
+(`io.github.taisau.espanso`) on Omarchy. Agreed 2026-10-20:
 
-- **Omarchy:** a *picker* (press a key, fuzzy-search, insert/open), not
-  keyword expansion: too many keywords to remember; the picker gets used
-  anyway.
-- **Mac:** Raycast (free tier: local snippets and quicklinks), importing
-  the same JSON.
+- `install.sh` installs espanso itself (`omarchy-pkg-aur-add
+  espanso-wayland`; the plugin's own install button falls back to `yay`).
+- The match files live in a **Syncthing folder** (personal and work text,
+  so never in dots). Both systems can use `~/.config/espanso`: espanso
+  checks it before macOS's `~/Library/Application Support/espanso`
+  (`espanso/src/path/mod.rs`, `get_config_dir`), and loads
+  `match/**/[!_]*.yml`.
 
-Check the Omarchy plugin catalog (`https://plugins.omarchy.org`) before
-building anything. Candidates seen 2026-10-04:
-
-- Snippets: `community.shoxjaxon.snippets`, `io.github.prohner.snippets`,
-  `leninzapata.super-clipboard-snippet`, `io.github.ferc10110.readily`,
-  `cylon58.paste-layer`, `reclip`.
-- Bookmarks: `stefanmara.bookmarks`, `io.github.idr4n.bookmarks`,
-  `eudionelima.bookomarchy`, `io.github.decadentsavant.bookmark-everything`,
-  `weblauncher`, `io.github.equa-tory.quicksearch` (keyword quicklinks).
-- Launchers that bundle both: `io.github.hominluo.launcher`,
-  `io.github.terrifiedbug.omacast`.
-
-Raycast is being dropped on the Macs (2026-10-10; Spotlight instead), so
-its quicklinks and snippets need a new home. Candidates to weigh then:
-**Raindrop.io** for bookmarks (Mac cask `raindropio`; the Omarchy catalog
-has a Raindrop Bookmarks picker plugin), and **espanso** for snippets on
-Omarchy and the Macs (dropped earlier only because Raycast covered it; the
-catalog has an espanso plugin, `io.github.taisau.espanso`), with its
-snippet files synced by Syncthing.
-Things to settle then: the JSON format (Raycast's export vs. the plugin's),
-where the JSON lives (dots if nothing private, else 1Password), and the
-shared keybindings.
+Still to settle: converting the export (espanso needs a trigger on every
+match; `{argument}` becomes a form `[[name]]`), the secret-looking ones
+(1Password instead), the search shortcut, and the 4 quicklinks with a
+query argument plus 5 that aren't web links.
 
 ### Meeting recording on Omarchy (Plaud)
 

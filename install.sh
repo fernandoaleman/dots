@@ -618,6 +618,20 @@ install_secrets() {
       fi
     done < <(items dots/vpn Document)
 
+    # The Raindrop Bookmarks plugin reads its token from a file, not the env:
+    # RAINDROP_TOKEN (a dots/token field, in ~/.config/dots/env above) ->
+    # ~/.config/raindrop/token (600, the plugin's own format), so the picker
+    # never asks for it. Read from the env file, not 1Password again.
+    local raindrop_token
+    raindrop_token=$(source "$HOME/.config/dots/env" 2>/dev/null && printf '%s' "${RAINDROP_TOKEN:-}") || true
+    if [[ -n $raindrop_token ]]; then
+      mkdir -p "$HOME/.config/raindrop" && chmod 700 "$HOME/.config/raindrop"
+      printf '%s\n' "$raindrop_token" | put_secret "$HOME/.config/raindrop/token" 600
+    else
+      warn "No RAINDROP_TOKEN in a 1Password item tagged dots/token; the Raindrop picker will ask for one"
+    fi
+    unset raindrop_token
+
     # Incoming SSH: Omarchy's script, authorizing only the personal key
     local pubkey
     pubkey=$(op --account "$DOTS_OP_PERSONAL" read "op://Private/id_ed25519/public key" | awk '{print $1, $2}')
@@ -1352,6 +1366,17 @@ else
   omarchy plugin add https://github.com/fernandoaleman/omarchy-aws-vpn-client --enable --yes
 fi
 "$VPN_PLUGIN_DIR/setup" --no-keybind
+
+# Raindrop Bookmarks: a catalog plugin (Quickshell overlay) that fuzzy-searches
+# Raindrop.io; its token comes from the secrets step, its key from
+# hyprland.dots.lua. Its README's packages, with Omarchy's installer.
+RAINDROP_PLUGIN_ID=io.github.treramey.raindrop-bookmarks
+omarchy-pkg-add jq imagemagick python # installs only what's missing
+if omarchy plugin list | grep -q "^$RAINDROP_PLUGIN_ID "; then
+  ok "Raindrop Bookmarks plugin already added"
+else
+  omarchy plugin add https://github.com/treramey/omarchy-raindrop-bookmarks.git --enable --yes
+fi
 
 # Web apps (Chrome app windows), created with Omarchy's installer:
 # "Name|URL|icon URL". With no icon URL, Omarchy fetches the site's own icon

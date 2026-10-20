@@ -189,6 +189,7 @@ repo) that bash loads. A new token is a 1Password-only change.
 | `NEW_RELIC_API_KEY` (added 2026-10-13, a user key `NRAK-…`; moved from `Private`) | New Relic (work) |
 | `PAGERTREE_API_TOKEN` (was field `API Token - Claude`) | PagerTree (work), moved from `Private` |
 | `TODOIST_API_TOKEN` (added; `td` reads it, so no browser login) | Todoist (Personal), `Private` |
+| `RAINDROP_TOKEN` (added 2026-10-20, a test token; also written to `~/.config/raindrop/token` for the bookmarks picker, [desktop.md](desktop.md#bookmarks-raindropio-with-the-raindrop-bookmarks-picker)) | Raindrop, `Private` |
 
 Edits used piped JSON templates (values never on a command line);
 existing tags and notes kept (dots line appended). One auto-saved web-form
