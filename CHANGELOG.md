@@ -36,6 +36,8 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Added
 
+- `install.sh` deletes links to files dots no longer has (broken links
+  into dots that re-stowing leaves behind when a folder is dropped).
 - `private words` git hook (prek): fails a commit or `make lint` when a
   staged file or the message contains a word from the machine-local list
   `~/.config/dots/private-words`; no list, no commit.

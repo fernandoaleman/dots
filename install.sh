@@ -109,6 +109,44 @@ get_dots() {
   source "$DOTS_DIR/lib/dots.sh"
 }
 
+# Restowing removes links to deleted package files only in folders the
+# package still has, so a dropped folder's links stay, pointing nowhere
+# (troubleshooting). Delete every broken link whose target is inside dots,
+# where packages link to ($HOME's top, ~/.config, ~/.local/bin, ~/.ssh), and
+# its folder if that leaves it empty. The target can't be resolved with
+# realpath (it's gone, and macOS has no -m), so it's worked out as a path.
+remove_stale_links() {
+  step "Removing links to files dots no longer has"
+  local link dir target part removed=0
+  local -a parts kept
+  local roots=("$HOME/.config" "$HOME/.local/bin" "$HOME/.ssh")
+  while IFS= read -r -d '' link; do
+    [[ -e $link ]] && continue
+    dir=${link%/*}
+    target=$(readlink "$link")
+    [[ $target == /* ]] || target="$(cd "$dir" && pwd -P)/$target"
+    kept=()
+    IFS=/ read -ra parts <<<"$target"
+    for part in "${parts[@]}"; do
+      case $part in
+      "" | .) ;;
+      ..) ((${#kept[@]})) && unset 'kept[-1]' ;;
+      *) kept+=("$part") ;;
+      esac
+    done
+    target="/$(IFS=/ && echo "${kept[*]}")"
+    [[ $target == "$DOTS_DIR"/* ]] || continue
+    rm "$link"
+    ok "Removed ${link/#$HOME/\~} (dots no longer has ${target#"$DOTS_DIR"/})"
+    [[ $dir == "$HOME" || " ${roots[*]} " == *" $dir "* ]] || rmdir "$dir" 2>/dev/null || true
+    removed=1
+  done < <(
+    find "$HOME" -maxdepth 1 -type l -print0
+    find "${roots[@]}" -type l -print0 2>/dev/null
+  )
+  ((removed)) || ok "None"
+}
+
 # Link dots into $HOME: stow the packages and add the include lines to
 # Omarchy's config files. Shared by both OSes; what gets stowed and hooked
 # comes from lib/dots.sh (per OS).
@@ -141,6 +179,7 @@ link_dots() {
   [[ " ${PACKAGES[*]} " == *" ssh "* ]] && mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
   stow --dir "$DOTS_DIR" --target "$HOME" --restow --no-folding "${PACKAGES[@]}"
   ok "Stowed"
+  remove_stale_links
 
   # Omarchy's own config files stay real files that Omarchy (and its update
   # migrations) can keep editing. Each gets one line, added last, that loads

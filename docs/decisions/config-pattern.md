@@ -132,6 +132,15 @@ into it (private keys, `known_hosts`) lands inside the git working tree.
 reports any package file that isn't committed. Cost: a new file in a
 package needs a re-stow (`install.sh`), for every package alike.
 
+**Removed files** (added 2026-10-19): re-stowing removes links to deleted
+package files only in folders the package still has, so when a whole folder
+goes (the Mac's `~/.config/ghostty/themes/` after OneDark was dropped) its
+links stay, pointing nowhere. After stowing, `install.sh`
+(`remove_stale_links`) deletes every broken link whose target is inside
+dots, at the top of `$HOME` and under `~/.config`, `~/.local/bin` and
+`~/.ssh` (where packages link to), and its folder if that leaves it
+empty. Broken links pointing anywhere else are left alone.
+
 ## Tally
 
 Every Omarchy-owned config file we customize. **If "no include" ends up

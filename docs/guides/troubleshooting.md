@@ -232,11 +232,15 @@ missing everywhere, check `~/.config/sesh` is linked (`install.sh` stows the
 
 ### A dots file was removed, but its link is still in `$HOME`
 
-**Why:** stow only links what's in the package; when a file is deleted
-from dots, re-stowing doesn't remove its old link, which now points at
-nothing (seen with `~/.config/tmux/session-picker`). `make doctor` reports
-it while the file is still tracked. **Fix:** delete the broken link
-(`find ~/.config ~/.local/bin -xtype l` lists broken links).
+**Why:** re-stowing removes links to deleted package files only in folders
+the package still has; when a whole folder goes, its links stay, pointing
+at nothing (seen with `~/.config/tmux/session-picker`, and the Mac's
+`~/.config/ghostty/themes/onedark-dark` on 2026-10-19). `make doctor`
+reports it while the file is still tracked. **Fix:** re-run `install.sh`,
+which now deletes broken links into dots
+([config-pattern.md](../decisions/config-pattern.md#stow-without-folding));
+for one elsewhere, `find ~/.config ~/.local/bin -xtype l` lists broken
+links (on a Mac, `find … -type l ! -exec test -e {} \; -print`).
 
 ### Ctrl+b doesn't act as a tmux prefix
 
@@ -686,15 +690,6 @@ macos/.bash_profile`, remove the line from `~/.bashrc` and the files it
 created (`~/.local/bin/env`, `env.fish` and `prek`, `~/.config/prek`, plus
 `~/.profile`, `~/.zshrc`, `~/.config/fish` if they hold only that line),
 then re-run `install.sh`. Run `make setup` from a normal terminal.
-
-### A link to a file dots no longer has (after `install.sh`)
-
-**Why:** `stow --restow` removes links to deleted package files only in
-folders the package still has; when a whole folder goes (e.g.
-`macos/.config/ghostty/themes/`, 2026-10-19), its links stay, pointing
-nowhere. Harmless, but untidy. **Fix:** find and delete them:
-`find ~/.config ~/.local -type l ! -exec test -e {} \; -print | xargs ls -l | grep Work/dots`,
-then `rm` each (and `rmdir` the empty folder).
 
 ### Mac: want OneDark back
 
