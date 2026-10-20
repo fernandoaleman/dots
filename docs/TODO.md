@@ -258,7 +258,7 @@ the Studio's Claude Code SessionStart hook (`herdr-agent-state.sh`) and
 
 Old zsh `50-aliases` git aliases re-added 2026-10-19 in their own section
 of `~/.config/bash/aliases` ([shell.md](decisions/shell.md)) because muscle
-memory was slowing work: `gs`, `ggpur`, `gftf`, `ggpurt`, `grhh`, `gcm` (overrides Omarchy's `gcm`), `gcmsg`. Once Omarchy's (`g`, `gcm`, `gcam`, `gcad`)
+memory was slowing work: `gs`, `ggpur`, `gftf`, `ggpurt`, `grhh`, `gcm` (overrides Omarchy's `gcm`), `gcmsg`, and (2026-10-20) `gaa`, `glo`, `gloo`. Once Omarchy's (`g`, `gcm`, `gcam`, `gcad`)
 are habit, decide which to keep and drop the rest.
 
 ### Office: remote desktop slow, fuzzy, freezes when idle

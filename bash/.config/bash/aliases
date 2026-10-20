@@ -36,3 +36,7 @@ alias grhh='git reset HEAD --hard'
 # the newer git checkout <branch>.
 alias gcm='git switch master'
 alias gcmsg='git commit -m'
+# Added 2026-10-20, as on the Mac Studio (no Omarchy alias or command uses them)
+alias gaa='git add -A'
+alias glo='git log --oneline --max-count=10'
+alias gloo='git log --oneline'

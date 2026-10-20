@@ -264,6 +264,9 @@ Aliases `co`, `br`, `ci`, `st`; `init.defaultBranch = master`;
     `default/bash/aliases`); that command is `gcmsg` here. The user chose
     muscle memory over Omarchy's name (troubleshooting has the way back).
   - `gcmsg` = `git commit -m`, as on the Mac (Omarchy's old `gcm`). No clash.
+  - `gaa` = `git add -A`, `glo` = `git log --oneline --max-count=10`,
+    `gloo` = `git log --oneline` (added 2026-10-20, as on the Mac Studio).
+    No Omarchy alias or command by those names.
 - `50-shortcuts`: `c` conflicted with Omarchy's `c` (opencode); `~/Work` +
   zoxide replace `~/code` + `c <project>`.
 - `90-path`: Omarchy already inits mise/starship/zoxide; PATH order kept as
