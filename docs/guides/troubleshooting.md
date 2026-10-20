@@ -353,6 +353,13 @@ where you are (pinning every terminal would be too broad).
 **Why:** with Omarchy's Lua config, dispatch takes Lua:
 `hyprctl dispatch 'hl.dsp.focus({ workspace = "2" })'`.
 
+### A new dots key binding does nothing (e.g. Super+Shift+R)
+
+**Why:** Hyprland didn't reload on its own after `hyprland.dots.lua` (a
+link into dots) changed; `hyprctl binds -j` didn't list the new key
+(found 2026-10-20). **Fix:** `hyprctl reload`. `install.sh` now does it at
+the end when Hyprland is running.
+
 ## Slack
 
 ### Can't draw on someone's shared screen in a Slack huddle

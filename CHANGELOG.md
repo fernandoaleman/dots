@@ -39,6 +39,8 @@ by a clean install; macOS support comes in later `1.x` releases.
 - Raindrop.io bookmarks on Omarchy: `install.sh` adds the Raindrop
   Bookmarks picker plugin (Super+Shift+R) and writes its token from
   1Password (`RAINDROP_TOKEN`, tag `dots/token`).
+- `install.sh` reloads Hyprland at the end, so changed key bindings apply
+  right away.
 - `install.sh` deletes links to files dots no longer has (broken links
   into dots that re-stowing leaves behind when a folder is dropped).
 - `private words` git hook (prek): fails a commit or `make lint` when a

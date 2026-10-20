@@ -1583,6 +1583,13 @@ fi
 
 cache_work_dirs
 
+# Hyprland didn't pick up a binding added to hyprland.dots.lua (a link into
+# dots) on its own, so reload it when it's running; a no-op otherwise
+if hyprctl version &>/dev/null; then
+  step "Reloading Hyprland"
+  if hyprctl reload >/dev/null; then ok "Reloaded"; else warn "hyprctl reload failed; run it yourself"; fi
+fi
+
 step "Checking dots"
 dots_doctor || true
 
