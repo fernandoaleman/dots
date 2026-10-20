@@ -43,6 +43,8 @@ by a clean install; macOS support comes in later `1.x` releases.
   right away.
 - CapsLock+H/K/L on Omarchy (clipboard, emoji, Raindrop bookmarks):
   CapsLock is a Hyper key instead of Compose, which moves to Right Alt.
+- `install.sh` writes the Jira CLI config with `jira init` when it's
+  missing (project and board from 1Password), on both systems.
 - `install.sh` deletes links to files dots no longer has (broken links
   into dots that re-stowing leaves behind when a folder is dropped).
 - `private words` git hook (prek): fails a commit or `make lint` when a

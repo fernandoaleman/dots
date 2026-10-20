@@ -651,6 +651,26 @@ install_secrets() {
   else
     warn "Todoist not authenticated: add TODOIST_API_TOKEN to a 1Password item tagged dots/token"
   fi
+
+  # Jira CLI config: written by `jira init` from dots/token fields (site and
+  # login are CONFLUENCE_DOMAIN / CONFLUENCE_EMAIL, plus DOTS_JIRA_PROJECT and
+  # DOTS_JIRA_BOARD; not JIRA_*, since jira-cli lets any JIRA_<setting> env
+  # variable replace that setting), so it lists Jira's current fields and
+  # issue types; it names work details, so it's never in dots. Kept once
+  # written (delete it to regenerate); the token stays in JIRA_API_TOKEN.
+  step "Checking Jira CLI config"
+  local jira_config="$HOME/.config/.jira/.config.yml"
+  if [[ -f $jira_config ]]; then
+    ok "Jira CLI config exists"
+  elif (set -a && source "$HOME/.config/dots/env" 2>/dev/null &&
+    [[ -n ${JIRA_API_TOKEN:-} && -n ${CONFLUENCE_DOMAIN:-} && -n ${CONFLUENCE_EMAIL:-} && -n ${DOTS_JIRA_PROJECT:-} && -n ${DOTS_JIRA_BOARD:-} ]] &&
+    mise exec -- jira init --installation cloud --server "https://${CONFLUENCE_DOMAIN#https://}" \
+      --login "$CONFLUENCE_EMAIL" --project "$DOTS_JIRA_PROJECT" --board "$DOTS_JIRA_BOARD" --auth-type basic >/dev/null); then
+    ok "Jira CLI config written (${jira_config/#$HOME/\~})"
+  else
+    warn "No Jira CLI config: needs JIRA_API_TOKEN, CONFLUENCE_DOMAIN, CONFLUENCE_EMAIL, DOTS_JIRA_PROJECT"
+    warn "and DOTS_JIRA_BOARD in a 1Password item tagged dots/token (or jira init failed)"
+  fi
 }
 
 # GitHub over HTTPS on every machine (docs/decisions/git.md): gh-role-login

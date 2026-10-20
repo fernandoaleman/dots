@@ -458,6 +458,25 @@ Add your own lines to `~/.XCompose`, then `omarchy-restart-xcompose`:
 (https://espanso.org/docs/install/linux/). The old config was stock, so
 there's nothing to restore.
 
+### `jira sprint list`: "No result found for given query in project \"\""
+
+**Why:** an environment variable named `JIRA_<setting>` replaces that
+setting in jira-cli's config (viper `AutomaticEnv`, prefix `jira`), so a
+`JIRA_PROJECT` or `JIRA_BOARD` in `~/.config/dots/env` broke the project and
+board (found 2026-10-20). **Fix:** dots' own fields are `DOTS_JIRA_PROJECT`
+/ `DOTS_JIRA_BOARD`; never add a `JIRA_*` field to a `dots/token` item
+unless jira-cli should read it (like `JIRA_API_TOKEN`). Open a new shell
+after `install.sh` rewrites the env file.
+
+### `jira`: config not found / "Unable to generate configuration: board not found"
+
+**Why:** `install.sh` writes `~/.config/.jira/.config.yml` with `jira init`
+only when it's missing, from `DOTS_JIRA_PROJECT` / `DOTS_JIRA_BOARD` (and the
+Confluence site and email) in the Atlassian 1Password item
+([secrets.md](../decisions/secrets.md)). "Board not found" means the board
+was renamed; the error lists the current ones. **Fix:** set `DOTS_JIRA_BOARD` in
+1Password, delete the config file, re-run `install.sh`.
+
 ## Docker
 
 ### `docker ps`: permission denied on `/var/run/docker.sock`

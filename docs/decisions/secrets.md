@@ -184,7 +184,7 @@ repo) that bash loads. A new token is a 1Password-only change.
 
 | Variable | Item (work vault) |
 |---|---|
-| `JIRA_API_TOKEN` (was field `token`), `CONFLUENCE_API_TOKEN` (added, was missing), `CONFLUENCE_DOMAIN`, `CONFLUENCE_EMAIL` | Atlassian (work) |
+| `JIRA_API_TOKEN` (was field `token`), `CONFLUENCE_API_TOKEN` (added, was missing), `CONFLUENCE_DOMAIN`, `CONFLUENCE_EMAIL`, `DOTS_JIRA_PROJECT`, `DOTS_JIRA_BOARD` (added 2026-10-20, for the Jira CLI config below) | Atlassian (work) |
 | `CLOUDFLARE_API_TOKEN` (was field `Claude`) | Cloudflare (work) |
 | `NEW_RELIC_API_KEY` (added 2026-10-13, a user key `NRAK-…`; moved from `Private`) | New Relic (work) |
 | `PAGERTREE_API_TOKEN` (was field `API Token - Claude`) | PagerTree (work), moved from `Private` |
@@ -196,6 +196,18 @@ existing tags and notes kept (dots line appended). One auto-saved web-form
 field without ID or label was labeled `unlabeled form field` (templates
 can't round-trip it; value unchanged). Verified: every exported variable
 matches the Mac Studio by hash.
+
+**Jira CLI config** (`~/.config/.jira/.config.yml`, added 2026-10-20; it
+was never migrated): `install.sh` runs `jira init` when it's missing, with
+`--installation cloud --server https://$CONFLUENCE_DOMAIN --login
+$CONFLUENCE_EMAIL --project $DOTS_JIRA_PROJECT --board $DOTS_JIRA_BOARD --auth-type
+basic` (same Atlassian site and login as Confluence). Not a stored copy:
+everything in the file is what `jira init` downloads (compared with the
+Mac Studio's May copy: same settings, but 137 custom fields vs 56, 7 issue
+types vs 13, and its saved board "TBDEV board", id 2, has since been renamed
+eCommerce). The board is **Platform** (the user's sprints, Platform-0xx):
+new tickets sit in Tech Submission (Tech Intake board) until they're
+pulled to To Do with team Platform. Delete the file to regenerate it.
 
 **Titles:** `<Service> (<account>)`: Atlassian (work) / (Personal),
 Cloudflare (work) / (work devops) / (Personal), PagerTree
