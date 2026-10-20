@@ -674,6 +674,19 @@ its default theme
 **Fix (optional):** pick a built-in theme in btop's menu (Esc > Options),
 or put a `.theme` file in `~/.config/btop/themes/current.theme`.
 
+### `install.sh` says "has local changes; skipping update" (`.bash_profile`)
+
+**Why:** `make setup` ran where neither mise's `prek` nor Homebrew was on
+PATH (seen over SSH on the MacBook, 2026-10-19), so it fell back to prek's
+own installer, which appended `. "$HOME/.local/bin/env"` to `~/.bashrc`,
+`~/.bash_profile` (a link into dots) and new `~/.profile`, `~/.zshrc` and
+fish files. The Makefile now runs that installer with
+`PREK_NO_MODIFY_PATH=1`. **Fix:** `git -C ~/Work/dots checkout --
+macos/.bash_profile`, remove the line from `~/.bashrc` and the files it
+created (`~/.local/bin/env`, `env.fish` and `prek`, `~/.config/prek`, plus
+`~/.profile`, `~/.zshrc`, `~/.config/fish` if they hold only that line),
+then re-run `install.sh`. Run `make setup` from a normal terminal.
+
 ### Mac: want OneDark back
 
 **Why:** the Mac moved to the Moonlight theme on 2026-10-19

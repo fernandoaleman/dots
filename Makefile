@@ -2,7 +2,9 @@
 
 # ── Setup ──────────────────────────────────────────────
 # Must work on a bare machine BEFORE anything is installed, so it depends on
-# nothing this repo provides.
+# nothing this repo provides. prek's own installer (the last resort) would
+# add a PATH line to every shell startup file, ~/.bash_profile included,
+# which on a Mac is dots' own file; PREK_NO_MODIFY_PATH=1 stops that.
 .PHONY: setup
 setup: ## Install prek + shellcheck and activate git hooks
 	@command -v prek >/dev/null 2>&1 || { \
@@ -12,7 +14,7 @@ setup: ## Install prek + shellcheck and activate git hooks
 		elif command -v brew >/dev/null 2>&1; then \
 			brew install prek; \
 		else \
-			curl --proto '=https' --tlsv1.2 -LsSf https://github.com/j178/prek/releases/latest/download/prek-installer.sh | sh; \
+			curl --proto '=https' --tlsv1.2 -LsSf https://github.com/j178/prek/releases/latest/download/prek-installer.sh | PREK_NO_MODIFY_PATH=1 sh; \
 		fi; \
 	}
 	@command -v shellcheck >/dev/null 2>&1 || { \

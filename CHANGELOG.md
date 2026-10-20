@@ -98,6 +98,9 @@ by a clean install; macOS support comes in later `1.x` releases.
 
 ### Fixed
 
+- `make setup`'s last-resort prek installer no longer adds a PATH line to
+  every shell startup file (on a Mac, dots' own `.bash_profile`, which then
+  stopped `install.sh` from updating dots).
 - Super+V/Super+C paste and copy in the tmux window (Super+Alt+Return)
   again: its `tmux` app-id hid it from Omarchy's terminal detection, so
   they sent Ctrl+V (`^V` in Neovim) and Ctrl+C (interrupt).
