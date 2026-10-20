@@ -266,6 +266,8 @@ anything: `tailscale status` / `tailscale ping <host>` from the office
 and without the AWS VPN; then Screen Sharing's quality mode, Moonlight's
 bitrate/resolution/codec, and what the idle freeze is (display sleep on
 the host, or the connection dropping).
+The test steps are in
+[remote-desktop-from-office.md](guides/remote-desktop-from-office.md).
 
 ### Teams: native app or web app (ask again)
 

@@ -111,7 +111,8 @@ themes/             Omarchy themes (One Dark), linked by install.sh (not stowed;
 lib/dots.sh         shared: PACKAGES, INCLUDES, drift checks (dots_doctor)
 docs/decisions/     what we kept or dropped, and what Omarchy already does
 docs/setup/         step-by-step fresh-install checklists (omarchy.md, macos.md)
-docs/guides/        how-tos: troubleshooting.md ("it used to do X"), ruby.md, rclone.md
+docs/guides/        how-tos: troubleshooting.md ("it used to do X"), ruby.md, rclone.md,
+                    remote-desktop-from-office.md
 docs/TODO.md        ideas and follow-ups for after the migration
 Makefile            dev tasks (make help)
 prek.toml           git hooks: whitespace, toml/yaml, typos, shellcheck, private words, commit messages
