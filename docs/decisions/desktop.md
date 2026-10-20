@@ -292,10 +292,11 @@ The old setup installed **espanso** (AUR `espanso-wayland`); its config held
 only espanso's stock examples plus `search_shortcut: SHIFT+ALT+SPACE`, so
 nothing personal is lost. **Dropped** (2026-10-04).
 
-Omarchy already has text snippets via the **Compose key** (CapsLock):
+Omarchy already has text snippets via the **Compose key** (CapsLock by
+default; **Right Alt** in dots since 2026-10-20, see below):
 `~/.XCompose` includes Omarchy's emoji table
 (`/usr/share/omarchy/default/xcompose`) and two identity snippets,
-CapsLock, Space, `n` (name) and CapsLock, Space, `e` (email). Omarchy's
+Compose, Space, `n` (name) and Compose, Space, `e` (email). Omarchy's
 installer (`install/user/xcompose.sh`) writes them from
 `$OMARCHY_USER_NAME` / `$OMARCHY_USER_EMAIL`, which can be blank, leaving
 `""`. `install.sh` fills **only empty** entries from the git identity
@@ -308,6 +309,38 @@ A picker-style snippets/bookmarks plugin shared with Raycast on the Mac is
 a post-dots idea ([TODO](../TODO.md)).
 
 **Mac:** no Compose key; Raycast snippets (free tier) cover this.
+
+## CapsLock is Hyper (CapsLock+letter keys); Compose on Right Alt
+
+Decided 2026-10-20 (user's call). Omarchy makes CapsLock the Compose key
+(`compose:caps` in `default/hypr/input.lua`). dots makes it **Hyper**
+instead, for the CapsLock+letter keys the Mac Studio has (Raycast's Hyper
+key there), and moves Compose to **Right Alt**, so accents, symbols and
+Omarchy's Compose emoji still work (espanso takes over the name/email
+snippets later). Caps Lock itself stays on both Shifts (Omarchy's
+`shift:both_capslock_cancel`).
+
+- **How:** `hyprland.dots.lua` sets `kb_options =
+  "caps:hyper,compose:ralt,shift:both_capslock_cancel"`. xkb's `caps:hyper`
+  puts Hyper on **Mod3** (`symbols/capslock` includes `hyper(mod3)`), not
+  Super's Mod4, so no Super binding clashes; Hyprland's Lua binds accept
+  `MOD3` (`LuaBindingsToplevel.cpp`, v0.56.2). No extra tool (a keyd
+  tap/hold setup was the alternative).
+- **Keys** (Omarchy's own keys for these stay too):
+
+  | Key | Opens |
+  |---|---|
+  | CapsLock+H | Omarchy's clipboard manager (also Super+Ctrl+V) |
+  | CapsLock+J | espanso search (when espanso is set up) |
+  | CapsLock+K | Omarchy's emoji picker (also Super+Ctrl+E) |
+  | CapsLock+L | Raindrop bookmarks (also Super+Shift+R) |
+
+- **fcitx5** (Omarchy's input method) keeps the options it started with,
+  so a live change needs `omarchy-restart-xcompose`; `install.sh` does it
+  after its Hyprland reload when the two differ.
+- **Mac:** Hyperkey (cask) for CapsLock as Cmd+Ctrl+Opt+Shift, and likely
+  Hammerspoon for the keys (it's coming for Voxtype anyway); to verify in
+  the Mac step ([TODO](../TODO.md)).
 
 ## Apple keyboard F-keys (fnmode): Omarchy's
 

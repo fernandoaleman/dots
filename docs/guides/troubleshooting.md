@@ -353,6 +353,20 @@ where you are (pinning every terminal would be too broad).
 **Why:** with Omarchy's Lua config, dispatch takes Lua:
 `hyprctl dispatch 'hl.dsp.focus({ workspace = "2" })'`.
 
+### CapsLock doesn't start a Compose sequence (é, ©, emoji, name/email)
+
+**Why:** dots made CapsLock a Hyper key for CapsLock+H/J/K/L
+([desktop.md](../decisions/desktop.md#capslock-is-hyper-capslockletter-keys-compose-on-right-alt));
+Compose is **Right Alt** now (Right Alt, Space, n types your name).
+**Bring CapsLock-Compose back:** remove the `kb_options` line in
+`hyprland.dots.lua`, then `hyprctl reload` and `omarchy-restart-xcompose`.
+
+### CapsLock still acts as Compose after changing keyboard options
+
+**Why:** fcitx5's virtual keyboard keeps the options it started with
+(`hyprctl devices` shows the old ones on `hl-virtual-keyboard-fcitx5`).
+**Fix:** `omarchy-restart-xcompose` (`install.sh` does it when they differ).
+
 ### A new dots key binding does nothing (e.g. Super+Shift+R)
 
 **Why:** Hyprland didn't reload on its own after `hyprland.dots.lua` (a

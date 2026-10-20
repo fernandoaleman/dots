@@ -1588,6 +1588,14 @@ cache_work_dirs
 if hyprctl version &>/dev/null; then
   step "Reloading Hyprland"
   if hyprctl reload >/dev/null; then ok "Reloaded"; else warn "hyprctl reload failed; run it yourself"; fi
+  # fcitx5's virtual keyboard keeps the keyboard options it started with
+  # (e.g. CapsLock still Compose after it became Hyper); Omarchy's restart
+  # script gives it the new ones
+  kb_options=$(hyprctl getoption input:kb_options -j | jq -r '.str // empty') || true
+  fcitx_options=$(hyprctl devices -j | jq -r '.keyboards[] | select(.name | test("fcitx")) | .options' | head -n1) || true
+  if [[ -n $fcitx_options && $fcitx_options != "$kb_options" ]]; then
+    omarchy-restart-xcompose && ok "Restarted fcitx5 for the new keyboard options"
+  fi
 fi
 
 step "Checking dots"

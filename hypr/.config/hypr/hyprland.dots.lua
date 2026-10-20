@@ -29,6 +29,15 @@ o.bind("SUPER + SHIFT + V", "AWS VPN", "omarchy-shell fernandoaleman.aws-vpn-cli
 -- Raindrop Bookmarks picker (the plugin's README key); Super+Shift+R was free
 o.bind("SUPER + SHIFT + R", "Raindrop bookmarks", "omarchy-shell shell toggle io.github.treramey.raindrop-bookmarks '{}'")
 
+-- CapsLock is Hyper (its own modifier, Mod3, so no clash with Super) for the
+-- CapsLock+letter keys shared with the Mac; Compose moves to Right Alt.
+-- Omarchy's default is compose:caps (default/hypr/input.lua); Caps Lock
+-- itself stays on both Shifts.
+hl.config({ input = { kb_options = "caps:hyper,compose:ralt,shift:both_capslock_cancel" } })
+o.bind("MOD3 + H", "Clipboard manager", "omarchy-shell shell toggle omarchy.clipboard")
+o.bind("MOD3 + K", "Emojis", "omarchy-shell shell toggle omarchy.emojis")
+o.bind("MOD3 + L", "Raindrop bookmarks", "omarchy-shell shell toggle io.github.treramey.raindrop-bookmarks '{}'")
+
 -- Machine-local overrides, not stored in dots (skipped if missing)
 do
   local f = os.getenv("HOME") .. "/.config/hypr/hyprland.local.lua"

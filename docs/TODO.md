@@ -153,6 +153,22 @@ takes the key for itself like Hyprland does on Omarchy: Voxtype ships
 (likely still fn+F9), Hammerspoon's own Accessibility permission, and
 whether Hammerspoon could also serve the window manager decision.
 
+### Mac: CapsLock+H/J/K/L (Hyperkey + Hammerspoon)
+
+Same keys as Omarchy ([desktop.md](decisions/desktop.md#capslock-is-hyper-capslockletter-keys-compose-on-right-alt)),
+replacing Raycast's Hyper key on the Mac Studio and adding it to the
+MacBook. Leaning (2026-10-20): **Hyperkey** (cask `hyperkey`, free; makes
+CapsLock Cmd+Ctrl+Opt+Shift, no driver) plus **Hammerspoon** for the keys
+(coming for Voxtype anyway, above); Karabiner-Elements only if Hammerspoon
+can't take the keys. Per key: H clipboard (Spotlight's history?), J espanso
+search (its `search_shortcut`?), K the emoji viewer, L Raindrop (the app
+has no picker). Verify each in the docs first.
+
+### CapsLock+: for animated GIFs
+
+The Mac Studio's Raycast has a GIF picker on CapsLock+:. Look for an
+Omarchy plugin (or something to add) and a Mac equivalent later.
+
 ### Claude Code: my own skills in a repo or plugin marketplace
 
 Personal skills now live in `~/.agents/skills/<name>` (read by Codex and
