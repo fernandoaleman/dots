@@ -941,6 +941,14 @@ machine at a time.
 existing session with `claude-migrate-projects --apply`. Also check the
 folder is shared with that machine in Omarchy's Syncthing UI.
 
+**Synced, but `claude --resume` doesn't list it:** the shell started before
+the switch-over. The wrapper checks for `~/.claude/.claude.json` only when
+bash starts, so a shell (or tmux pane) opened earlier runs plain Claude,
+which uses `~/.claude.json` and lists the path-named folder's sessions
+(found on the MacBook 2026-10-19, in a tmux pane from a week before). Check
+with `type -t claude` (`function` when it's on). **Fix:** open a new shell
+or tmux window, or `exec bash -l` in the old one.
+
 ### Claude Code: get back an old or deleted session
 
 Omarchy keeps the previous copy of each session or memory file a Mac
