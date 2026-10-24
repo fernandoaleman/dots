@@ -1,0 +1,29 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors and local IDE state
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Go build outputs (source code and go.sum remain tracked)
+/dots
+/dots.exe
+/bin/
+/dist/
+/build/
+*.test
+*.out
+*.prof
+/coverage/
+coverage.txt
+coverage.html
+coverage.out
+
+# Local environment and scratch files
+.env
+.env.local
+/tmp/
