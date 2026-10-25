@@ -2,18 +2,39 @@
 package filesystem
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+	"syscall"
 )
 
 // Result classifies a destination for a selected source.
 type Result struct {
 	Status string
 	Reason string
+	// State describes read-only inspection independently of legacy action labels.
+	State State
 }
+
+// State distinguishes observed destination conditions, without claiming ownership.
+type State string
+
+// Inspection states retain separate labels for occupied entry types.
+const (
+	Correct           State = "OK"
+	Missing           State = "MISSING"
+	WrongLink         State = "WRONG"
+	BrokenLink        State = "BROKEN"
+	OccupiedFile      State = "FILE"
+	OccupiedDirectory State = "DIRECTORY"
+	OccupiedOther     State = "SPECIAL"
+	BlockedParent     State = "BLOCKED"
+	Conflict          State = "CONFLICT"
+	InspectionError   State = "ERROR"
+)
 
 // Destination describes a selected leaf or a required source directory.
 // Source is retained for diagnostics; inspection never changes selection.
@@ -27,10 +48,10 @@ type Destination struct {
 // must resolve to directories. Source selection is never changed here.
 func Inspect(source, destination string) Result {
 	if !filepath.IsAbs(source) || !filepath.IsAbs(destination) {
-		return conflict("source and destination paths must be absolute")
+		return conflict(InspectionError, "source and destination paths must be absolute")
 	}
 	if _, err := os.Lstat(source); err != nil {
-		return conflict("source unavailable: %v", err)
+		return conflict(InspectionError, "source unavailable: %v", err)
 	}
 	var ancestors []string
 	for name := parentPath(destination); ; name = parentPath(name) {
@@ -45,55 +66,59 @@ func Inspect(source, destination string) Result {
 		if os.IsNotExist(err) {
 			for _, part := range strings.Split(destination[len(name):], string(filepath.Separator)) {
 				if part == ".." {
-					return conflict("unresolved parent traversal beneath missing ancestor %q", name)
+					return conflict(BlockedParent, "unresolved parent traversal beneath missing ancestor %q", name)
 				}
 			}
-			return Result{Status: "LINK"}
+			return Result{Status: "LINK", State: Missing}
 		}
 		if err != nil {
-			return conflict("cannot inspect ancestor %q: %v", name, err)
+			return conflict(InspectionError, "cannot inspect ancestor %q: %v", name, err)
 		}
 		if info.Mode()&os.ModeSymlink != 0 {
 			info, err = os.Stat(name)
-			if os.IsNotExist(err) {
-				return conflict("broken ancestor symlink %q", name)
+			if missingReferent(err) {
+				return conflict(BlockedParent, "broken ancestor symlink %q", name)
 			}
 			if err != nil {
-				return conflict("cannot inspect ancestor symlink %q: %v", name, err)
+				return conflict(InspectionError, "cannot inspect ancestor symlink %q: %v", name, err)
 			}
 		}
 		if !info.IsDir() {
-			return conflict("ancestor %q is not a directory", name)
+			return conflict(BlockedParent, "ancestor %q is not a directory", name)
 		}
 	}
 	sourceEntry, err := canonicalEntry(source)
 	if err != nil {
-		return conflict("cannot resolve source parent: %v", err)
+		return conflict(InspectionError, "cannot resolve source parent: %v", err)
 	}
 	destinationEntry, err := canonicalEntry(destination)
 	if err != nil {
-		return conflict("cannot resolve destination parent: %v", err)
+		return conflict(InspectionError, "cannot resolve destination parent: %v", err)
 	}
-	if sameEntry(sourceEntry, destinationEntry) {
-		return conflict("source and destination are the same filesystem entry")
+	same, err := compareEntries(sourceEntry, destinationEntry, directoryNameRules)
+	if err != nil {
+		return conflict(InspectionError, "cannot compare source and destination: %v", err)
+	}
+	if same {
+		return conflict(Conflict, "source and destination are the same filesystem entry")
 	}
 	info, err := os.Lstat(destination)
 	if os.IsNotExist(err) {
-		return Result{Status: "LINK"}
+		return Result{Status: "LINK", State: Missing}
 	}
 	if err != nil {
-		return conflict("cannot inspect destination: %v", err)
+		return conflict(InspectionError, "cannot inspect destination: %v", err)
 	}
 	if info.Mode()&os.ModeSymlink != 0 {
 		if _, err := os.Stat(destination); err != nil {
-			if os.IsNotExist(err) {
-				return conflict("broken destination symlink")
+			if missingReferent(err) {
+				return conflict(BrokenLink, "broken destination symlink")
 			}
-			return conflict("cannot inspect destination symlink: %v", err)
+			return conflict(InspectionError, "cannot inspect destination symlink: %v", err)
 		}
 		target, err := os.Readlink(destination)
 		if err != nil {
-			return conflict("cannot read destination symlink: %v", err)
+			return conflict(InspectionError, "cannot read destination symlink: %v", err)
 		}
 		if !filepath.IsAbs(target) {
 			// Preserve symlink/.. traversal order from the stored link text.
@@ -101,20 +126,30 @@ func Inspect(source, destination string) Result {
 		}
 		targetEntry, err := canonicalEntry(target)
 		if err != nil {
-			return conflict("cannot resolve destination symlink target: %v", err)
+			return conflict(InspectionError, "cannot resolve destination symlink target: %v", err)
 		}
-		if sameEntry(targetEntry, sourceEntry) {
-			return Result{Status: "OK"}
+		same, err := compareEntries(targetEntry, sourceEntry, directoryNameRules)
+		if err != nil {
+			return conflict(InspectionError, "cannot compare destination symlink target: %v", err)
 		}
-		return conflict("destination symlink points to another source")
+		if same {
+			return Result{Status: "OK", State: Correct}
+		}
+		return conflict(WrongLink, "destination symlink points to another source")
 	}
 	if info.IsDir() {
-		return conflict("destination is an existing directory")
+		return conflict(OccupiedDirectory, "destination is an existing directory")
 	}
 	if info.Mode().IsRegular() {
-		return conflict("destination is an existing regular file")
+		return conflict(OccupiedFile, "destination is an existing regular file")
 	}
-	return conflict("destination is an existing special file")
+	return conflict(OccupiedOther, "destination is an existing special file")
+}
+
+// A non-directory component makes a symlink referent unreachable just as a
+// missing component does. Permission and resource failures remain uncertain.
+func missingReferent(err error) bool {
+	return os.IsNotExist(err) || errors.Is(err, syscall.ENOTDIR)
 }
 
 // Resolve parent aliases while preserving the final entry's own identity.
@@ -144,10 +179,26 @@ func CollisionReasons(destinations []Destination) []string {
 }
 
 func collisionReasons(destinations []Destination, rulesAt func(string) (nameRules, error)) []string {
+	results := collisionResults(destinations, rulesAt)
+	reasons := make([]string, len(results))
+	for i, result := range results {
+		reasons[i] = result.Reason
+	}
+	return reasons
+}
+
+// CollisionResults reports confirmed collisions separately from unavailable name
+// capabilities. Empty results mean no collision was found; inspect paths too.
+func CollisionResults(destinations []Destination) []Result {
+	return collisionResults(destinations, nameRulesAt)
+}
+
+func collisionResults(destinations []Destination, rulesAt func(string) (nameRules, error)) []Result {
 	keys := make([]string, len(destinations))
 	prefixes := make([][]string, len(destinations))
 	byLeaf := make(map[string][]int)
 	messages := make([][]string, len(destinations))
+	states := make([]State, len(destinations))
 	for i, destination := range destinations {
 		if key, err := physicalDestination(destination.Path); err == nil {
 			keys[i] = key
@@ -186,15 +237,24 @@ func collisionReasons(destinations []Destination, rulesAt func(string) (nameRule
 				}
 				messages[leftIndex] = append(messages[leftIndex], message)
 				messages[rightIndex] = append(messages[rightIndex], message)
+				for _, index := range []int{leftIndex, rightIndex} {
+					if err != nil {
+						states[index] = InspectionError
+					} else if states[index] != InspectionError {
+						states[index] = Conflict
+					}
+				}
 			}
 		}
 	}
-	reasons := make([]string, len(destinations))
+	results := make([]Result, len(destinations))
 	for i := range messages {
 		sort.Strings(messages[i])
-		reasons[i] = strings.Join(messages[i], "; ")
+		if len(messages[i]) != 0 {
+			results[i] = Result{Status: "CONFLICT", Reason: strings.Join(messages[i], "; "), State: states[i]}
+		}
 	}
-	return reasons
+	return results
 }
 
 func describeDestination(destination Destination, key string) string {
@@ -241,8 +301,8 @@ func physicalDestination(name string) (string, error) {
 	}
 }
 
-func conflict(format string, args ...any) Result {
-	return Result{Status: "CONFLICT", Reason: fmt.Sprintf(format, args...)}
+func conflict(state State, format string, args ...any) Result {
+	return Result{Status: "CONFLICT", Reason: fmt.Sprintf(format, args...), State: state}
 }
 
 // Preserve parent components until the filesystem has resolved symlinks.
@@ -256,8 +316,13 @@ func parentPath(name string) string {
 }
 
 func sameEntry(a, b string) bool {
+	same, err := compareEntries(a, b, directoryNameRules)
+	return err == nil && same
+}
+
+func compareEntries(a, b string, rulesAt func(string) (nameRules, error)) (bool, error) {
 	if a == b {
-		return true
+		return true, nil
 	}
 	// canonicalEntry has already resolved parent traversal. Directory
 	// aliases preserve replacement of a named entry; separate hard-link
@@ -266,26 +331,35 @@ func sameEntry(a, b string) bool {
 	rightParent := filepath.Dir(b)
 	left, leftErr := os.Stat(leftParent)
 	right, rightErr := os.Stat(rightParent)
-	if leftErr != nil || rightErr != nil || !os.SameFile(left, right) {
-		return false
+	if leftErr != nil {
+		return false, leftErr
+	}
+	if rightErr != nil {
+		return false, rightErr
+	}
+	if !os.SameFile(left, right) {
+		return false, nil
 	}
 	leftName, rightName := filepath.Base(a), filepath.Base(b)
 	if leftName == rightName {
-		return true
+		return true, nil
 	}
 	if potentialNameKey(leftName) != potentialNameKey(rightName) {
-		return false
+		return false, nil
 	}
-	rules, err := directoryNameRules(leftParent)
-	if err != nil || !equivalentName(leftName, rightName, rules) {
-		return false
+	rules, err := rulesAt(leftParent)
+	if err != nil {
+		return false, err
+	}
+	if !equivalentName(leftName, rightName, rules) {
+		return false, nil
 	}
 	// Unicode tables may be newer than the filesystem's tables. Distinct
 	// directory entries must remain distinct even when they are hard links
 	// and a conservative comparison considers their names equivalent.
 	entries, err := os.ReadDir(leftParent)
 	if err != nil {
-		return false
+		return false, err
 	}
 	matches := 0
 	for _, entry := range entries {
@@ -294,9 +368,15 @@ func sameEntry(a, b string) bool {
 		}
 	}
 	if matches != 1 {
-		return false
+		return false, nil
 	}
 	left, leftErr = os.Lstat(a)
 	right, rightErr = os.Lstat(b)
-	return leftErr == nil && rightErr == nil && os.SameFile(left, right)
+	if leftErr != nil {
+		return false, leftErr
+	}
+	if rightErr != nil {
+		return false, rightErr
+	}
+	return os.SameFile(left, right), nil
 }

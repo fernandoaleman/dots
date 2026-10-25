@@ -30,15 +30,17 @@ func TestInspectDestinations(t *testing.T) {
 		mode   string
 		status string
 		reason string
+		state  State
 	}{
-		{"missing", "LINK", ""},
-		{"correct", "OK", ""},
-		{"relative correct", "OK", ""},
-		{"wrong", "CONFLICT", "another source"},
-		{"broken", "CONFLICT", "broken destination symlink"},
-		{"file", "CONFLICT", "regular file"},
-		{"directory", "CONFLICT", "existing directory"},
-		{"self", "CONFLICT", "same filesystem entry"},
+		{"missing", "LINK", "", Missing},
+		{"correct", "OK", "", Correct},
+		{"relative correct", "OK", "", Correct},
+		{"wrong", "CONFLICT", "another source", WrongLink},
+		{"broken", "CONFLICT", "broken destination symlink", BrokenLink},
+		{"broken non-directory target", "CONFLICT", "broken destination symlink", BrokenLink},
+		{"file", "CONFLICT", "regular file", OccupiedFile},
+		{"directory", "CONFLICT", "existing directory", OccupiedDirectory},
+		{"self", "CONFLICT", "same filesystem entry", Conflict},
 	}
 	for _, tt := range tests {
 		t.Run(tt.mode, func(t *testing.T) {
@@ -60,6 +62,10 @@ func TestInspectDestinations(t *testing.T) {
 				fixtureLink(t, other, destination)
 			case "broken":
 				fixtureLink(t, "missing", destination)
+			case "broken non-directory target":
+				other := filepath.Join(root, "other")
+				fixtureFile(t, other)
+				fixtureLink(t, other+"/child", destination)
 			case "file":
 				fixtureFile(t, destination)
 			case "directory":
@@ -70,7 +76,7 @@ func TestInspectDestinations(t *testing.T) {
 				destination = source
 			}
 			got := Inspect(source, destination)
-			if got.Status != tt.status || !strings.Contains(got.Reason, tt.reason) {
+			if got.Status != tt.status || got.State != tt.state || !strings.Contains(got.Reason, tt.reason) {
 				t.Fatalf("result = %+v; want %s containing %q", got, tt.status, tt.reason)
 			}
 		})
@@ -82,12 +88,14 @@ func TestInspectAncestors(t *testing.T) {
 		mode   string
 		status string
 		reason string
+		state  State
 	}{
-		{"missing", "LINK", ""},
-		{"directory", "LINK", ""},
-		{"directory symlink", "LINK", ""},
-		{"file", "CONFLICT", "not a directory"},
-		{"broken", "CONFLICT", "broken ancestor symlink"},
+		{"missing", "LINK", "", Missing},
+		{"directory", "LINK", "", Missing},
+		{"directory symlink", "LINK", "", Missing},
+		{"file", "CONFLICT", "not a directory", BlockedParent},
+		{"broken", "CONFLICT", "broken ancestor symlink", BlockedParent},
+		{"non-directory target", "CONFLICT", "broken ancestor symlink", BlockedParent},
 	}
 	for _, tt := range tests {
 		t.Run(tt.mode, func(t *testing.T) {
@@ -111,9 +119,13 @@ func TestInspectAncestors(t *testing.T) {
 				fixtureFile(t, parent)
 			case "broken":
 				fixtureLink(t, "missing", parent)
+			case "non-directory target":
+				other := filepath.Join(root, "other")
+				fixtureFile(t, other)
+				fixtureLink(t, other+"/child", parent)
 			}
 			got := Inspect(source, destination)
-			if got.Status != tt.status || !strings.Contains(got.Reason, tt.reason) {
+			if got.Status != tt.status || got.State != tt.state || !strings.Contains(got.Reason, tt.reason) {
 				t.Fatalf("result = %+v; want %s containing %q", got, tt.status, tt.reason)
 			}
 			if _, err := os.Lstat(filepath.Join(parent, ".config")); err == nil {

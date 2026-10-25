@@ -56,5 +56,45 @@ or execute tests.
 
 Local formatting, vet, tests, Staticcheck, build, race tests, and prek passed,
 including hooks over untracked commit candidates. Go 1.23 tests, Linux vet,
-and macOS/Linux cross-builds passed. Native Linux execution and formal milestone
-closure still require the approved commit/push and a successful CI run.
+and macOS/Linux cross-builds passed. These were the local review-readiness
+results. Milestone 1 subsequently merged through
+[the installation PR](https://github.com/fernandoaleman/dots/pull/1), with
+[successful post-merge macOS/Linux CI](https://github.com/fernandoaleman/dots/actions/runs/40157259345).
+
+## Milestone 2 design reviews
+
+Architecture and testing reviewed the authoritative listing and status issues
+before Go implementation. Both recommended resolver-only listing, shared
+inspection for status and up, and additive structured classifications without
+parsing human-readable reasons. The implementation keeps the three-package
+dependency direction and adds no dependencies.
+
+| Finding family | Implementation or verification |
+| --- | --- |
+| Inspection uncertainty | Error-aware named-entry comparisons and typed capability failures distinguish ERROR from confirmed wrong links and collisions |
+| Combined diagnostics | Source scan failures remain distinct from structural conflicts; error classifications take priority while reasons are retained |
+| Read-only behavior | Snapshot fixtures cover mapping, destination states, configuration errors, output failures, native permissions, and physical collisions |
+| Compatibility | Existing up and dry-run tests remain, with cross-command selected-source assertions and unchanged legacy action labels |
+| Output and exits | Explicit status labels, fixed summary order, deterministic enumeration, output-failure handling, and missing-link status exits |
+
+Final read-only implementation and coverage reviews are separate from these
+initial design recommendations. GitHub issues remain the progress record;
+local validation alone does not complete the milestone.
+
+The testing review requested combined-diagnostic fixtures. Source failure plus
+physical collision now verifies retained explanations, source identity, exact
+counts, and ERROR priority. Confirmed collision plus capability uncertainty is
+tested in both input orders with an unaffected unrelated entry.
+
+Independent review found that a symlink target traversing a regular file returns
+ENOTDIR and was incorrectly classified as an inspection error. Destination links
+now report BROKEN and ancestor links BLOCKED for that condition. Permission and
+resource failures remain ERROR. Filesystem and cross-command snapshot fixtures
+cover both forms, including the legacy nonzero dry-run conflict behavior.
+
+Final follow-up reviews from all three specialists found no remaining actionable
+findings or material coverage gaps. Local formatting, vet, tests, Staticcheck,
+build, race tests, and prek passed, including the new untracked files. Proposed
+commit messages passed the committed hook. Go 1.23 tests, Linux vet, and supported
+cross-builds passed. These are local review-readiness results; native macOS/Linux
+CI and formal closure follow the approved commit/push/PR/merge workflow.

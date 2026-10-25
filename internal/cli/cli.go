@@ -1,4 +1,4 @@
-// Package cli orchestrates dotfile planning, installation, and user-facing output.
+// Package cli orchestrates dotfile planning, inspection, installation, and output.
 package cli
 
 import (
@@ -9,12 +9,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fernandoaleman/dots/internal/filesystem"
 	"github.com/fernandoaleman/dots/internal/resolver"
 )
 
-// Run returns zero for successful plans, one for runtime errors/conflicts,
-// and two for invalid command usage.
+// Run returns zero for successful commands, one for errors or an unsatisfied
+// status, and two for invalid usage. Dry-run permits missing destinations.
 func Run(args []string, stdout, stderr io.Writer) int {
 	var config string
 	root := flag.NewFlagSet("dots", flag.ContinueOnError)
@@ -22,6 +21,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 	root.StringVar(&config, "config", "", "select a TOML configuration file")
 	root.Usage = func() {
 		fmt.Fprintln(stderr, "Usage: dots [--config PATH] up [--dry-run]")
+		fmt.Fprintln(stderr, "       dots [--config PATH] ls|status")
 		root.PrintDefaults()
 	}
 	if err := root.Parse(args); err != nil {
@@ -39,27 +39,30 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		root.Usage()
 		return 2
 	}
-	if rest[0] != "up" {
-		return fail(stderr, 2, fmt.Errorf("unsupported command %q; use up", rest[0]))
+	command := rest[0]
+	if command != "up" && command != "ls" && command != "status" {
+		return fail(stderr, 2, fmt.Errorf("unsupported command %q; use up, ls, or status", command))
 	}
-	up := flag.NewFlagSet("up", flag.ContinueOnError)
-	up.SetOutput(stderr)
-	up.StringVar(&config, "config", config, "select a TOML configuration file")
+	flags := flag.NewFlagSet(command, flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	flags.StringVar(&config, "config", config, "select a TOML configuration file")
 	var dryRun bool
-	up.BoolVar(&dryRun, "dry-run", false, "print a plan without filesystem changes")
-	up.BoolVar(&dryRun, "n", false, "alias for --dry-run")
-	if err := up.Parse(rest[1:]); err != nil {
+	if command == "up" {
+		flags.BoolVar(&dryRun, "dry-run", false, "print a plan without filesystem changes")
+		flags.BoolVar(&dryRun, "n", false, "alias for --dry-run")
+	}
+	if err := flags.Parse(rest[1:]); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			return 0
 		}
 		return 2
 	}
-	if len(up.Args()) != 0 {
-		return fail(stderr, 2, fmt.Errorf("up accepts no positional arguments"))
+	if len(flags.Args()) != 0 {
+		return fail(stderr, 2, fmt.Errorf("%s accepts no positional arguments", command))
 	}
 	configSupplied := false
-	for _, flags := range []*flag.FlagSet{root, up} {
-		flags.Visit(func(f *flag.Flag) {
+	for _, set := range []*flag.FlagSet{root, flags} {
+		set.Visit(func(f *flag.Flag) {
 			if f.Name == "config" {
 				configSupplied = true
 			}
@@ -81,29 +84,12 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		return fail(stderr, 1, err)
 	}
 	plan := resolver.Resolve(cfg)
-	results := make([]filesystem.Result, len(plan.Links))
-	destinations := make([]filesystem.Destination, 0, len(plan.Links)+len(plan.Directories))
-	for i, link := range plan.Links {
-		destinations = append(destinations, filesystem.Destination{
-			Path: link.Destination, Source: link.Source,
-		})
-		results[i] = filesystem.Result{Status: "CONFLICT", Reason: link.Conflict}
-		if link.Conflict == "" {
-			results[i] = filesystem.Inspect(link.Source, link.Destination)
-		}
+	if command == "ls" {
+		return list(plan, stdout, stderr)
 	}
-	for _, directory := range plan.Directories {
-		destinations = append(destinations, filesystem.Destination{
-			Path: directory.Destination, Source: directory.Source, Directory: true,
-		})
-	}
-	for i, reason := range filesystem.CollisionReasons(destinations)[:len(results)] {
-		if reason != "" {
-			if results[i].Reason != "" {
-				reason = results[i].Reason + "; " + reason
-			}
-			results[i] = filesystem.Result{Status: "CONFLICT", Reason: reason}
-		}
+	destinations, results := inspectPlan(plan)
+	if command == "status" {
+		return status(plan, results, stdout, stderr)
 	}
 	if !dryRun {
 		return install(plan, destinations, results, stdout, stderr)
