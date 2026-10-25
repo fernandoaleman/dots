@@ -1,4 +1,4 @@
-// Package cli orchestrates read-only planning and user-facing output.
+// Package cli orchestrates dotfile planning, installation, and user-facing output.
 package cli
 
 import (
@@ -21,7 +21,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 	root.SetOutput(stderr)
 	root.StringVar(&config, "config", "", "select a TOML configuration file")
 	root.Usage = func() {
-		fmt.Fprintln(stderr, "Usage: dots [--config PATH] up --dry-run")
+		fmt.Fprintln(stderr, "Usage: dots [--config PATH] up [--dry-run]")
 		root.PrintDefaults()
 	}
 	if err := root.Parse(args); err != nil {
@@ -40,7 +40,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	if rest[0] != "up" {
-		return fail(stderr, 2, fmt.Errorf("unsupported command %q; use up --dry-run", rest[0]))
+		return fail(stderr, 2, fmt.Errorf("unsupported command %q; use up", rest[0]))
 	}
 	up := flag.NewFlagSet("up", flag.ContinueOnError)
 	up.SetOutput(stderr)
@@ -54,8 +54,8 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		}
 		return 2
 	}
-	if len(up.Args()) != 0 || !dryRun {
-		return fail(stderr, 2, fmt.Errorf("milestone 0 requires up --dry-run with no positional arguments"))
+	if len(up.Args()) != 0 {
+		return fail(stderr, 2, fmt.Errorf("up accepts no positional arguments"))
 	}
 	configSupplied := false
 	for _, flags := range []*flag.FlagSet{root, up} {
@@ -104,6 +104,9 @@ func Run(args []string, stdout, stderr io.Writer) int {
 			}
 			results[i] = filesystem.Result{Status: "CONFLICT", Reason: reason}
 		}
+	}
+	if !dryRun {
+		return install(plan, destinations, results, stdout, stderr)
 	}
 	var output strings.Builder
 	planned, correct, conflicts := 0, 0, 0

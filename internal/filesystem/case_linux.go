@@ -5,6 +5,8 @@ import (
 	"os"
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/unix"
 )
 
 func directoryCaseSensitive(name string) (bool, error) {
@@ -39,6 +41,25 @@ func directoryNameRules(name string) (nameRules, error) {
 	if err != nil {
 		return nameRules{}, err
 	}
+	return linuxNameRules(sensitive), nil
+}
+
+func directoryNameRulesFD(fd int) (nameRules, error) {
+	var volume unix.Statfs_t
+	if err := unix.Fstatfs(fd, &volume); err != nil {
+		return nameRules{}, err
+	}
+	if volume.Type != 0xef53 {
+		return nameRules{}, fmt.Errorf("case-sensitivity query unavailable for filesystem type %#x", volume.Type)
+	}
+	flags, err := unix.IoctlGetInt(fd, unix.FS_IOC_GETFLAGS)
+	if err != nil {
+		return nameRules{}, err
+	}
+	return linuxNameRules(flags&0x40000000 == 0), nil
+}
+
+func linuxNameRules(sensitive bool) nameRules {
 	// ext4 casefold uses canonical decomposition; ordinary directories
 	// preserve byte distinctions, including normalization variants.
 	// https://docs.kernel.org/admin-guide/ext4.html#case-insensitive-file-name-lookups
@@ -47,5 +68,5 @@ func directoryNameRules(name string) (nameRules, error) {
 	return nameRules{
 		caseSensitive: sensitive, normalizationSensitive: sensitive,
 		ignoreDefaultIgnorables: !sensitive,
-	}, nil
+	}
 }

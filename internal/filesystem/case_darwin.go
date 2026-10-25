@@ -3,6 +3,8 @@ package filesystem
 import (
 	"fmt"
 	"syscall"
+
+	"golang.org/x/sys/unix"
 )
 
 func directoryCaseSensitive(name string) (bool, error) {
@@ -34,6 +36,32 @@ func directoryNameRules(name string) (nameRules, error) {
 		}
 		filesystem += string(byte(value))
 	}
+	return darwinNameRules(sensitive, filesystem)
+}
+
+func directoryNameRulesFD(fd int) (nameRules, error) {
+	value, err := unix.Fpathconf(fd, 11)
+	if err != nil {
+		return nameRules{}, err
+	}
+	if value != 0 && value != 1 {
+		return nameRules{}, fmt.Errorf("unknown case-sensitivity capability")
+	}
+	var volume unix.Statfs_t
+	if err := unix.Fstatfs(fd, &volume); err != nil {
+		return nameRules{}, err
+	}
+	var filesystem string
+	for _, value := range volume.Fstypename {
+		if value == 0 {
+			break
+		}
+		filesystem += string(byte(value))
+	}
+	return darwinNameRules(value == 1, filesystem)
+}
+
+func darwinNameRules(sensitive bool, filesystem string) (nameRules, error) {
 	// APFS and HFS+ normalize names independently of case sensitivity.
 	// https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/APFS_Guide/FAQ/FAQ.html
 	if filesystem != "apfs" && filesystem != "hfs" {

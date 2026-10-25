@@ -208,9 +208,9 @@ dots/
 └── CONTRIBUTING.md            # optional early; helpful for contributors
 ```
 
-- **`internal/cli` — front door:** Parse subcommands/flags, invoke resolver configuration loading and resolution, orchestrate read-only target inspection, and format output. No low-level symlink logic.
+- **`internal/cli` — front door:** Parse subcommands/flags, invoke resolver configuration loading and resolution, orchestrate inspection and installation, and format output. No low-level symlink logic.
 - **`internal/resolver` — brains:** Discover/load TOML configuration, apply exclusions, read the configured source locations, traverse files, normalize source paths, apply ordered precedence and dotted-file tie-breaking, generate a deterministic plan of `{Source, Destination}` plus warnings. This package does **not** modify the filesystem.
-- **`internal/filesystem` — hands:** Perform read-only destination and ancestor inspection using `os.Lstat` and `os.Readlink`, distinguishing missing paths, correct links, conflicts, and broken links. Mutation APIs are deferred beyond Milestone 0.
+- **`internal/filesystem` — hands:** Inspect destinations and ancestors, distinguishing missing paths, correct links, conflicts, and broken links. Milestone 1 adds prepared create-only symlink installation and safe parent creation.
 
 For the first proof of concept, `filesystem` may only provide nonmutating inspection helpers. Avoid unnecessary interfaces, plugin systems, or abstraction layers. Unit tests live alongside the packages (`*_test.go`). Use `t.TempDir()` for isolated fixtures and never tests that modify the real home directory.
 
@@ -366,7 +366,11 @@ Use `CHANGELOG.md` consistently for user-visible changes. Keep implementation do
 
 ## 12. Instructions to local Codex
 
-Implement **only Milestone 0** initially. Prioritize clear Go code and tests over scaffolding or speculative extensibility. Start by creating a clean git repository with the files and CI listed above, implement the TOML config loader, read-only deterministic resolver with pure mapping and selection helpers, and read-only dry-run CLI, and demonstrate it with fixture-backed tests. Create the rcm migration guide and keep a running changelog. Make sure `go test ./...`, `go vet ./...`, formatting checks, and a local build pass. Do not implement symlink writes or removal until dry-run behavior is documented and thoroughly tested. After Milestone 0, report the decisions, assumptions, test outcomes, and suggested next steps.
+Milestone 0 is complete. Implement only the approved Milestone 1 contract
+below, retaining the established resolver and read-only dry-run behavior.
+Prefer small Go code and fixture-backed tests. The lead alone edits files;
+Herdr specialists review architecture, tests, and safety read-only. Do not
+commit, push, merge, tag, or release without separate approval.
 
 ### Approved Milestone 0 contract
 
@@ -400,3 +404,49 @@ Implement **only Milestone 0** initially. Prioritize clear Go code and tests ove
   ambiguous entries while retaining unrelated entries.
 - Warning-only plans succeed; errors and conflicts return nonzero.
 - Dry-run performs no filesystem modifications.
+
+### Approved Milestone 1 contract
+
+- `dots up` creates real symlinks to selected absolute source paths. It
+  never copies files or changes source precedence in response to occupancy.
+- Preserve M0 dry-run output and its no-write guarantee. Installation adds
+  read-only preparation with pinned directory descriptors; it must not
+  require those write-preparation resources just to display a dry-run.
+- Any resolver error, preflight conflict, or preparation failure prevents
+  all mutations. Warning-only plans may proceed.
+- Walk directory components individually. Accept existing directory
+  symlinks, including those resolving outside `target_dir`, and preserve
+  symlink-plus-`..` semantics. Pin resolved directory identities. Missing
+  ancestors followed by unresolved `..` remain conflicts.
+- Create parents and final symlinks relative to held directory descriptors.
+  Never follow newly substituted parent symlinks. Never unlink, overwrite,
+  copy, or rename over an existing entry. Unexpected existence, including
+  a concurrently created correct link or parent, stops installation.
+- Create needed parents with mode `0700`, subject to the existing umask.
+  Do not change process umask or permissions of existing directories.
+  Empty source directories remain collision evidence, not link actions.
+- Revalidate named ancestors and selected source entries before mutations.
+  Reject observed replacement or retargeting; in-place content edits are
+  allowed. Real symlinks remain path-based and cannot freeze referents.
+- Directory descriptors prevent symlink redirection, not concurrent rename.
+  A rename after validation can move the pinned directory; operations remain
+  attached to that directory identity. A newly made directory can also be
+  replaced before its first identity observation. Reject observed changes
+  and non-directory/symlink substitutions without claiming transactionality.
+- Stop at the first runtime failure. Retain completed links and directories
+  without automatic rollback or cleanup. Count successful mutation calls,
+  including a successful mkdir followed by failed open, and report remaining
+  entries as unattempted. Output failure does not undo completed writes.
+- Prepared plans own copied inputs and deduplicated directory descriptors.
+  Apply is single-use; Close is idempotent. Release descriptors after success,
+  abandonment, or any failure. Fail cleanly on resource exhaustion without
+  raising limits or reverting to pathname-based writes.
+- Keep Go 1.23 and the three-package dependency direction. The pinned
+  `golang.org/x/sys v0.35.0` dependency supplies maintained macOS/Linux
+  descriptor-relative primitives; do not add a filesystem framework.
+- Run all standard checks plus race testing where supported. Test actual
+  symlinks, unchanged link identities, partial failures, descriptor cleanup,
+  and controlled races with external sentinel trees in temporary fixtures.
+- Local validation is review readiness. Formal closure requires an approved
+  commit and push plus successful GitHub Actions CI. No later milestones,
+  real home-directory installation, releases, or publication are authorized.

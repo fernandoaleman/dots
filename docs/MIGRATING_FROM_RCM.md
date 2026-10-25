@@ -1,7 +1,8 @@
 # Migrating from rcm
 
 dots is independent of thoughtbot/rcm. It does not load or execute `.rcrc`.
-Migration is manual; Milestone 0 previews links without installing them.
+Migration is manual. Preview with `dots up --dry-run`; Milestone 1 can install
+missing links with `dots up` after the preview is reviewed.
 
 Before making your own configuration changes, back up your existing
 configuration and dotfiles using your usual backup process.
@@ -42,7 +43,9 @@ go run . --config /path/to/config.toml up --dry-run
 ```
 
 Inspect every planned link, warning, and conflict. Existing links to a
-different source remain conflicts. No ownership-based relinking or
-installation is available yet. Do not run `rcdn`, unlink existing files,
-or switch management based solely on a successful preview. Switch only
-after reviewing the results and when safe mutation is available.
+different source remain conflicts. No ownership-based relinking is available.
+Do not run `rcdn`, unlink existing files, or switch management based solely on
+a successful preview. After reviewing a conflict-free plan, run `dots up`
+with the same configuration to create only missing links. Preflight errors
+prevent all writes; runtime failures retain completed work without rollback.
+See the README installation safety section before switching management.

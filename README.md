@@ -4,9 +4,9 @@ A lightweight Go dotfiles manager with ordered personal and shared source
 directories. dots is independent of thoughtbot/rcm and is not affiliated with
 or supported by thoughtbot.
 
-Milestone 0 implements `dots up --dry-run` only. It reads configuration and
-prints a deterministic plan. It creates no links, directories, backups, or
-configuration files, and does not overwrite or remove existing content.
+Milestone 1 adds `dots up` to install missing symbolic links and necessary
+parent directories. Existing content is preserved. `dots up --dry-run`
+continues to print a deterministic plan without making filesystem changes.
 
 ## Development and usage
 
@@ -61,7 +61,8 @@ Go-file hook. `make lint` and CI still check the module unconditionally.
 
 `--config` works before or after `up`; `-n` aliases `--dry-run`.
 Use `dots --help` or `dots up --help` for usage.
-Mutating `up`, `down`, `add`, and other future commands are unavailable.
+`up` installs missing links; `down`, `add`, and other future commands remain
+unavailable.
 
 The target platforms are macOS and Linux on arm64 and amd64. CI uses the
 Go version declared in `go.mod` and checks formatting, vet, tests,
@@ -72,7 +73,8 @@ pinned Staticcheck installer and caches Go dependencies and hook environments.
 
 Run this from the repository root to preview two source directories without
 using your own dotfiles. These setup commands create sample files in a new
-temporary directory; dots itself only reads them. The target remains absent.
+temporary directory; the dry-run only reads them. The target remains absent
+until the installation commands below are run.
 
 ```sh
 dots_fixture="$(mktemp -d)"
@@ -98,9 +100,18 @@ SUMMARY 2 planned, 0 correct, 0 conflicts, 0 warnings, 0 errors, 0 changes made
 ```
 
 The first source's `gitconfig` wins over the shared `.gitconfig`, while the
-shared Neovim file contributes a distinct destination. The sample files
-remain in the temporary directory for inspection and can be discarded
-afterward.
+shared Neovim file contributes a distinct destination. To install only into
+this fixture and verify idempotency:
+
+```sh
+go run . --config "$dots_fixture/config.toml" up
+go run . --config "$dots_fixture/config.toml" up
+```
+
+The first invocation creates two real symlinks and three parent directories.
+The second reports two correct links and zero changes. Source contents are
+never copied. The sample files remain in the temporary directory for
+inspection and can be discarded afterward.
 
 ## Configuration
 
@@ -198,10 +209,63 @@ are automatically replaced or removed, including broken links.
 The executable exits 0 for clean or warning-only plans, 1 for runtime
 errors or conflicts, and 2 for invalid usage. `--force` is unavailable.
 
+## Installing safely
+
+Review `dots up --dry-run`, then run `dots up` with the same configuration.
+Both commands use the same resolver-selected sources. Existing correct
+absolute or relative links are left unchanged. Files, directories, wrong
+links, and broken links are conflicts; nothing is automatically replaced.
+
+Installation validates the entire plan before writing. Any source error,
+conflict, or preparation failure prevents all changes, including parent
+creation. Warnings alone permit installation. Dry-run retains its read-only
+inspection path; it cannot guarantee later write permissions or resources.
+
+The filesystem package prepares directory handles, then creates parents and
+symlinks relative to those handles. The pinned `golang.org/x/sys v0.35.0`
+dependency supplies macOS/Linux primitives while retaining Go 1.23 support.
+No filesystem framework or ownership manifest is used.
+
+Existing directory symlinks are accepted, including those resolving outside
+`target_dir`. Their resolved directory identities are pinned. Newly
+substituted parent symlinks are never followed during creation. Observed
+ancestor or source-entry changes abort installation; source contents may
+still be edited in place. New links store the selected absolute source path,
+preserving configured symlink-plus-`..` traversal.
+
+New parents use `0700`, subject to the existing umask. Existing permissions
+and process umask are unchanged. If an unexpected parent or destination
+appears after preflight, installation stops, even for a concurrent correct
+link. A fresh invocation can recognize that link as satisfied.
+
+On a runtime failure, installation stops at the first failing entry. Completed
+links and directories remain, and later entries are unattempted. There is no
+automatic rollback or cleanup. Fix the reported problem, review a new dry-run,
+then rerun; completed correct links will be skipped. An output failure also
+does not undo writes; stderr reports the already completed counts.
+
+Installation reports `LINKED`, `OK`, `CONFLICT`, `ERROR`, and `SKIP` rows in
+destination order. Its summary counts successful link and directory creation
+calls; total changes are their sum. Counts describe operations completed by
+dots, not a permanently frozen filesystem snapshot.
+
+Directory handles resist symlink redirection but cannot freeze names. A
+concurrent rename after final validation can move the pinned directory;
+creation remains attached to that directory rather than a replacement path.
+An ordinary directory substituted before the first post-mkdir identity
+observation cannot always be detected. Real symlinks also cannot freeze source
+referents after their final validation. These limits are tested explicitly;
+installation is create-only, not a filesystem transaction.
+
+Prepared plans are single-use and own deduplicated directory handles. Handles
+are released after application, failure, or explicit abandonment. Resource
+exhaustion fails cleanly; dots does not raise limits or fall back to unchecked
+pathname writes.
+
 See [the handoff](docs/HANDOFF.md) for requirements and
 [migration from rcm](docs/MIGRATING_FROM_RCM.md) for manual migration.
-Safe mutation, ownership tracking, cleanup, import, and releases remain
-future milestones.
+Ownership tracking, replacement, cleanup, import, and releases remain future
+milestones.
 
 ## License
 

@@ -4,6 +4,12 @@
 
 ### Added
 
+- Create-only `dots up` with prepared directory handles, exclusive symlink
+  creation, safe parent handling, idempotency, and partial-failure reports.
+- Temporary installation fixtures covering conflict preservation, controlled
+  filesystem races, descriptor cleanup, permissions, and retry behavior.
+- Documented Milestone 1 safety guarantees and macOS/Linux race limitations.
+
 - Shared Staticcheck configuration with recommended defaults and selected
   Go documentation, naming, and error-formatting checks.
 - Pinned Staticcheck installation, module-wide linting, a staged-Go
