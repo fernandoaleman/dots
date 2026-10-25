@@ -40,6 +40,8 @@
 
 ### Fixed
 
+- Preserve non-directory source error classification so recorded broken links
+  remain removable when configured source roots or their referents become files.
 - Classify symlinks with non-directory target components as broken links,
   while retaining inspection errors for permission and capability failures.
 - Detect Unicode normalization and full case-folding destination collisions.

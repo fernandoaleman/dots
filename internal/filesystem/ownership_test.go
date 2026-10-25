@@ -202,6 +202,34 @@ func TestBrokenConfiguredSourceRootDoesNotBlockRemoval(t *testing.T) {
 	}
 }
 
+func TestSourceBoundaryPermissionFailureBlocksRemoval(t *testing.T) {
+	options, destinations := ownedFixture(t, ".a")
+	installFixture(t, options, destinations)
+	protected := filepath.Join(filepath.Dir(options.Profile), "protected")
+	source := filepath.Join(protected, "source")
+	fixtureFile(t, filepath.Join(source, "sentinel"))
+	if err := os.Chmod(protected, 0); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(protected, 0o700) })
+	if _, err := os.Stat(source); err == nil {
+		t.Skip("permissions do not prevent inspecting the fixture")
+	} else if !os.IsPermission(err) {
+		t.Fatal(err)
+	}
+	options.Sources = []string{source}
+	if _, err := sourceBoundary(source); !errors.Is(err, os.ErrPermission) {
+		t.Fatalf("source inspection error was hidden: %v", err)
+	}
+	for _, dryRun := range []bool{true, false} {
+		report, err := Down(options, dryRun)
+		if !errors.Is(err, os.ErrPermission) || report.Removed != 0 {
+			t.Fatalf("dry-run=%v: permission failure was ignored: %+v %v", dryRun, report, err)
+		}
+		assertLink(t, destinations[0].Path, destinations[0].Source)
+	}
+}
+
 func TestRegistryRecoveryNeverPromotesOrReactivates(t *testing.T) {
 	// Clean "removing" is a synthetic schema-policy case. Actual interrupted
 	// operations retain unfinished=true and are tested with child processes.

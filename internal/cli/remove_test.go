@@ -216,6 +216,80 @@ func TestRunDownReportsDeterministicOrder(t *testing.T) {
 	}
 }
 
+func TestRunDownAfterSourceDirectoryBecomesFile(t *testing.T) {
+	for _, mode := range []string{"source root", "source-root symlink referent", "source ancestor"} {
+		t.Run(mode, func(t *testing.T) {
+			root := t.TempDir()
+			original := filepath.Join(root, "source")
+			sourceRoot := original
+			configured := "source"
+			switch mode {
+			case "source-root symlink referent":
+				original = filepath.Join(root, "shared")
+				sourceRoot = original
+				fixtureLink(t, "shared", filepath.Join(root, "source"))
+			case "source ancestor":
+				sourceRoot = filepath.Join(original, "nested")
+				configured = "source/nested"
+			}
+			fixtureFile(t, filepath.Join(sourceRoot, "a"), "original source")
+			fixtureFile(t, filepath.Join(sourceRoot, "config", "nvim", "init.lua"), "nested source")
+			config := installationConfig(t, root, fmt.Sprintf("dotfiles_dirs = [%q]\ntarget_dir = 'target'\n", configured))
+			if code, output, stderr := runFixtureCommand(t, config, "up"); code != 0 {
+				t.Fatalf("install: %d %s %s", code, output, stderr)
+			}
+			saved := original + ".original"
+			if err := os.Rename(original, saved); err != nil {
+				t.Fatal(err)
+			}
+			fixtureFile(t, original, "replacement file must survive")
+			replacement, err := os.Lstat(original)
+			if err != nil {
+				t.Fatal(err)
+			}
+			before := snapshot(t, root)
+			if code, output, stderr := runFixtureCommand(t, config, "down", "--dry-run"); code != 0 || strings.Count(output, "REMOVE ") != 2 || !strings.Contains(output, "0 changes made") {
+				t.Fatalf("dry-run: %d %s %s", code, output, stderr)
+			}
+			if !reflect.DeepEqual(before, snapshot(t, root)) {
+				t.Fatal("dry-run modified source, destination, or state")
+			}
+			sourceBefore := snapshot(t, saved)
+			if code, output, stderr := runFixtureCommand(t, config, "down"); code != 0 || !strings.Contains(output, "2 removed") {
+				t.Fatalf("remove: %d %s %s", code, output, stderr)
+			}
+			for _, destination := range []string{".a", ".config/nvim/init.lua"} {
+				if _, err := os.Lstat(filepath.Join(root, "target", destination)); !os.IsNotExist(err) {
+					t.Fatalf("owned broken link remains: %s %v", destination, err)
+				}
+			}
+			contents, err := os.ReadFile(original)
+			if err != nil || string(contents) != "replacement file must survive" {
+				t.Fatal("replacement source file changed:", err)
+			}
+			after, err := os.Lstat(original)
+			if err != nil || !os.SameFile(replacement, after) {
+				t.Fatal("replacement source file was replaced:", err)
+			}
+			if !reflect.DeepEqual(sourceBefore, snapshot(t, saved)) {
+				t.Fatal("original source contents changed")
+			}
+			if mode == "source-root symlink referent" {
+				text, err := os.Readlink(filepath.Join(root, "source"))
+				if err != nil || text != "shared" {
+					t.Fatal("configured root alias changed:", err)
+				}
+			}
+			if _, err := os.Stat(filepath.Join(root, "target", ".config", "nvim")); err != nil {
+				t.Fatal("destination parent removed:", err)
+			}
+			if code, output, stderr := runFixtureCommand(t, config, "down"); code != 0 || !strings.Contains(output, "0 removed") {
+				t.Fatalf("repeat: %d %s %s", code, output, stderr)
+			}
+		})
+	}
+}
+
 func TestReadOnlyCommandsIgnoreOwnershipState(t *testing.T) {
 	for _, mode := range []string{"absent", "corrupt", "unfinished", "permissions", "locked"} {
 		t.Run(mode, func(t *testing.T) {
