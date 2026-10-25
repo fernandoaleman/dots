@@ -180,13 +180,15 @@ func TestRunUsage(t *testing.T) {
 		{[]string{"--help"}, 0},
 		{[]string{"help"}, 0},
 		{[]string{"up", "--help"}, 0},
-		{[]string{"up"}, 2},
+		{[]string{"up"}, 1},
 		{[]string{"down"}, 2},
 		{[]string{"up", "--force"}, 2},
 		{[]string{"up", "--dry-run", "extra"}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(strings.Join(tt.args, " "), func(t *testing.T) {
+			t.Setenv("HOME", t.TempDir())
+			t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 			var stdout, stderr bytes.Buffer
 			if got := Run(tt.args, &stdout, &stderr); got != tt.code {
 				t.Fatalf("exit = %d; want %d; stderr = %s", got, tt.code, stderr.String())

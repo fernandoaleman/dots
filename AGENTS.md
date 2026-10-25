@@ -18,7 +18,7 @@ Codex and Claude Code equally.
 - Keep responsibilities separated into three logical packages under `internal/`:
   - `cli`: commands, flags, user-facing output.
   - `resolver`: TOML discovery/loading, source traversal, exclusions, destination mapping, precedence, and structural collision detection.
-  - `filesystem`: read-only destination and ancestor inspection in Milestone 0.
+  - `filesystem`: destination inspection, prepared symlink installation, and safe parent creation.
 - Do not introduce microservices, extra binaries, templates, or speculative abstractions.
 - Use `gofmt` and idiomatic Go naming: `PascalCase` for exported identifiers and `camelCase` for unexported identifiers.
 
@@ -32,13 +32,17 @@ Codex and Claude Code equally.
 - Respect the target directory and exclusions defined in the handoff. Do not force end users to relocate their own app configurations to XDG paths.
 - Never execute shell statements from configuration files. `docs/MIGRATING_FROM_RCM.md` describes manual migration from rcm.
 
-## Current milestone: M0 only
+## Current milestone: M1 only
 
-Implement **`dots up --dry-run`** as the first vertical slice. It should load and validate TOML, resolve sources to intended destinations, report conflicts and duplicate-name warnings, and print a deterministic proposed action plan.
+Milestone 0 is complete. Implement **`dots up`** as create-only symlink
+installation, preserving the existing resolution and dry-run behavior.
+Follow the approved Milestone 1 contract in `docs/HANDOFF.md`.
 
 **Dry-run is strictly read-only**: no symlink creation, directory creation, backup, deletion, configuration generation, or changes to real user dotfiles. Use temporary fixture directories in tests.
 
-Do not implement mutating `dots up`, `dots down`, `dots add`, or other future features until explicitly asked. CLI names and future flags may be documented without implementing them.
+Do not implement `dots down`, `dots add`, replacement, ownership-based
+relinking, backups, or other future features. Work on the M1 feature branch;
+only the lead edits files. Tests must isolate HOME, XDG, sources, and targets.
 
 ## Development and checks
 
@@ -79,9 +83,9 @@ prek run --all-files
 ## Working with Herdr agents
 
 - **Lead/orchestrator:** owns project changes, task breakdown, integration, and final reporting.
-- **Testing agent:** read-only test-plan and coverage review in M0.
-- **Architecture agent:** read-only package/API review in M0.
-- **Review agent:** read-only correctness, safety, and regression review in M0.
+- **Testing agent:** read-only test-plan and coverage review.
+- **Architecture agent:** read-only package/API review.
+- **Review agent:** read-only correctness, safety, and regression review.
 - Delegation must be explicit. Specialists must not edit files, create commits, or change branches unless the user authorizes a different collaboration model.
 - Use Herdr's supported agent commands only after confirming the installed CLI's syntax. Treat specialist findings as recommendations to verify, not automatic instructions to apply.
 - Avoid simultaneous edits to the same checkout. Consider isolated Git worktrees only in a later milestone.

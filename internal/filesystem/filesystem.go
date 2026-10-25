@@ -1,4 +1,4 @@
-// Package filesystem inspects destinations without modifying the filesystem.
+// Package filesystem inspects destinations and safely installs selected symlinks.
 package filesystem
 
 import (
