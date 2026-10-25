@@ -1,6 +1,7 @@
 # dots — Project Handoff for Codex
 
-**Status:** Initial project specification / implementation handoff  
+**Status:** Architectural reference and milestone history; active GitHub issues define current feature scope
+
 **Project name:** `dots`  
 **CLI executable:** `dots`  
 **Implementation:** Go  
@@ -136,7 +137,9 @@ Examples:
 
 ## 4. CLI commands
 
-One binary and subcommands:
+The long-term CLI design uses one binary and the subcommands below. Consult
+the README for current availability. Historical/stale-link discovery and
+ownership handling remain future work rather than inspection guarantees.
 
 | Command | Purpose | Relationship to original rcm |
 | --- | --- | --- |
@@ -256,7 +259,7 @@ Dry-run output should distinguish `LINK` (missing), `OK` (already correct), `CON
 
 **Milestone 4 — Import:** `dots add PATH` safely moves/copies/imports source into a chosen source directory; clearly distinguish moves from copies and avoid surprises. Define defaults for choosing a source root.
 
-**Milestone 5 — Polishing:** Better conflict explanations, optional `--force` with backup semantics, optional tags/host-specific sources/exclusions/hooks if there is demonstrated need. Don't try to clone every original rcm feature up front.
+**Milestone 5 — Release & Distribution:** Version reporting, macOS/Linux arm64/amd64 archives, SHA-256 checksums, tested release automation, and installation/verification/upgrade documentation. Publication requires separate approval. Optional force/backups, tags, host-specific sources, and hooks remain deferred.
 
 ## 8. Testing strategy from day one
 
@@ -366,11 +369,14 @@ Use `CHANGELOG.md` consistently for user-visible changes. Keep implementation do
 
 ## 12. Instructions to local Codex
 
-Milestone 0 is complete. Implement only the approved Milestone 1 contract
-below, retaining the established resolver and read-only dry-run behavior.
+Read the user-designated active [GitHub milestone](https://github.com/fernandoaleman/dots/milestones)
+and its linked issues before implementation. Their acceptance criteria and
+discussion are authoritative for scope; contracts below preserve established
+decisions and milestone history. Milestones 0 and 1 are merged and CI-validated.
 Prefer small Go code and fixture-backed tests. The lead alone edits files;
 Herdr specialists review architecture, tests, and safety read-only. Do not
-commit, push, merge, tag, or release without separate approval.
+push, open or merge PRs, close issues/milestones, tag, or release without
+separate approval.
 
 ### Approved Milestone 0 contract
 
@@ -450,3 +456,34 @@ commit, push, merge, tag, or release without separate approval.
 - Local validation is review readiness. Formal closure requires an approved
   commit and push plus successful GitHub Actions CI. No later milestones,
   real home-directory installation, releases, or publication are authorized.
+
+### Milestone 2 inspection contract
+
+Authoritative scope: [M2: Inspection & Status](https://github.com/fernandoaleman/dots/milestone/3),
+[resolver-based listing](https://github.com/fernandoaleman/dots/issues/2), and
+[destination status](https://github.com/fernandoaleman/dots/issues/3).
+
+- `ls`, `status`, and `up` use the same configuration loader and resolver.
+  `ls` stops after resolution and reports selected mappings and source
+  diagnostics without inspecting destination occupancy. `status` and `up`
+  share CLI orchestration of destination inspection and physical collision
+  checks, retaining empty-directory evidence and selected source identities.
+- Inspection adds structured classifications to existing filesystem results;
+  legacy action labels remain available to `up` and its dry-run. Compare
+  named entries with error-aware metadata queries. Capability failures must
+  not become confident wrong-link or confirmed-collision classifications.
+- Preserve explanations when several problems affect one selected mapping.
+  Inspection/source errors take precedence over confirmed conflicts, and each
+  row contributes to one primary classification. Standalone diagnostics remain
+  separately counted. Resolver source failures are distinguished structurally
+  from collision evidence without parsing diagnostic text.
+- `ls` succeeds for valid or warning-only resolution, including empty plans;
+  source/configuration errors and structural conflicts fail. `status` succeeds
+  only for an empty valid plan or all-correct links; missing and divergent
+  states fail. Both use exit 1 for failures and exit 2 for invalid usage.
+- Both commands accept `--config` before or after the command, reject
+  positional arguments and installation-only flags, and are strictly read-only.
+  They never require installation preparation or create configuration files.
+- Report only current selected mappings. Correctness does not establish
+  ownership; no historical-link scan, repair, replacement, JSON output,
+  removal, import, or new dependency is included.

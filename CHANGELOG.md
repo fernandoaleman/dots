@@ -4,6 +4,13 @@
 
 ### Added
 
+- Read-only `dots ls` for resolver-selected mappings and `dots status` for
+  deterministic destination classifications, summaries, and documented exits.
+- Structured inspection diagnostics separating wrong/broken links, occupied
+  paths, blocked ancestors, and metadata or name-capability failures.
+- Temporary inspection fixtures covering no-write execution and shared source
+  selection across listing, status, and existing dry-run behavior.
+
 - Create-only `dots up` with prepared directory handles, exclusive symlink
   creation, safe parent handling, idempotency, and partial-failure reports.
 - Temporary installation fixtures covering conflict preservation, controlled
@@ -26,5 +33,7 @@
 
 ### Fixed
 
+- Classify symlinks with non-directory target components as broken links,
+  while retaining inspection errors for permission and capability failures.
 - Detect Unicode normalization and full case-folding destination collisions.
 - Retain empty source directories through filesystem-aware structural checks.

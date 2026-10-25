@@ -7,9 +7,9 @@ Codex and Claude Code equally.
 
 ## Read first
 
-1. Read [`docs/HANDOFF.md`](docs/HANDOFF.md) before planning or editing code. It is the source of truth for requirements and milestone scope.
-2. Read `README.md`, `go.mod`, and relevant package tests before modifying behavior.
-3. If instructions conflict, follow the user's latest explicit request, then this file, then the handoff. Call out any consequential conflict rather than guessing.
+1. Read the active [GitHub milestone](https://github.com/fernandoaleman/dots/milestones), its linked issues, acceptance criteria, and discussion before planning or editing code. The user identifies which milestone is active; an open milestone alone does not authorize implementation. GitHub is the source of truth for feature scope and progress.
+2. Read [`docs/HANDOFF.md`](docs/HANDOFF.md) for architectural decisions and historical contracts, then `README.md`, `go.mod`, and relevant package tests before modifying behavior.
+3. Follow the user's latest explicit request and these project standards. Treat the active GitHub issues as authoritative for feature requirements; call out consequential conflicts with the handoff rather than guessing or silently changing scope.
 
 ## Product principles
 
@@ -32,17 +32,17 @@ Codex and Claude Code equally.
 - Respect the target directory and exclusions defined in the handoff. Do not force end users to relocate their own app configurations to XDG paths.
 - Never execute shell statements from configuration files. `docs/MIGRATING_FROM_RCM.md` describes manual migration from rcm.
 
-## Current milestone: M1 only
+## Scope and read-only commands
 
-Milestone 0 is complete. Implement **`dots up`** as create-only symlink
-installation, preserving the existing resolution and dry-run behavior.
-Follow the approved Milestone 1 contract in `docs/HANDOFF.md`.
+Implement only the active milestone and issues explicitly authorized by the
+user. Preserve existing command behavior and the three-package architecture.
+Propose changes to scope or acceptance criteria before implementing them.
 
-**Dry-run is strictly read-only**: no symlink creation, directory creation, backup, deletion, configuration generation, or changes to real user dotfiles. Use temporary fixture directories in tests.
+**Read-only commands and dry-runs are strictly read-only**: no symlink creation, directory creation, backup, deletion, configuration generation, or changes to real user dotfiles. Use temporary fixture directories in tests.
 
-Do not implement `dots down`, `dots add`, replacement, ownership-based
-relinking, backups, or other future features. Work on the M1 feature branch;
-only the lead edits files. Tests must isolate HOME, XDG, sources, and targets.
+Do not implement future features outside the approved issues. Work on a focused
+feature branch; only the lead edits files unless the user explicitly authorizes
+another collaboration model. Tests must isolate HOME, XDG, sources, and targets.
 
 ## Development and checks
 
@@ -78,7 +78,16 @@ prek run --all-files
 - Use Conventional Commits, e.g., `feat(resolver): apply local precedence`, `test(cli): cover dry-run conflicts`, or `docs: clarify config location`.
 - Keep `README.md` accurate, update `CHANGELOG.md` for user-visible changes, and document rcm migration separately.
 - Use Semantic Versioning (`v0.x.y` during early development). Do not create tags, publish releases, or push changes without explicit approval.
-- Future release targets include macOS `arm64`/`amd64` and Linux `arm64`/`amd64`; do not add complex release tooling for M0.
+- Supported targets are macOS `arm64`/`amd64` and Linux `arm64`/`amd64`. Add release tooling only when the approved scope requires it.
+
+## GitHub issues, milestones, and pull requests
+
+- Use GitHub Issues and Milestones in `fernandoaleman/dots` as the source of truth for scoped work and acceptance criteria. Read the active milestone and linked issues before implementation; do not create duplicate issues.
+- Work on a focused feature branch. Link pull requests to the relevant issues and assign the applicable GitHub milestone. Use `Closes #N` only when merging the PR will fully satisfy that issue; otherwise use `Refs #N`.
+- Post concise issue updates at meaningful checkpoints or when blockers arise; avoid routine noise. Propose changes to issue scope or acceptance criteria before editing them.
+- Run required local checks and obtain passing GitHub Actions CI. Do not push, open or merge PRs, close issues/milestones, or publish releases without explicit user approval.
+- After an approved merge, verify the merged commit, CI results, and issue closure. Close the milestone only when its acceptance criteria and linked issues are complete. Do not start the next milestone without approval.
+- After a squash merge, check the local feature branch for unrelated work and ask the user before deleting it, even when its changes are present on the default branch.
 
 ## Working with Herdr agents
 
@@ -88,7 +97,7 @@ prek run --all-files
 - **Review agent:** read-only correctness, safety, and regression review.
 - Delegation must be explicit. Specialists must not edit files, create commits, or change branches unless the user authorizes a different collaboration model.
 - Use Herdr's supported agent commands only after confirming the installed CLI's syntax. Treat specialist findings as recommendations to verify, not automatic instructions to apply.
-- Avoid simultaneous edits to the same checkout. Consider isolated Git worktrees only in a later milestone.
+- Avoid simultaneous edits to the same checkout. Use isolated Git worktrees only when explicitly authorized.
 
 ## Safety and reporting
 
@@ -96,12 +105,12 @@ prek run --all-files
 - Ask for explicit permission before modifying real dotfiles, changing Git remotes, pushing commits, or publishing releases.
 - Summarize changed files, key decisions, checks run and results, unresolved issues, and next recommended milestone at the end of each task.
 
-### Approved Milestone 0 contract
+## Resolution and filesystem contract
 
 - `cli` owns commands, flags, orchestration, and output.
 - `resolver` owns TOML discovery/loading, source traversal, exclusions,
   destination mapping, precedence, and structural collision detection.
-- `filesystem` performs read-only destination and ancestor inspection.
+- `filesystem` owns destination and ancestor inspection and authorized safe filesystem operations.
 - Dependencies are `main → cli → {resolver, filesystem}`; neither lower
   package depends on the other. Resolve desired links before inspecting
   destinations; occupancy never changes the selected source.

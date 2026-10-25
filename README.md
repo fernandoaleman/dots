@@ -4,9 +4,10 @@ A lightweight Go dotfiles manager with ordered personal and shared source
 directories. dots is independent of thoughtbot/rcm and is not affiliated with
 or supported by thoughtbot.
 
-Milestone 1 adds `dots up` to install missing symbolic links and necessary
-parent directories. Existing content is preserved. `dots up --dry-run`
-continues to print a deterministic plan without making filesystem changes.
+`dots up` installs missing symbolic links and necessary parent directories,
+preserving existing content. `dots up --dry-run` previews the plan; `dots ls`
+lists selected mappings, and `dots status` inspects current destinations.
+All three inspection commands are deterministic and read-only.
 
 ## Development and usage
 
@@ -59,10 +60,11 @@ gofmt and other hooks retain their behavior.
 Dependency-only and lint-configuration-only commits do not trigger this
 Go-file hook. `make lint` and CI still check the module unconditionally.
 
-`--config` works before or after `up`; `-n` aliases `--dry-run`.
-Use `dots --help` or `dots up --help` for usage.
-`up` installs missing links; `down`, `add`, and other future commands remain
-unavailable.
+`--config` works before or after `up`, `ls`, and `status`. On `up`, `-n`
+aliases `--dry-run`. Use `dots --help` or a command's `--help` for usage.
+`ls` and `status` are inherently read-only and reject `--dry-run`, `-n`,
+and installation-only flags. JSON output is not available.
+`down`, `add`, and other future commands remain unavailable.
 
 The target platforms are macOS and Linux on arm64 and amd64. CI uses the
 Go version declared in `go.mod` and checks formatting, vet, tests,
@@ -112,6 +114,64 @@ The first invocation creates two real symlinks and three parent directories.
 The second reports two correct links and zero changes. Source contents are
 never copied. The sample files remain in the temporary directory for
 inspection and can be discarded afterward.
+
+## Listing and status
+
+Using the disposable fixture above:
+
+```sh
+go run . --config "$dots_fixture/config.toml" ls
+go run . --config "$dots_fixture/config.toml" status
+```
+
+`ls` shows the desired mappings, regardless of destination occupancy:
+
+```text
+SELECTED "<fixture>/target/.config/nvim/init.lua" -> "<fixture>/shared/config/nvim/init.lua"
+SELECTED "<fixture>/target/.gitconfig" -> "<fixture>/local/gitconfig"
+SUMMARY 2 selected, 0 conflicts, 0 warnings, 0 errors, 0 changes made
+```
+
+It uses the same configuration, exclusions, precedence, and source structural
+checks as `up`. Source conflicts remain visible with `CONFLICT` rows, and
+warnings and errors follow the mappings. Empty source directories contribute
+structural evidence rather than mapping rows. `ls` does not inspect destination
+occupancy, ancestors, or physical alias/name collisions; use `status` for those.
+
+`status` inspects only the current resolver-selected destinations. After the
+fixture installation, it reports `OK` for both links. Before installation,
+it reports `MISSING`, including when parent directories are absent. Neither
+command creates directories, links, configuration files, or other artifacts.
+
+| Status row | Meaning |
+| --- | --- |
+| `OK` | Existing link points to the selected named source entry |
+| `MISSING` | Destination or required parents are absent |
+| `WRONG` | Usable symlink points to a different source entry |
+| `BROKEN` | Destination symlink has a missing referent or a non-directory target component |
+| `FILE`, `DIRECTORY`, `SPECIAL` | Destination is occupied by that entry type |
+| `BLOCKED` | A required ancestor is obstructed or traversal cannot be resolved |
+| `CONFLICT` | Source/destination identity or structural, alias, or native-name collision |
+| `ERROR` | Source or filesystem inspection failed, including unavailable name capabilities |
+
+Rows retain quoted destination and selected-source paths, reasons, and stable
+destination ordering. Collision errors retain all applicable explanations;
+inspection errors take priority over confirmed conflicts. Summaries count
+each row once, with occupied types grouped together. The error total includes
+error rows and standalone source diagnostics, which can concern the same path.
+
+`OK` describes current target equivalence, not ownership by dots. `WRONG` does
+not imply permission to replace a link. Status is a point-in-time observation;
+it does not scan for historical links or repair, relink, or remove anything.
+
+| Command | Exit 0 | Exit 1 | Exit 2 |
+| --- | --- | --- | --- |
+| `ls` | Successful or warning-only resolution, including an empty plan | Configuration/source errors, structural conflicts, or output failure | Invalid usage |
+| `status` | Every selected link is correct, or a valid empty plan; warnings alone are permitted | Any missing, wrong, broken, occupied, blocked, or conflicting path; inspection/configuration/source errors or output failure | Invalid usage |
+
+Unlike `status`, `up --dry-run` still succeeds when its only proposed actions
+are missing links. Both new commands accept `--config` before or after their
+name, reject positional arguments, and show help without loading configuration.
 
 ## Configuration
 
