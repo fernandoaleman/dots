@@ -18,6 +18,99 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+func TestRestrictiveUmaskPreservesRegistry(t *testing.T) {
+	if mode := os.Getenv("DOTS_UMASK_COMMAND"); mode != "" {
+		var options Ownership
+		var destinations []Destination
+		if err := json.Unmarshal([]byte(os.Getenv("DOTS_UMASK_OPTIONS")), &options); err != nil {
+			t.Fatal(err)
+		}
+		if err := json.Unmarshal([]byte(os.Getenv("DOTS_UMASK_DESTINATIONS")), &destinations); err != nil {
+			t.Fatal(err)
+		}
+		var mask int
+		if _, err := fmt.Sscanf(os.Getenv("DOTS_UMASK"), "%o", &mask); err != nil {
+			t.Fatal(err)
+		}
+		// Umask is process-wide: change it only in this isolated child.
+		unix.Umask(mask)
+		var operationErr error
+		if mode == "up" {
+			_, operationErr = InstallOwned(destinations, options)
+		} else {
+			_, operationErr = Down(options, false)
+		}
+		if mask&0o600 == 0 {
+			if operationErr != nil {
+				t.Fatal(operationErr)
+			}
+		} else if operationErr == nil || !strings.Contains(operationErr.Error(), "ownership state requires private") {
+			t.Fatalf("expected snapshot permission rejection, got %v", operationErr)
+		}
+		return
+	}
+	for _, mode := range []string{"up", "down"} {
+		for _, mask := range []int{0o022, 0o200, 0o400, 0o600} {
+			t.Run(fmt.Sprintf("%s/%04o", mode, mask), func(t *testing.T) {
+				options, destinations := ownedFixture(t, ".a", ".b")
+				installFixture(t, options, destinations[:1])
+				before, err := os.ReadFile(options.Registry)
+				if err != nil {
+					t.Fatal(err)
+				}
+				registryBefore, err := os.Stat(options.Registry)
+				if err != nil {
+					t.Fatal(err)
+				}
+				linkBefore, err := os.Lstat(destinations[0].Path)
+				if err != nil {
+					t.Fatal(err)
+				}
+				encodedOptions, err := json.Marshal(options)
+				if err != nil {
+					t.Fatal(err)
+				}
+				encodedDestinations, err := json.Marshal(destinations)
+				if err != nil {
+					t.Fatal(err)
+				}
+				ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+				defer cancel()
+				command := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestRestrictiveUmaskPreservesRegistry$")
+				command.Env = append(os.Environ(), "DOTS_UMASK_COMMAND="+mode, fmt.Sprintf("DOTS_UMASK=%o", mask),
+					"DOTS_UMASK_OPTIONS="+string(encodedOptions), "DOTS_UMASK_DESTINATIONS="+string(encodedDestinations))
+				if output, err := command.CombinedOutput(); err != nil {
+					t.Fatalf("child: %s %v", output, err)
+				}
+				if mask&0o600 == 0 {
+					return
+				}
+				after, err := os.ReadFile(options.Registry)
+				if err != nil || !bytes.Equal(before, after) {
+					t.Fatalf("authoritative snapshot changed: %v", err)
+				}
+				registryAfter, err := os.Stat(options.Registry)
+				if err != nil || !os.SameFile(registryBefore, registryAfter) || registryAfter.Mode().Perm() != 0o600 {
+					t.Fatalf("registry identity or permissions changed: %v", err)
+				}
+				linkAfter, err := os.Lstat(destinations[0].Path)
+				if err != nil || !os.SameFile(linkBefore, linkAfter) {
+					t.Fatalf("existing link changed: %v", err)
+				}
+				if _, err := os.Lstat(destinations[1].Path); !errors.Is(err, os.ErrNotExist) {
+					t.Fatalf("failed transaction created destination: %v", err)
+				}
+				if state := ownershipSnapshot(t, options); state.Unfinished || len(state.Records) != 1 || state.Records[0].Phase != "owned" {
+					t.Fatalf("prior ownership lost: %+v", state)
+				}
+				if report, err := Down(options, false); err != nil || report.Removed != 1 {
+					t.Fatalf("registry unusable after rejection: %+v %v", report, err)
+				}
+			})
+		}
+	}
+}
+
 func TestPersistenceFailuresAtEveryTransactionPhase(t *testing.T) {
 	for _, phase := range []string{"creating", "owned", "install finish", "removing", "retirement", "remove finish"} {
 		for _, failure := range []string{"write", "file sync", "close", "rename", "published sync"} {

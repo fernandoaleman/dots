@@ -463,6 +463,11 @@ func (r *registry) save() error {
 	}
 	f := os.NewFile(uintptr(fd), name)
 	// Failed temporary snapshots are deliberately retained, never replayed.
+	// Creation permissions are subject to umask; never publish state that a
+	// subsequent invocation would reject as unusable or unsafe.
+	if err := privateFD(fd, false); err != nil {
+		return fmt.Errorf("validate ownership snapshot: %w", errors.Join(err, r.ops.closeFile(f)))
+	}
 	n, writeErr := r.ops.write(f, data)
 	if writeErr == nil && n != len(data) {
 		writeErr = io.ErrShortWrite

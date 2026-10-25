@@ -119,6 +119,7 @@ automatic adoption were explicitly excluded.
 | Failed preflight authority | Local Codex review identified a CLI bypass; failed actual installation preflights now validate/revoke existing ownership without destination writes |
 | Ancestor durability | Pre-push review identified missing synchronization of newly created parent bindings; synchronize each containing directory and test failures at every level before ownership publication |
 | Source-boundary error classification | Copilot identified lost ENOTDIR identity when a source directory becomes a file; preserve the classified error so recorded broken links remain removable, with no-write and permission-error regressions |
+| Snapshot permissions | Copilot identified that owner-restricting umasks could publish unusable state; validate each new snapshot before publication, with isolated up/down subprocess tests preserving prior registry bytes, identity, permissions, and removal authority |
 | Recovery coverage | Phase-targeted persistence failures, actual child-process interruptions, independent command contention, and cross-profile/historical invalidation fixtures |
 | Read-only behavior | Snapshot tests include absent, malformed, unfinished, unsafe, and locked state; inspection commands remain independent of ownership state |
 

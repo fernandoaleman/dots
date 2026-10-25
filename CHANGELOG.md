@@ -40,6 +40,8 @@
 
 ### Fixed
 
+- Reject ownership snapshots with umask-restricted permissions before publication,
+  preserving the previous usable registry and managed links on failure.
 - Preserve non-directory source error classification so recorded broken links
   remain removable when configured source roots or their referents become files.
 - Classify symlinks with non-directory target components as broken links,
