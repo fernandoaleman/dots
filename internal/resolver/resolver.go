@@ -14,6 +14,8 @@ type Link struct {
 	Source      string
 	Destination string
 	Conflict    string
+	// InvalidSource distinguishes source failures from structural conflicts.
+	InvalidSource bool
 }
 
 // Plan contains desired links, directory evidence, and source diagnostics.
@@ -172,9 +174,10 @@ func Resolve(cfg Config) Plan {
 		}
 		sort.Strings(reasons)
 		plan.Links = append(plan.Links, Link{
-			Source:      item.source,
-			Destination: item.destination,
-			Conflict:    strings.Join(reasons, "; "),
+			Source:        item.source,
+			Destination:   item.destination,
+			Conflict:      strings.Join(reasons, "; "),
+			InvalidSource: item.problem != "",
 		})
 	}
 	sort.Strings(plan.Warnings)
