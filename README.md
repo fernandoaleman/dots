@@ -7,7 +7,8 @@ or supported by thoughtbot.
 `dots up` installs missing symbolic links and necessary parent directories,
 preserving existing content. `dots up --dry-run` previews the plan; `dots ls`
 lists selected mappings, and `dots status` inspects current destinations.
-All three inspection commands are deterministic and read-only.
+`dots up --dry-run`, `dots ls`, and `dots status` are deterministic and
+read-only.
 
 ## Development and usage
 
