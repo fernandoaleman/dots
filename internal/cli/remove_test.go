@@ -157,6 +157,82 @@ func TestRunDownWithoutStateAndXDGIsolation(t *testing.T) {
 	}
 }
 
+func TestRunDownEmptyRecordsMessageRequiresSuccessfulInspection(t *testing.T) {
+	for _, dryRun := range []bool{true, false} {
+		for _, mode := range []string{"absent", "empty", "corrupt", "unsupported", "unsafe permissions", "registry directory", "lock directory", "lock held"} {
+			if dryRun && (mode == "lock directory" || mode == "lock held") {
+				continue // Dry-run deliberately does not open or acquire the lock.
+			}
+			t.Run(fmt.Sprintf("%s/dry-run=%v", mode, dryRun), func(t *testing.T) {
+				root := t.TempDir()
+				fixtureFile(t, filepath.Join(root, "source", "a"), "source")
+				config := installationConfig(t, root, "dotfiles_dirs = ['source']\ntarget_dir = 'target'\n")
+				if mode != "absent" {
+					if code, output, _ := runFixtureCommand(t, config, "up"); code != 0 {
+						t.Fatal(output)
+					}
+				}
+				state := filepath.Join(root, "state", "dots", "ownership.json")
+				switch mode {
+				case "empty":
+					if code, output, _ := runFixtureCommand(t, config, "down"); code != 0 {
+						t.Fatal(output)
+					}
+				case "corrupt":
+					fixtureFile(t, state, "malformed")
+				case "unsupported":
+					fixtureFile(t, state, `{"version":99,"revision":1,"unfinished":false,"records":[]}`)
+				case "unsafe permissions":
+					if err := os.Chmod(state, 0o644); err != nil {
+						t.Fatal(err)
+					}
+				case "registry directory", "lock directory":
+					path := state
+					if mode == "lock directory" {
+						path = filepath.Join(filepath.Dir(state), "ownership.lock")
+					}
+					if err := os.Rename(path, path+".original"); err != nil {
+						t.Fatal(err)
+					}
+					if err := os.Mkdir(path, 0o700); err != nil {
+						t.Fatal(err)
+					}
+				case "lock held":
+					file, err := os.OpenFile(filepath.Join(filepath.Dir(state), "ownership.lock"), os.O_RDWR, 0)
+					if err != nil {
+						t.Fatal(err)
+					}
+					defer file.Close()
+					if err := unix.Flock(int(file.Fd()), unix.LOCK_EX|unix.LOCK_NB); err != nil {
+						t.Fatal(err)
+					}
+				}
+				before := installationSnapshot(t, root)
+				readOnlyBefore := snapshot(t, root)
+				var flags []string
+				if dryRun {
+					flags = []string{"--dry-run"}
+				}
+				code, output, stderr := runFixtureCommand(t, config, "down", flags...)
+				success := mode == "absent" || mode == "empty"
+				if success {
+					if code != 0 || !strings.Contains(output, "INFO no eligible ownership records") {
+						t.Fatalf("valid empty state: %d %s %s", code, output, stderr)
+					}
+				} else if code != 1 || !strings.Contains(output, "ERROR ") || strings.Contains(output, "no eligible ownership records") {
+					t.Fatalf("unknown ownership reported as empty: %d %s %s", code, output, stderr)
+				}
+				if !strings.Contains(output, "0 removed") || !strings.Contains(output, "0 changes made") || !reflect.DeepEqual(before, installationSnapshot(t, root)) {
+					t.Fatalf("inspection changed destinations: %s", output)
+				}
+				if dryRun && !reflect.DeepEqual(readOnlyBefore, snapshot(t, root)) {
+					t.Fatal("dry-run modified state")
+				}
+			})
+		}
+	}
+}
+
 func TestRunDownPreservesTraversalAndAncestorAliases(t *testing.T) {
 	root := t.TempDir()
 	fixtureFile(t, filepath.Join(root, "source", "a"), "source")

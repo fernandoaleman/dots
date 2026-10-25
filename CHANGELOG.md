@@ -40,6 +40,8 @@
 
 ### Fixed
 
+- Suppress the empty-ownership message when removal inspection fails, preserving
+  the distinction between unknown ownership and successfully inspected empty state.
 - Reject ownership snapshots with umask-restricted permissions before publication,
   preserving the previous usable registry and managed links on failure.
 - Preserve non-directory source error classification so recorded broken links

@@ -32,7 +32,7 @@ func remove(options filesystem.Ownership, dryRun bool, stdout, stderr io.Writer)
 	for _, warning := range report.Warnings {
 		fmt.Fprintf(&output, "WARN %s\n", warning)
 	}
-	if len(report.Entries) == 0 {
+	if operationErr == nil && len(report.Entries) == 0 {
 		fmt.Fprintln(&output, "INFO no eligible ownership records; untracked and legacy links are never adopted or removed")
 	}
 	errors := 0
