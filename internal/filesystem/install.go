@@ -17,6 +17,7 @@ type Report struct {
 	Results            []Result
 	LinksCreated       int
 	DirectoriesCreated int
+	Warnings           []string
 }
 
 type directoryID struct{ device, inode uint64 }
@@ -72,15 +73,16 @@ func nativeInstallOps() installOps {
 // Apply is single-use. Close is required when abandoning preparation and is
 // otherwise called by Apply. A plan must not be used concurrently.
 type PreparedPlan struct {
-	entries []preparedEntry
-	dirs    map[directoryID]*directory
-	order   []*directory
-	paths   map[string]*directory
-	routes  []binding
-	root    *directory
-	ops     installOps
-	used    bool
-	closed  bool
+	registry *registry
+	entries  []preparedEntry
+	dirs     map[directoryID]*directory
+	order    []*directory
+	paths    map[string]*directory
+	routes   []binding
+	root     *directory
+	ops      installOps
+	used     bool
+	closed   bool
 }
 
 // Prepare validates copied destinations without making filesystem changes.
@@ -412,6 +414,14 @@ func (p *PreparedPlan) Apply() (report Report, err error) {
 
 func (p *PreparedPlan) applyEntry(entry preparedEntry, created map[directoryID]binding, report *Report) error {
 	check := func() error {
+		if p.registry != nil {
+			if err := p.registry.validate(); err != nil {
+				return err
+			}
+			if err := p.registry.options.protect(entry.destination.Path); err != nil {
+				return err
+			}
+		}
 		for _, route := range entry.routes {
 			if err := validateBinding(route); err != nil {
 				return err
@@ -474,11 +484,25 @@ func (p *PreparedPlan) applyEntry(entry preparedEntry, created map[directoryID]b
 	if entry.initial.Status == "OK" {
 		return entry.validateExistingLink()
 	}
+	if p.registry != nil {
+		if err := p.registry.beforeCreate(entry, current); err != nil {
+			return err
+		}
+		if err := check(); err != nil {
+			return err
+		}
+	}
 	p.checkpoint("before-symlink", entry.destination)
 	if err := p.ops.symlinkat(entry.destination.Source, current.fd, name); err != nil {
 		return fmt.Errorf("create symlink %q: %w", entry.destination.Path, err)
 	}
 	report.LinksCreated++
+	if p.registry != nil {
+		p.checkpoint("before-ownership", entry.destination)
+		if err := p.registry.afterCreate(entry, current); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
