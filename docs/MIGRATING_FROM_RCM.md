@@ -47,5 +47,10 @@ different source remain conflicts. No ownership-based relinking is available.
 Do not run `rcdn`, unlink existing files, or switch management based solely on
 a successful preview. After reviewing a conflict-free plan, run `dots up`
 with the same configuration to create only missing links. Preflight errors
-prevent all writes; runtime failures retain completed work without rollback.
+prevent destination changes; actual commands may initialize private ownership
+state. Runtime failures retain completed work without rollback.
+Existing rcm, M1/M2, and manually created links are not adopted: `OK` means
+correctness, not ownership. Only new creations receive registry records.
+`down` removes eligible recorded links, so it cannot undo an entire legacy
+installation. See [ownership and recovery](OWNERSHIP.md) before using removal.
 See the README installation safety section before switching management.

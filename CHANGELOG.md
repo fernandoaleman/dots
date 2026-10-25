@@ -4,6 +4,13 @@
 
 ### Added
 
+- Registry-backed `dots down` and strictly read-only `dots down --dry-run`,
+  with current-target selection, recorded identity checks, and partial-failure
+  reporting. Newly created links gain ownership; existing links are never adopted.
+- Private XDG ownership state, stable process locking, durable transaction
+  snapshots, conservative interrupted-operation recovery, and temporary fixtures.
+- Documented cooperative concurrency requirements and legacy-link limitations.
+
 - Read-only `dots ls` for resolver-selected mappings and `dots status` for
   deterministic destination classifications, summaries, and documented exits.
 - Structured inspection diagnostics separating wrong/broken links, occupied

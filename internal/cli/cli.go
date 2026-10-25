@@ -21,7 +21,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 	root.SetOutput(stderr)
 	root.StringVar(&config, "config", "", "select a TOML configuration file")
 	root.Usage = func() {
-		fmt.Fprintln(stderr, "Usage: dots [--config PATH] up [--dry-run]")
+		fmt.Fprintln(stderr, "Usage: dots [--config PATH] up|down [--dry-run]")
 		fmt.Fprintln(stderr, "       dots [--config PATH] ls|status")
 		root.PrintDefaults()
 	}
@@ -41,14 +41,14 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	command := rest[0]
-	if command != "up" && command != "ls" && command != "status" {
-		return fail(stderr, 2, fmt.Errorf("unsupported command %q; use up, ls, or status", command))
+	if command != "up" && command != "down" && command != "ls" && command != "status" {
+		return fail(stderr, 2, fmt.Errorf("unsupported command %q; use up, down, ls, or status", command))
 	}
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	flags.StringVar(&config, "config", config, "select a TOML configuration file")
 	var dryRun bool
-	if command == "up" {
+	if command == "up" || command == "down" {
 		flags.BoolVar(&dryRun, "dry-run", false, "print a plan without filesystem changes")
 		flags.BoolVar(&dryRun, "n", false, "alias for --dry-run")
 	}
@@ -85,6 +85,9 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		return fail(stderr, 1, err)
 	}
 	ownership := filesystem.Ownership{Registry: filesystem.StatePath(home, os.Getenv("XDG_STATE_HOME")), Profile: cfg.Path, Target: cfg.TargetDir, Sources: cfg.DotfilesDirs}
+	if command == "down" {
+		return remove(ownership, dryRun, stdout, stderr)
+	}
 	plan := resolver.Resolve(cfg)
 	if command == "ls" {
 		return list(plan, stdout, stderr)

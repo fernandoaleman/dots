@@ -181,7 +181,9 @@ func TestRunUsage(t *testing.T) {
 		{[]string{"help"}, 0},
 		{[]string{"up", "--help"}, 0},
 		{[]string{"up"}, 1},
-		{[]string{"down"}, 2},
+		{[]string{"down"}, 1},
+		{[]string{"down", "--help"}, 0},
+		{[]string{"down", "--force"}, 2},
 		{[]string{"up", "--force"}, 2},
 		{[]string{"up", "--dry-run", "extra"}, 2},
 	}

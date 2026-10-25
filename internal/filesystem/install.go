@@ -431,6 +431,7 @@ func (p *PreparedPlan) applyEntry(entry preparedEntry, created map[directoryID]b
 	}
 	current := entry.parent
 	for _, name := range entry.missing {
+		createdNow := false
 		if err := check(); err != nil {
 			return err
 		}
@@ -453,6 +454,7 @@ func (p *PreparedPlan) applyEntry(entry preparedEntry, created map[directoryID]b
 				return fmt.Errorf("create parent %q for %q: %w", name, entry.destination.Path, err)
 			}
 			report.DirectoriesCreated++
+			createdNow = true
 			p.checkpoint("after-mkdir", entry.destination)
 			if err := unix.Fstatat(current.fd, name, &stat, unix.AT_SYMLINK_NOFOLLOW); err != nil {
 				return fmt.Errorf("inspect created parent %q: %w", name, err)
@@ -467,6 +469,17 @@ func (p *PreparedPlan) applyEntry(entry preparedEntry, created map[directoryID]b
 			return fmt.Errorf("created parent %q changed", name)
 		}
 		route := binding{parent: current, name: name, entry: stat, target: next}
+		if createdNow && p.registry != nil {
+			if err := validateBinding(route); err != nil {
+				return err
+			}
+			// Persist the new directory's name in its containing directory.
+			// Syncing only the eventual symlink parent cannot establish the
+			// durability of every newly created ancestor binding.
+			if err := p.registry.ops.sync(current.fd); err != nil {
+				return fmt.Errorf("sync created parent binding %q for %q: %w", name, entry.destination.Path, err)
+			}
+		}
 		if original, known := created[next.id]; known {
 			if err := validateBinding(original); err != nil {
 				return err

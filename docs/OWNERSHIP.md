@@ -94,6 +94,8 @@ pinned private directory. Write the complete snapshot, synchronize/close it,
 atomically rename it over the registry, then synchronize the directory.
 Synchronize newly created state directories and their parents. Synchronize
 destination parents before committing creation or retiring removal.
+After creating each missing destination directory, synchronize its containing
+directory before proceeding, so newly created ancestor bindings precede ownership.
 Required synchronization, locking, and publication failures are fatal; no
 silently weaker fallback is available.
 

@@ -674,3 +674,97 @@ func TestRevocationFailureReportsEverySelectedDestination(t *testing.T) {
 		})
 	}
 }
+
+func TestCreatedAncestorBindingsSyncBeforeOwnership(t *testing.T) {
+	for _, failureAt := range []int{0, 1, 2, 3} {
+		t.Run(fmt.Sprint(failureAt), func(t *testing.T) {
+			options, destinations := ownedFixture(t, ".config/nvim/init.lua")
+			ops, install := nativeRegistryOps(), nativeInstallOps()
+			dirty := make(map[entryID]bool)
+			bindingSyncs := 0
+			install.mkdirat = func(fd int, name string, mode uint32) error {
+				if err := unix.Mkdirat(fd, name, mode); err != nil {
+					return err
+				}
+				var stat unix.Stat_t
+				if err := unix.Fstat(fd, &stat); err != nil {
+					t.Fatal(err)
+				}
+				dirty[idOf(stat)] = true
+				return nil
+			}
+			ops.sync = func(fd int) error {
+				var stat unix.Stat_t
+				if err := unix.Fstat(fd, &stat); err != nil {
+					return err
+				}
+				if stat.Mode&unix.S_IFMT == unix.S_IFDIR && dirty[idOf(stat)] {
+					bindingSyncs++
+					if failureAt != 0 && bindingSyncs == failureAt {
+						return unix.EIO
+					}
+				}
+				if err := unix.Fsync(fd); err != nil {
+					return err
+				}
+				delete(dirty, idOf(stat))
+				return nil
+			}
+			install.checkpoint = func(phase string, _ Destination) {
+				if phase == "before-symlink" && len(dirty) != 0 {
+					t.Fatal("symlink created before ancestor bindings were synchronized")
+				}
+			}
+			report, err := installOwned(destinations, options, ops, install)
+			state := ownershipSnapshot(t, options)
+			if failureAt == 0 {
+				if err != nil || bindingSyncs != 3 || report.LinksCreated != 1 || state.Unfinished || len(state.Records) != 1 || state.Records[0].Phase != "owned" {
+					t.Fatalf("ancestor sync: %+v %+v %v", report, state, err)
+				}
+			} else {
+				if !errors.Is(err, unix.EIO) || bindingSyncs != failureAt || report.DirectoriesCreated != failureAt || report.LinksCreated != 0 || !state.Unfinished || len(state.Records) != 0 {
+					t.Fatalf("failed binding sync committed authority: %+v %+v %v", report, state, err)
+				}
+			}
+		})
+	}
+}
+
+func TestAncestorSyncFailureRetainsEarlierInstallation(t *testing.T) {
+	options, destinations := ownedFixture(t, ".a", ".nested/file", ".z")
+	ops, install := nativeRegistryOps(), nativeInstallOps()
+	var failingParent *entryID
+	install.mkdirat = func(fd int, name string, mode uint32) error {
+		if err := unix.Mkdirat(fd, name, mode); err != nil {
+			return err
+		}
+		if name == ".nested" {
+			var stat unix.Stat_t
+			if err := unix.Fstat(fd, &stat); err != nil {
+				t.Fatal(err)
+			}
+			id := idOf(stat)
+			failingParent = &id
+		}
+		return nil
+	}
+	ops.sync = func(fd int) error {
+		var stat unix.Stat_t
+		if err := unix.Fstat(fd, &stat); err != nil {
+			return err
+		}
+		if failingParent != nil && idOf(stat) == *failingParent {
+			return unix.EIO
+		}
+		return unix.Fsync(fd)
+	}
+	report, err := installOwned(destinations, options, ops, install)
+	if !errors.Is(err, unix.EIO) || report.LinksCreated != 1 || report.DirectoriesCreated != 2 || report.Results[1].Status != "ERROR" || report.Results[2].Status != "SKIP" {
+		t.Fatalf("partial ancestor sync: %+v %v", report, err)
+	}
+	state := ownershipSnapshot(t, options)
+	if !state.Unfinished || len(state.Records) != 1 || state.Records[0].Destination != pathBytes(destinations[0].Path) {
+		t.Fatal("partial authority lost or falsely finalized:", state)
+	}
+	assertLink(t, destinations[0].Path, destinations[0].Source)
+}

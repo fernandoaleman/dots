@@ -18,7 +18,7 @@ Codex and Claude Code equally.
 - Keep responsibilities separated into three logical packages under `internal/`:
   - `cli`: commands, flags, user-facing output.
   - `resolver`: TOML discovery/loading, source traversal, exclusions, destination mapping, precedence, and structural collision detection.
-  - `filesystem`: destination inspection, prepared symlink installation, and safe parent creation.
+  - `filesystem`: destination inspection, prepared installation/removal, private ownership state, and filesystem safety.
 - Do not introduce microservices, extra binaries, templates, or speculative abstractions.
 - Use `gofmt` and idiomatic Go naming: `PascalCase` for exported identifiers and `camelCase` for unexported identifiers.
 
@@ -125,8 +125,9 @@ prek run --all-files
 - Detect file/directory structural collisions within and across roots.
   Leaf precedence cannot hide ancestor/descendant conflicts. Report all
   participants, block affected entries, and display unrelated entries.
-- Broken destination symlinks are occupied conflicts with a distinct
-  reason. Do not relink or remove anything.
+- Broken destination symlinks remain installation conflicts with a distinct
+  reason. Removal requires the approved recorded-ownership policy in
+  [`docs/OWNERSHIP.md`](docs/OWNERSHIP.md); correctness alone is not ownership.
 - Plans and diagnostics are deterministic regardless of enumeration order.
 - Preserve symlink-plus-`..` traversal in configured paths; do not collapse
   it lexically. Report unresolved traversal beneath missing ancestors.

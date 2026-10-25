@@ -138,8 +138,9 @@ Examples:
 ## 4. CLI commands
 
 The long-term CLI design uses one binary and the subcommands below. Consult
-the README for current availability. Historical/stale-link discovery and
-ownership handling remain future work rather than inspection guarantees.
+the README for current availability and [ownership safety](OWNERSHIP.md) for
+registry-backed removal. Inspection does not establish ownership or scan
+historical links.
 
 | Command | Purpose | Relationship to original rcm |
 | --- | --- | --- |
@@ -255,7 +256,9 @@ Dry-run output should distinguish `LINK` (missing), `OK` (already correct), `CON
 
 **Milestone 2 — Visibility:** `dots ls` and `dots status` reuse the exact same resolver; show path, selected source, and current link state. Useful testable text output; JSON output can wait.
 
-**Milestone 3 — Cleanup:** `dots down --dry-run` and `dots down` remove **only symlinks provably owned by dots**. Consider how ownership is determined when configs change: manifests, strict source-path validation, or explicitly documented behavior. Never delete the contents of the linked file.
+**Milestone 3 — Removal:** `dots down --dry-run` and `dots down` use the approved
+[creation registry and cooperative concurrency policy](OWNERSHIP.md). Never
+infer ownership from source membership or delete source referents/parents.
 
 **Milestone 4 — Import:** `dots add PATH` safely moves/copies/imports source into a chosen source directory; clearly distinguish moves from copies and avoid surprises. Define defaults for choosing a source root.
 
@@ -362,7 +365,8 @@ Use `CHANGELOG.md` consistently for user-visible changes. Keep implementation do
 **Open technical decisions Codex should settle and document rather than guess:**
 
 - TOML decoding is settled: BurntSushi TOML v1.6.0 with unknown-key rejection.
-- What counts as an owned symlink for later updates/deletion; how ownership survives changes to the source order.
+- Ownership/removal is settled in [the approved M3 policy](OWNERSHIP.md):
+  creation records, current-target scope, and cooperative concurrency.
 - Windows is **out of initial scope**; macOS and Linux only.
 - `--force` semantics and backups are **out of initial scope**.
 - License: MIT. The Go module path is `github.com/fernandoaleman/dots`, matching the assigned GitHub repository.
