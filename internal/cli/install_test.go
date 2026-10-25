@@ -9,15 +9,46 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/fernandoaleman/dots/internal/filesystem"
+	"github.com/fernandoaleman/dots/internal/resolver"
 )
 
 func installationConfig(t *testing.T, root, body string) string {
 	t.Helper()
 	t.Setenv("HOME", filepath.Join(root, "home"))
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(root, "xdg"))
+	t.Setenv("XDG_STATE_HOME", filepath.Join(root, "state"))
 	path := filepath.Join(root, "config.toml")
 	fixtureFile(t, path, body)
 	return path
+}
+
+func TestInstallationSummaryCountsCreationBeforeOwnershipFailure(t *testing.T) {
+	plan := resolver.Plan{Links: []resolver.Link{{Source: "/fixture/source", Destination: "/fixture/target/.a"}}}
+	report := filesystem.Report{Results: []filesystem.Result{{Status: "ERROR", Reason: "ownership persistence failed"}}, LinksCreated: 1, DirectoriesCreated: 1}
+	var output, stderr bytes.Buffer
+	if code := writeInstallation(plan, report, nil, &output, &stderr); code != 1 {
+		t.Fatalf("exit=%d: %s %s", code, &output, &stderr)
+	}
+	want := "SUMMARY 1 linked, 0 correct, 0 conflicts, 0 skipped, 0 warnings, 1 errors, 1 directories created, 2 changes made\n"
+	if !strings.HasSuffix(output.String(), want) {
+		t.Fatalf("completed syscall hidden: %s", &output)
+	}
+}
+
+// Mutating commands may update their private registry even with no dotfile
+// changes. Keep assertions over all other fixture entries and their metadata.
+func installationSnapshot(t *testing.T, root string) map[string]string {
+	t.Helper()
+	state := snapshot(t, root)
+	delete(state, root)
+	for name := range state {
+		if name == filepath.Join(root, "state") || strings.HasPrefix(name, filepath.Join(root, "state")+string(filepath.Separator)) {
+			delete(state, name)
+		}
+	}
+	return state
 }
 
 func TestDryRunDoesNotRequirePreparedDirectoryHandles(t *testing.T) {
@@ -28,7 +59,7 @@ func TestDryRunDoesNotRequirePreparedDirectoryHandles(t *testing.T) {
 		t.Fatal(err)
 	}
 	config := installationConfig(t, root, "dotfiles_dirs = ['source']\ntarget_dir = 'target'\n")
-	before := snapshot(t, root)
+	before := installationSnapshot(t, root)
 	if err := os.Chmod(target, 0o300); err != nil {
 		t.Fatal(err)
 	}
@@ -61,7 +92,7 @@ func TestDryRunDoesNotRequirePreparedDirectoryHandles(t *testing.T) {
 	if err := os.Chmod(target, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(before, snapshot(t, root)) {
+	if !reflect.DeepEqual(before, installationSnapshot(t, root)) {
 		t.Fatal("commands modified fixture")
 	}
 }
@@ -139,12 +170,12 @@ func TestRunInstallsSelectedSources(t *testing.T) {
 					}
 				}
 			}
-			installed := snapshot(t, root)
+			installed := installationSnapshot(t, root)
 			output.Reset()
 			if code := Run(args, &output, &stderr); code != 0 {
 				t.Fatalf("repeat failed: %d %s", code, &stderr)
 			}
-			if !strings.HasSuffix(output.String(), fmt.Sprintf("SUMMARY 0 linked, %d correct, 0 conflicts, 0 skipped, %d warnings, 0 errors, 0 directories created, 0 changes made\n", links, warnings)) || !reflect.DeepEqual(installed, snapshot(t, root)) {
+			if !strings.HasSuffix(output.String(), fmt.Sprintf("SUMMARY 0 linked, %d correct, 0 conflicts, 0 skipped, %d warnings, 0 errors, 0 directories created, 0 changes made\n", links, warnings)) || !reflect.DeepEqual(installed, installationSnapshot(t, root)) {
 				t.Fatalf("repeat changed fixture or counts: %s", &output)
 			}
 		})

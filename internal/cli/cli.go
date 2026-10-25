@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fernandoaleman/dots/internal/filesystem"
 	"github.com/fernandoaleman/dots/internal/resolver"
 )
 
@@ -83,6 +84,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 	if err != nil {
 		return fail(stderr, 1, err)
 	}
+	ownership := filesystem.Ownership{Registry: filesystem.StatePath(home, os.Getenv("XDG_STATE_HOME")), Profile: cfg.Path, Target: cfg.TargetDir, Sources: cfg.DotfilesDirs}
 	plan := resolver.Resolve(cfg)
 	if command == "ls" {
 		return list(plan, stdout, stderr)
@@ -92,7 +94,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		return status(plan, results, stdout, stderr)
 	}
 	if !dryRun {
-		return install(plan, destinations, results, stdout, stderr)
+		return install(plan, destinations, results, ownership, stdout, stderr)
 	}
 	var output strings.Builder
 	planned, correct, conflicts := 0, 0, 0
