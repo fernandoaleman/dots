@@ -49,7 +49,7 @@ dotfiles_dirs = [
 # Root destination; do not force XDG paths onto the user's dotfiles.
 target_dir = "~"
 
-# Ignore repo metadata and documentation (apply documented path/glob rules).
+# Ignore repo metadata and documentation (match literal source-root-relative paths).
 excludes = [".git", "README.md", "LICENSE"]
 
 # Duplicate dotted/undotted names in a single source root are nonfatal.
@@ -60,10 +60,11 @@ Schema expectations for the first milestone:
 
 - `dotfiles_dirs`: required, nonempty ordered array of directory paths; first directory has highest priority.
 - `target_dir`: optional destination root, defaulting to the user's home directory.
-- `excludes`: optional array of excluded path patterns; define precise match semantics, at least for exact names, before implementation.
+- `excludes`: optional array of literal original source-root-relative paths, matched before normalization and precedence. Excluded directories prune subtrees. No glob support in Milestone 0.
 - `warn_duplicates`: optional boolean, default `true`. Even when warnings are disabled, dotted-name tie-breaking remains deterministic.
 - Expand leading `~` in *path-valued fields* only; optionally support `${HOME}` as a documented convenience. Do not implement general shell interpolation, command substitution, or environment-variable execution.
-- Resolve relative `--config` paths against the process working directory. Prefer absolute normalized source/target paths internally.
+- Resolve relative `--config` paths against the process working directory. Keep paths absolute while preserving filesystem traversal through symlinks and `..`.
+- Resolve relative source and target paths against the selected configuration file's directory. Reject unknown TOML keys and empty paths. Exclusions must be canonical relative paths; wildcard characters are literal.
 - Use the same schema and validation for an explicitly supplied TOML config, regardless of filename.
 
 **Bootstrapping:** `dots --config /path/to/config.toml up --dry-run` must work before the canonical config exists. Installing or managing `~/.config/dots/config.toml` as a dotfile is allowed, but self-referential links and source/target collisions must be detected safely. The config file must be read before planning or creating any links. Never create configuration automatically as a side effect of a dry run.
@@ -207,9 +208,9 @@ dots/
 └── CONTRIBUTING.md            # optional early; helpful for contributors
 ```
 
-- **`internal/cli` — front door:** Parse subcommands/flags, load config, orchestrate planning/execution, format output. No low-level symlink logic.
-- **`internal/resolver` — brains:** Read the configured source locations, traverse files, normalize source paths, apply ordered precedence and dotted-file tie-breaking, generate a deterministic plan of `{Source, Destination}` plus warnings. This package does **not** modify the filesystem.
-- **`internal/filesystem` — hands:** Inspect existing paths and symlinks (using `os.Lstat`), detect conflicts/broken links, safely create/remove only appropriate links, prepare parent directories, and enforce no-clobber behavior. Writes belong here, not in the resolver.
+- **`internal/cli` — front door:** Parse subcommands/flags, invoke resolver configuration loading and resolution, orchestrate read-only target inspection, and format output. No low-level symlink logic.
+- **`internal/resolver` — brains:** Discover/load TOML configuration, apply exclusions, read the configured source locations, traverse files, normalize source paths, apply ordered precedence and dotted-file tie-breaking, generate a deterministic plan of `{Source, Destination}` plus warnings. This package does **not** modify the filesystem.
+- **`internal/filesystem` — hands:** Perform read-only destination and ancestor inspection using `os.Lstat` and `os.Readlink`, distinguishing missing paths, correct links, conflicts, and broken links. Mutation APIs are deferred beyond Milestone 0.
 
 For the first proof of concept, `filesystem` may only provide nonmutating inspection helpers. Avoid unnecessary interfaces, plugin systems, or abstraction layers. Unit tests live alongside the packages (`*_test.go`). Use `t.TempDir()` for isolated fixtures and never tests that modify the real home directory.
 
@@ -238,8 +239,7 @@ LINK   ~/.gitconfig             -> ~/dotfiles-local/gitconfig
 LINK   ~/.zshrc                 -> ~/dotfiles-local/zshrc
 LINK   ~/.tmux.conf             -> ~/dotfiles/tmux.conf
 LINK   ~/.config/nvim/init.lua  -> ~/dotfiles/config/nvim/init.lua
-WARN   duplicate source in ~/dotfiles: .gitconfig wins over gitconfig
-SUMMARY 4 planned, 1 warning, 0 changes made
+SUMMARY 4 planned, 0 correct, 0 conflicts, 0 warnings, 0 errors, 0 changes made
 ```
 
 Dry-run output should distinguish `LINK` (missing), `OK` (already correct), `CONFLICT` (destination occupied by other content), and eventually `RELINK` (stale managed link) instead of claiming every destination always needs creation.
@@ -300,10 +300,10 @@ Simple build examples:
 
 ```sh
 go build -o dots .
-GOOS=darwin GOARCH=arm64 go build -o dots-darwin-arm64 .
-GOOS=darwin GOARCH=amd64 go build -o dots-darwin-amd64 .
-GOOS=linux GOARCH=amd64 go build -o dots-linux-amd64 .
-GOOS=linux GOARCH=arm64 go build -o dots-linux-arm64 .
+GOOS=darwin GOARCH=arm64 go build -o dist/dots-darwin-arm64 .
+GOOS=darwin GOARCH=amd64 go build -o dist/dots-darwin-amd64 .
+GOOS=linux GOARCH=amd64 go build -o dist/dots-linux-amd64 .
+GOOS=linux GOARCH=arm64 go build -o dist/dots-linux-arm64 .
 ```
 
 Set `CGO_ENABLED=0` for release builds if the code remains pure Go and the target builds support it. Embed version information at build time (e.g., `-ldflags -X ...`) or use Go build information, and have `dots version` report it.
@@ -358,14 +358,45 @@ Use `CHANGELOG.md` consistently for user-visible changes. Keep implementation do
 
 **Open technical decisions Codex should settle and document rather than guess:**
 
-- Exact TOML library and validation policy (especially unknown keys and exclusion patterns); use the documented schema and do not evaluate shell code.
-- Whether missing higher-priority source directories are skipped with a warning or are hard errors.
+- TOML decoding is settled: BurntSushi TOML v1.6.0 with unknown-key rejection.
 - What counts as an owned symlink for later updates/deletion; how ownership survives changes to the source order.
-- Whether to descend into source symlinked directories; how to handle file-vs-directory path conflicts and recursive symlink loops.
 - Windows is **out of initial scope**; macOS and Linux only.
 - `--force` semantics and backups are **out of initial scope**.
-- Formal licensing choice and actual Go module path depend on the eventual repository owner; **do not invent a GitHub username or org**. Use a suitable placeholder until repository details are known.
+- License: MIT. The Go module path is `github.com/fernandoaleman/dots`, matching the assigned GitHub repository.
 
 ## 12. Instructions to local Codex
 
-Implement **only Milestone 0** initially. Prioritize clear Go code and tests over scaffolding or speculative extensibility. Start by creating a clean git repository with the files and CI listed above, implement the TOML config loader, pure deterministic resolver, and read-only dry-run CLI, and demonstrate it with fixture-backed tests. Create the rcm migration guide and keep a running changelog. Make sure `go test ./...`, `go vet ./...`, formatting checks, and a local build pass. Do not implement symlink writes or removal until dry-run behavior is documented and thoroughly tested. After Milestone 0, report the decisions, assumptions, test outcomes, and suggested next steps.
+Implement **only Milestone 0** initially. Prioritize clear Go code and tests over scaffolding or speculative extensibility. Start by creating a clean git repository with the files and CI listed above, implement the TOML config loader, read-only deterministic resolver with pure mapping and selection helpers, and read-only dry-run CLI, and demonstrate it with fixture-backed tests. Create the rcm migration guide and keep a running changelog. Make sure `go test ./...`, `go vet ./...`, formatting checks, and a local build pass. Do not implement symlink writes or removal until dry-run behavior is documented and thoroughly tested. After Milestone 0, report the decisions, assumptions, test outcomes, and suggested next steps.
+
+### Approved Milestone 0 contract
+
+- `cli` owns commands, flags, orchestration, and output.
+- `resolver` owns TOML discovery/loading, source traversal, exclusions,
+  destination mapping, precedence, and structural collision detection.
+- `filesystem` performs read-only destination and ancestor inspection.
+- Dependencies are `main → cli → {resolver, filesystem}`; neither lower
+  package depends on the other. Resolve desired links before inspecting
+  destinations; occupancy never changes the selected source.
+- Missing source roots warn when another usable root exists; otherwise
+  error. Empty roots are usable. Unreadable and non-directory roots error.
+- Exclusions match literal original source-root-relative paths before
+  normalization and precedence. Excluded directories prune subtrees.
+  Glob matching is deferred.
+- Nested source symlinks are opaque entries and are never traversed.
+  Dangling source links error. Configured roots may be symlinks to
+  accessible directories.
+- Detect file/directory structural collisions within and across roots.
+  Leaf precedence cannot hide ancestor/descendant conflicts. Report all
+  participants, block affected entries, and display unrelated entries.
+- Broken destination symlinks are occupied conflicts with a distinct
+  reason. Do not relink or remove anything.
+- Plans and diagnostics are deterministic regardless of enumeration order.
+- Preserve symlink-plus-`..` traversal in configured paths; do not collapse
+  it lexically. Report unresolved traversal beneath missing ancestors.
+- Inspect target-directory case sensitivity and Unicode normalization
+  without writing probe files. Preserve distinctions supported by directory
+  capabilities; block equivalent destinations, including conflicts with
+  empty source directories. If capability queries fail, block potentially
+  ambiguous entries while retaining unrelated entries.
+- Warning-only plans succeed; errors and conflicts return nonzero.
+- Dry-run performs no filesystem modifications.

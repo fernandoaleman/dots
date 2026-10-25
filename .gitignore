@@ -27,3 +27,6 @@ coverage.out
 .env
 .env.local
 /tmp/
+
+# Unrelated local npm artifact; this project uses Go tooling only.
+/package-lock.json

@@ -1,0 +1,45 @@
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: |
+            go.sum
+            Makefile
+            staticcheck.conf
+      - name: Install pinned Staticcheck
+        run: make install-staticcheck
+      - name: Check formatting
+        shell: bash
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            printf '%s\n' "$unformatted"
+            exit 1
+          fi
+      - run: go vet ./...
+      - run: go test ./...
+      - run: staticcheck ./...
+      - run: go build ./...
+      - name: Run prek checks
+        uses: j178/prek-action@1382ad72dea72f9d53832f2bcb65b3e87a947204 # prek-action v3.0.1
+        with:
+          prek-version: '0.4.4'
+          extra-args: --all-files
+          cache: true
