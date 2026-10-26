@@ -37,6 +37,11 @@ type candidate struct {
 
 // Resolve reads source trees without inspecting or modifying destinations.
 func Resolve(cfg Config) Plan {
+	candidates, plan := scanSources(cfg)
+	return resolveCandidates(cfg, candidates, plan)
+}
+
+func scanSources(cfg Config) ([]candidate, Plan) {
 	var plan Plan
 	var candidates []candidate
 	excluded := make(map[string]bool)
@@ -124,6 +129,10 @@ func Resolve(cfg Config) Plan {
 	if usable == 0 {
 		plan.Errors = append(plan.Errors, "no usable source directories")
 	}
+	return candidates, plan
+}
+
+func resolveCandidates(cfg Config, candidates []candidate, plan Plan) Plan {
 	sort.Slice(candidates, func(i, j int) bool {
 		a, b := candidates[i], candidates[j]
 		if a.destination != b.destination {
