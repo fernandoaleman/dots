@@ -32,6 +32,13 @@ symlink state files, a symlink dots directory, corruption, and unsupported
 versions block mutation. State/source overlap and destination/state overlap
 are rejected using physical paths and native name equivalence.
 
+State creation respects the process umask. A mask that removes required owner
+permissions can leave a newly created directory or lock unusable. Bootstrap
+fails before changing managed destinations; it does not automatically chmod,
+delete, or replace these entries. Changing the umask alone will not repair an
+entry already created with unsuitable permissions. Use a mask that preserves
+owner permissions, such as `0022` or `0077`.
+
 The version 1 JSON snapshot requires `version`, `revision`, `unfinished`,
 and `records`. Records contain exact configuration/target locators,
 destination, absolute link text, phase, parent identity, ancestor bindings,
@@ -161,6 +168,17 @@ Do not replay a temporary snapshot, manually set `owned`, or recreate/delete
 a lock while a process may hold it. Fix ordinary access problems without
 changing unrelated permissions. Corrupt/unsupported state and missing locks
 require deliberate manual recovery; dots never resets them automatically.
+
+For a known failed first-time bootstrap, first stop all dots processes and
+other writers. Verify that no authoritative registry was published and that
+the affected entries are the new, user-owned directories or single-link regular
+lock file from that failed attempt, with no symlink substitutions. Only then
+restore required permissions on those specific entries in place: `0700` for
+directories and `0600` for the lock. Preserve the lock's identity; never delete
+or recreate it. Retry with an owner-permission-preserving umask. Do not apply
+this procedure to unverified entries or unrelated HOME/XDG ancestors; an
+existing registry or uncertain provenance requires the broader recovery review
+above. Bootstrap tests use only disposable fixtures for this manual repair.
 
 Present invalidated or legacy links require independent user verification
 before any manual removal. M3 has no adoption, force, or repair command.

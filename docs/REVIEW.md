@@ -123,6 +123,7 @@ automatic adoption were explicitly excluded.
 | Inspection uncertainty reporting | Copilot identified an empty-records message after failed ownership inspection; require success before asserting empty state, with actual/dry-run error, empty-state, destination-preservation, and no-write regressions |
 | Cross-scope removal claims | Copilot identified selected-only collision checks; compare all recorded slots/routes at preflight and before unlink, without visiting historical targets. Test case/Unicode equivalence, capability failures, distinct names, historical preservation, and late capability changes |
 | Registry read diagnostics | Copilot identified a nil read-error diagnostic for oversized state; distinguish read failures from the 16 MiB limit, with no-mutation tests for both removal modes |
+| Bootstrap permissions | Copilot's summary mentioned restrictive umasks for new directories/locks without detailed findings. Existing behavior fails closed; subprocess fixtures verify no destination changes, no automatic permission repair, retained lock identity, and successful isolated manual recovery |
 | Recovery coverage | Phase-targeted persistence failures, actual child-process interruptions, independent command contention, and cross-profile/historical invalidation fixtures |
 | Read-only behavior | Snapshot tests include absent, malformed, unfinished, unsafe, and locked state; inspection commands remain independent of ownership state |
 

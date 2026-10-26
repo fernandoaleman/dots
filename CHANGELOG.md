@@ -4,6 +4,8 @@
 
 ### Added
 
+- Isolated restrictive-umask bootstrap tests and documented permission recovery
+  for newly created ownership directories and stable locks.
 - Registry-backed `dots down` and strictly read-only `dots down --dry-run`,
   with current-target selection, recorded identity checks, and partial-failure
   reporting. Newly created links gain ownership; existing links are never adopted.

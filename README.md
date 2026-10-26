@@ -146,6 +146,11 @@ Private state uses `0700` directories and `0600` files. Existing M1/M2 and
 manual links remain untracked even when `up` reports `OK`: target equivalence
 does not establish ownership. There is no adoption, force, or relinking.
 
+A restrictive umask that removes owner permissions can make first-time state
+creation fail, leaving incomplete private state while preserving managed paths.
+dots does not automatically repair its permissions. See the
+[bootstrap recovery procedure](docs/OWNERSHIP.md) before retrying.
+
 Removal selects the current configuration and target. Historical targets
 remain recorded without automatic removal. Root ordering, exclusions,
 missing sources, and broken referents do not redefine ownership; `down`

@@ -35,10 +35,19 @@ func TestRestrictiveUmaskPreservesRegistry(t *testing.T) {
 		// Umask is process-wide: change it only in this isolated child.
 		unix.Umask(mask)
 		var operationErr error
+		changes := 0
 		if mode == "up" {
-			_, operationErr = InstallOwned(destinations, options)
+			report, err := InstallOwned(destinations, options)
+			operationErr, changes = err, report.LinksCreated+report.DirectoriesCreated
 		} else {
-			_, operationErr = Down(options, false)
+			report, err := Down(options, false)
+			operationErr, changes = err, report.Removed
+		}
+		if os.Getenv("DOTS_UMASK_BOOTSTRAP") == "1" {
+			if operationErr == nil || changes != 0 {
+				t.Fatalf("bootstrap must fail before destination changes: changes=%d err=%v", changes, operationErr)
+			}
+			return
 		}
 		if mask&0o600 == 0 {
 			if operationErr != nil {
@@ -107,6 +116,104 @@ func TestRestrictiveUmaskPreservesRegistry(t *testing.T) {
 					t.Fatalf("registry unusable after rejection: %+v %v", report, err)
 				}
 			})
+		}
+	}
+}
+
+func TestRestrictiveUmaskBootstrapRecovery(t *testing.T) {
+	for _, stage := range []string{"state ancestor", "dots directory", "lock"} {
+		for _, command := range []string{"up", "down"} {
+			for _, mask := range []int{0o200, 0o400} {
+				t.Run(fmt.Sprintf("%s/%s/%04o", stage, command, mask), func(t *testing.T) {
+					options, destinations := ownedFixture(t, ".a")
+					fixtureFile(t, filepath.Join(options.Target, "user-file"))
+					fixtureLink(t, destinations[0].Source, filepath.Join(options.Target, ".legacy"))
+					stateRoot := filepath.Dir(filepath.Dir(options.Registry))
+					artifact, permissions := stateRoot, os.FileMode(0o700)
+					if stage != "state ancestor" {
+						if err := os.Mkdir(stateRoot, 0o700); err != nil {
+							t.Fatal(err)
+						}
+						artifact = filepath.Dir(options.Registry)
+					}
+					if stage == "lock" {
+						if err := os.Mkdir(artifact, 0o700); err != nil {
+							t.Fatal(err)
+						}
+						artifact, permissions = filepath.Join(artifact, "ownership.lock"), 0o600
+					}
+					// Only this disposable fixture's failed bootstrap entry is repaired.
+					t.Cleanup(func() { _ = os.Chmod(artifact, permissions) })
+					sourcesBefore, targetBefore := treeState(t, options.Sources[0]), treeState(t, options.Target)
+					encodedOptions, err := json.Marshal(options)
+					if err != nil {
+						t.Fatal(err)
+					}
+					encodedDestinations, err := json.Marshal(destinations)
+					if err != nil {
+						t.Fatal(err)
+					}
+					ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+					defer cancel()
+					child := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestRestrictiveUmaskPreservesRegistry$")
+					child.Env = append(os.Environ(), "DOTS_UMASK_BOOTSTRAP=1", "DOTS_UMASK_COMMAND="+command,
+						fmt.Sprintf("DOTS_UMASK=%o", mask), "DOTS_UMASK_OPTIONS="+string(encodedOptions), "DOTS_UMASK_DESTINATIONS="+string(encodedDestinations))
+					if output, err := child.CombinedOutput(); err != nil {
+						t.Fatalf("bootstrap child: %s %v", output, err)
+					}
+					created, err := os.Lstat(artifact)
+					if err != nil || created.Mode().Perm() != permissions&^os.FileMode(mask) {
+						t.Fatalf("unexpected bootstrap artifact: %v %v", created, err)
+					}
+					if r, err := openRegistry(options, true, nativeRegistryOps()); err == nil {
+						_ = r.Close()
+						t.Fatal("retry silently repaired unsuitable state permissions")
+					}
+					if !reflect.DeepEqual(sourcesBefore, treeState(t, options.Sources[0])) || !reflect.DeepEqual(targetBefore, treeState(t, options.Target)) {
+						t.Fatal("failed bootstrap or retry changed source/user entries")
+					}
+					unchanged, err := os.Lstat(artifact)
+					if err != nil || !os.SameFile(created, unchanged) || created.Mode() != unchanged.Mode() {
+						t.Fatal("retry replaced or chmodded the failed bootstrap entry")
+					}
+					if err := os.Chmod(artifact, permissions); err != nil {
+						t.Fatal(err)
+					}
+					repaired, err := os.Lstat(artifact)
+					if err != nil || !os.SameFile(created, repaired) {
+						t.Fatal("fixture recovery replaced the bootstrap entry")
+					}
+					if _, err := os.Lstat(options.Registry); !errors.Is(err, os.ErrNotExist) {
+						t.Fatalf("failed bootstrap published ownership: %v", err)
+					}
+					if stage == "lock" {
+						entries, err := os.ReadDir(filepath.Dir(options.Registry))
+						if err != nil || len(entries) != 1 || entries[0].Name() != "ownership.lock" {
+							t.Fatalf("unexpected bootstrap state: %v %v", entries, err)
+						}
+					}
+					// Normal permissions allow a subsequent invocation to initialize
+					// state and record only its own newly created destination.
+					installFixture(t, options, destinations)
+					if stage == "lock" {
+						retained, err := os.Lstat(artifact)
+						if err != nil || !os.SameFile(created, retained) {
+							t.Fatal("retry replaced the stable lock")
+						}
+					}
+					if report, err := Down(options, false); err != nil || report.Removed != 1 {
+						t.Fatalf("fixture recovery failed: %+v %v", report, err)
+					}
+					// The successful install/remove pair changes the target root's
+					// timestamp; pre-existing children must remain unchanged.
+					targetAfter := treeState(t, options.Target)
+					delete(targetBefore, options.Target)
+					delete(targetAfter, options.Target)
+					if !reflect.DeepEqual(targetBefore, targetAfter) || !reflect.DeepEqual(sourcesBefore, treeState(t, options.Sources[0])) {
+						t.Fatal("recovery changed pre-existing user entries")
+					}
+				})
+			}
 		}
 	}
 }
