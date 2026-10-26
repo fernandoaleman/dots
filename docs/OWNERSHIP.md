@@ -127,6 +127,12 @@ Historical targets remain recorded/reported without automatic visits or
 removals. Explicitly returning the same config to a previous target selects
 its records again, subject to full validation.
 
+Removal compares selected paths with all recorded physical slots and ancestor
+bindings, including other profiles and historical targets. An overlapping claim
+or unavailable required name-equivalence capability blocks removal. Historical
+locators are not traversed for these comparisons; only selected paths are opened.
+Repeat the claim check immediately before unlinking.
+
 Preflight the complete selected plan before unlinking. Reject blocked or
 changed ancestry and observed identity/text changes. Protect current source
 roots. Immediately before unlinking, revalidate state/lock bindings, parent

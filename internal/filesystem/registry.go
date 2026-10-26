@@ -115,6 +115,7 @@ const registrySizeLimit = 16 << 20
 
 // registryOps exposes narrow per-invocation failure seams, never global hooks.
 type registryOps struct {
+	nameRules  func(int) (nameRules, error)
 	sync       func(int) error
 	rename     func(int, string, int, string) error
 	write      func(*os.File, []byte) (int, error)
@@ -124,7 +125,7 @@ type registryOps struct {
 }
 
 func nativeRegistryOps() registryOps {
-	return registryOps{sync: unix.Fsync, rename: unix.Renameat, write: func(f *os.File, b []byte) (int, error) { return f.Write(b) }, closeFile: func(f *os.File) error { return f.Close() }, unlink: unix.Unlinkat}
+	return registryOps{nameRules: directoryNameRulesFD, sync: unix.Fsync, rename: unix.Renameat, write: func(f *os.File, b []byte) (int, error) { return f.Write(b) }, closeFile: func(f *os.File) error { return f.Close() }, unlink: unix.Unlinkat}
 }
 
 type registry struct {
@@ -287,8 +288,11 @@ func (r *registry) load() error {
 		return err
 	}
 	data, err := io.ReadAll(io.LimitReader(f, registrySizeLimit+1))
-	if err != nil || len(data) > registrySizeLimit {
-		return fmt.Errorf("read ownership registry (limit 16 MiB): %v", err)
+	if err != nil {
+		return fmt.Errorf("read ownership registry: %w", err)
+	}
+	if len(data) > registrySizeLimit {
+		return fmt.Errorf("ownership registry exceeds 16 MiB size limit")
 	}
 	if err := strictJSON(data); err != nil {
 		return fmt.Errorf("invalid ownership registry: %w", err)

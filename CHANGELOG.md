@@ -40,6 +40,9 @@
 
 ### Fixed
 
+- Block removal when another recorded profile or target claims an equivalent
+  physical destination, including failed name-capability checks.
+- Report oversized ownership registries explicitly rather than as nil read errors.
 - Suppress the empty-ownership message when removal inspection fails, preserving
   the distinction between unknown ownership and successfully inspected empty state.
 - Reject ownership snapshots with umask-restricted permissions before publication,

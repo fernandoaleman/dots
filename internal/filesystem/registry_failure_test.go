@@ -391,6 +391,26 @@ func TestSnapshotSizeLimitPreservesReadableAuthority(t *testing.T) {
 	}
 }
 
+func TestOversizedRegistryReadDiagnostic(t *testing.T) {
+	for _, dryRun := range []bool{true, false} {
+		t.Run(fmt.Sprintf("dry-run=%v", dryRun), func(t *testing.T) {
+			options, destinations := ownedFixture(t, ".a")
+			installFixture(t, options, destinations)
+			if err := os.WriteFile(options.Registry, bytes.Repeat([]byte(" "), registrySizeLimit+1), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			before := treeState(t, filepath.Dir(options.Profile))
+			report, err := Down(options, dryRun)
+			if err == nil || !strings.Contains(err.Error(), "exceeds 16 MiB") || strings.Contains(err.Error(), "<nil>") || report.Removed != 0 {
+				t.Fatalf("size failure misreported: %+v %v", report, err)
+			}
+			if !reflect.DeepEqual(before, treeState(t, filepath.Dir(options.Profile))) {
+				t.Fatal("oversized-registry rejection modified the fixture")
+			}
+		})
+	}
+}
+
 func TestExactSchemaRejectsCaseVariants(t *testing.T) {
 	options, destinations := ownedFixture(t, ".a")
 	installFixture(t, options, destinations)

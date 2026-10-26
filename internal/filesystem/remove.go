@@ -76,6 +76,9 @@ func down(options Ownership, dryRun bool, ops registryOps) (report RemovalReport
 			problem = errors.Join(problem, fmt.Errorf("recorded destination collision: %s", collisions[index].Reason))
 		}
 		if problem == nil {
+			problem = r.checkRemovalClaims(p, record)
+		}
+		if problem == nil {
 			problem = options.protect(entry.Destination)
 		}
 		switch {
@@ -121,6 +124,30 @@ func down(options Ownership, dryRun bool, ops registryOps) (report RemovalReport
 	return report, r.finish()
 }
 
+// Historical locators need not remain accessible. Compare their recorded slots
+// and routes against the selected entry's pinned namespace, without visiting
+// historical targets or inferring authority from their current occupants.
+func (r *registry) checkRemovalClaims(p *PreparedPlan, record ownershipRecord) error {
+	parent, missing, routes, err := p.walk(parentPath(string(record.Destination)))
+	if err != nil {
+		return err
+	}
+	entry := preparedEntry{destination: Destination{Path: string(record.Destination)}, parent: parent, missing: missing, routes: routes}
+	for _, other := range r.data.Records {
+		if other.Destination == record.Destination {
+			continue
+		}
+		shared, err := recordedClaimOverlap(p, entry, other, r.ops.nameRules)
+		if err != nil {
+			return fmt.Errorf("compare recorded ownership claim %q: %w", other.Destination, err)
+		}
+		if shared {
+			return fmt.Errorf("destination overlaps another recorded ownership claim: %q", other.Destination)
+		}
+	}
+	return nil
+}
+
 func skipRemovalPlans(entries []Removal) {
 	for i := range entries {
 		if entries[i].Status == "REMOVE" {
@@ -147,6 +174,9 @@ func (r *registry) removeOne(p *PreparedPlan, record ownershipRecord, report *Re
 	if err != nil {
 		return errors.Join(err, r.invalidate(record.Destination))
 	}
+	if err := r.checkRemovalClaims(p, record); err != nil {
+		return errors.Join(err, r.invalidate(record.Destination))
+	}
 	if err := r.options.protect(string(record.Destination)); err != nil {
 		return err
 	}
@@ -168,6 +198,9 @@ func (r *registry) removeOne(p *PreparedPlan, record ownershipRecord, report *Re
 		missing, err = inspectRecord(p, record)
 		if err != nil || missing {
 			return errors.Join(fmt.Errorf("destination changed before removal: %q", record.Destination), err, r.invalidate(record.Destination))
+		}
+		if err := r.checkRemovalClaims(p, record); err != nil {
+			return errors.Join(err, r.invalidate(record.Destination))
 		}
 		if err := r.options.protect(string(record.Destination)); err != nil {
 			return err

@@ -53,6 +53,127 @@ func installFixture(t *testing.T, options Ownership, destinations []Destination)
 	}
 }
 
+func TestRemovalChecksUnselectedOwnershipClaims(t *testing.T) {
+	for _, scope := range []string{"other profile", "historical target"} {
+		for _, mode := range []string{"case equivalent", "normalization equivalent", "distinct", "capability failure", "unrelated on capability failure"} {
+			for _, dryRun := range []bool{true, false} {
+				t.Run(fmt.Sprintf("%s/%s/dry-run=%v", scope, mode, dryRun), func(t *testing.T) {
+					name, otherName := ".a", ".A"
+					if mode == "normalization equivalent" {
+						name, otherName = ".é", ".e\u0301"
+					} else if mode == "unrelated on capability failure" {
+						otherName = ".unrelated"
+					}
+					options, destinations := ownedFixture(t, name)
+					installFixture(t, options, destinations)
+					var historical ownershipRecord
+					editRegistry(t, options, func(s *snapshot) {
+						historical = s.Records[0]
+						if scope == "other profile" {
+							historical.Profile += ".other"
+						} else {
+							historical.Target = pathBytes(options.Target + "/../unavailable-history")
+						}
+						historical.Destination = historical.Target + "/" + pathBytes(otherName)
+						// Retain the recorded physical slot while the historical
+						// locator is unavailable; removal must not visit that path.
+						s.Records = append(s.Records, historical)
+					})
+					ops := nativeRegistryOps()
+					queries := 0
+					ops.nameRules = func(int) (nameRules, error) {
+						queries++
+						if strings.Contains(mode, "capability failure") {
+							return nameRules{}, unix.EIO
+						}
+						return nameRules{caseSensitive: mode == "distinct", normalizationSensitive: mode == "distinct"}, nil
+					}
+					before := treeState(t, filepath.Dir(options.Profile))
+					report, err := down(options, dryRun, ops)
+					blocked := mode != "distinct" && mode != "unrelated on capability failure"
+					if (err != nil) != blocked || len(report.Entries) != 1 {
+						t.Fatalf("claim check: %+v %v", report, err)
+					}
+					if blocked {
+						if report.Removed != 0 || report.Entries[0].Status != "PRESERVE" || !strings.Contains(report.Entries[0].Reason, "ownership claim") {
+							t.Fatalf("ambiguous ownership allowed removal: %+v", report)
+						}
+						assertLink(t, destinations[0].Path, destinations[0].Source)
+					} else if !dryRun && report.Removed != 1 {
+						t.Fatalf("unrelated history blocked removal: %+v", report)
+					}
+					if mode == "unrelated on capability failure" && queries != 0 {
+						t.Fatal("queried capabilities for unrelated names")
+					}
+					if mode != "unrelated on capability failure" && queries == 0 {
+						t.Fatal("name-equivalence capability was not checked")
+					}
+					if dryRun && !reflect.DeepEqual(before, treeState(t, filepath.Dir(options.Profile))) {
+						t.Fatal("removal preview modified the fixture")
+					}
+					state := ownershipSnapshot(t, options)
+					found := false
+					for _, record := range state.Records {
+						if record.Destination == historical.Destination {
+							found = true
+							if !reflect.DeepEqual(record, historical) {
+								t.Fatal("historical ownership was changed")
+							}
+						}
+					}
+					if !found {
+						t.Fatal("historical ownership was discarded")
+					}
+				})
+			}
+		}
+	}
+}
+
+func TestRemovalRechecksRecordedClaimsBeforeUnlink(t *testing.T) {
+	for _, failure := range []bool{false, true} {
+		t.Run(fmt.Sprintf("capability-failure=%v", failure), func(t *testing.T) {
+			options, destinations := ownedFixture(t, ".a")
+			installFixture(t, options, destinations)
+			editRegistry(t, options, func(s *snapshot) {
+				other := s.Records[0]
+				other.Profile += ".other"
+				other.Destination = pathBytes(filepath.Join(options.Target, ".A"))
+				s.Records = append(s.Records, other)
+			})
+			ops := nativeRegistryOps()
+			late, checks := false, 0
+			ops.checkpoint = func(string, string) { late = true }
+			ops.nameRules = func(int) (nameRules, error) {
+				checks++
+				if late && failure {
+					return nameRules{}, unix.EIO
+				}
+				return nameRules{caseSensitive: !late, normalizationSensitive: true}, nil
+			}
+			unlinkCalls := 0
+			ops.unlink = func(int, string, int) error {
+				unlinkCalls++
+				return unix.EIO
+			}
+			report, err := down(options, false, ops)
+			if err == nil || !late || checks < 3 || unlinkCalls != 0 || report.Removed != 0 || report.Entries[0].Status != "ERROR" {
+				t.Fatalf("late claim change missed: late=%v checks=%d unlinks=%d report=%+v err=%v", late, checks, unlinkCalls, report, err)
+			}
+			assertLink(t, destinations[0].Path, destinations[0].Source)
+			state := ownershipSnapshot(t, options)
+			if !state.Unfinished || len(state.Records) != 2 {
+				t.Fatalf("uncertain ownership evidence lost: %+v", state)
+			}
+			for _, record := range state.Records {
+				if record.Destination == pathBytes(destinations[0].Path) && record.Phase != "invalidated" {
+					t.Fatal("late conflict retained removal authority")
+				}
+			}
+		})
+	}
+}
+
 func TestOwnershipPathDiscovery(t *testing.T) {
 	for _, xdg := range []string{"", "relative", "/custom/state", "/alias/../state"} {
 		want := "/home/example/.local/state/dots/ownership.json"

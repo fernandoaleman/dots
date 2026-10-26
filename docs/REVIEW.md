@@ -121,6 +121,8 @@ automatic adoption were explicitly excluded.
 | Source-boundary error classification | Copilot identified lost ENOTDIR identity when a source directory becomes a file; preserve the classified error so recorded broken links remain removable, with no-write and permission-error regressions |
 | Snapshot permissions | Copilot identified that owner-restricting umasks could publish unusable state; validate each new snapshot before publication, with isolated up/down subprocess tests preserving prior registry bytes, identity, permissions, and removal authority |
 | Inspection uncertainty reporting | Copilot identified an empty-records message after failed ownership inspection; require success before asserting empty state, with actual/dry-run error, empty-state, destination-preservation, and no-write regressions |
+| Cross-scope removal claims | Copilot identified selected-only collision checks; compare all recorded slots/routes at preflight and before unlink, without visiting historical targets. Test case/Unicode equivalence, capability failures, distinct names, historical preservation, and late capability changes |
+| Registry read diagnostics | Copilot identified a nil read-error diagnostic for oversized state; distinguish read failures from the 16 MiB limit, with no-mutation tests for both removal modes |
 | Recovery coverage | Phase-targeted persistence failures, actual child-process interruptions, independent command contention, and cross-profile/historical invalidation fixtures |
 | Read-only behavior | Snapshot tests include absent, malformed, unfinished, unsafe, and locked state; inspection commands remain independent of ownership state |
 

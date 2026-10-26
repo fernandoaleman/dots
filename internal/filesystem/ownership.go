@@ -234,7 +234,7 @@ func (r *registry) checkInstallation(p *PreparedPlan) error {
 	for _, entry := range p.entries {
 		for index := 0; index < len(r.data.Records); index++ {
 			record := &r.data.Records[index]
-			same, err := recordedClaimOverlap(p, entry, *record)
+			same, err := recordedClaimOverlap(p, entry, *record, r.ops.nameRules)
 			if err != nil {
 				return err
 			}
@@ -276,7 +276,7 @@ func (r *registry) checkInstallation(p *PreparedPlan) error {
 
 // Compare recorded physical slots with the current pinned namespace. Never
 // traverse an unrelated historical target merely to exclude its claim.
-func recordedClaimOverlap(p *PreparedPlan, entry preparedEntry, record ownershipRecord) (bool, error) {
+func recordedClaimOverlap(p *PreparedPlan, entry preparedEntry, record ownershipRecord, rulesAt func(int) (nameRules, error)) (bool, error) {
 	oldParent, oldName := record.Parent, filepath.Base(string(record.Destination))
 	parent, name := idOfDirectory(entry.parent), filepath.Base(entry.destination.Path)
 	if len(entry.missing) != 0 {
@@ -296,7 +296,7 @@ func recordedClaimOverlap(p *PreparedPlan, entry preparedEntry, record ownership
 		if dir == nil {
 			return false, fmt.Errorf("ownership claim directory unavailable")
 		}
-		rules, err := directoryNameRulesFD(dir.fd)
+		rules, err := rulesAt(dir.fd)
 		return equivalentName(x, y, rules), err
 	}
 	if record.Destination == pathBytes(entry.destination.Path) {
