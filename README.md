@@ -7,8 +7,9 @@ or supported by thoughtbot.
 `dots up` installs missing symbolic links and necessary parent directories,
 preserving existing content. `dots up --dry-run` previews the plan; `dots ls`
 lists selected mappings, and `dots status` inspects current destinations.
-`dots up --dry-run`, `dots ls`, and `dots status` are deterministic and
-read-only.
+`dots down` removes eligible recorded links; `dots down --dry-run` previews
+removal. Both dry-runs, `dots ls`, and `dots status` are deterministic and
+read-only. Legacy or manually created links are never adopted automatically.
 
 ## Development and usage
 
@@ -61,11 +62,11 @@ gofmt and other hooks retain their behavior.
 Dependency-only and lint-configuration-only commits do not trigger this
 Go-file hook. `make lint` and CI still check the module unconditionally.
 
-`--config` works before or after `up`, `ls`, and `status`. On `up`, `-n`
+`--config` works before or after `up`, `down`, `ls`, and `status`. On `up` and `down`, `-n`
 aliases `--dry-run`. Use `dots --help` or a command's `--help` for usage.
 `ls` and `status` are inherently read-only and reject `--dry-run`, `-n`,
 and installation-only flags. JSON output is not available.
-`down`, `add`, and other future commands remain unavailable.
+`add` and other future commands remain unavailable.
 
 The target platforms are macOS and Linux on arm64 and amd64. CI uses the
 Go version declared in `go.mod` and checks formatting, vet, tests,
@@ -85,6 +86,7 @@ mkdir -p "$dots_fixture/local" "$dots_fixture/shared/config/nvim"
 printf 'personal\n' > "$dots_fixture/local/gitconfig"
 printf 'shared\n' > "$dots_fixture/shared/.gitconfig"
 printf 'set number\n' > "$dots_fixture/shared/config/nvim/init.lua"
+export XDG_STATE_HOME="$dots_fixture/state"
 
 cat > "$dots_fixture/config.toml" <<'EOF'
 dotfiles_dirs = ["local", "shared"]
@@ -111,10 +113,66 @@ go run . --config "$dots_fixture/config.toml" up
 go run . --config "$dots_fixture/config.toml" up
 ```
 
+The fixture also isolates ownership state through `XDG_STATE_HOME`.
 The first invocation creates two real symlinks and three parent directories.
-The second reports two correct links and zero changes. Source contents are
+The second reports two correct links and zero destination changes. Source contents are
 never copied. The sample files remain in the temporary directory for
 inspection and can be discarded afterward.
+
+## Removing recorded links
+
+Using the same disposable fixture and isolated state directory:
+
+```sh
+go run . --config "$dots_fixture/config.toml" down --dry-run
+go run . --config "$dots_fixture/config.toml" down
+```
+
+The preview shows `REMOVE` for eligible links. Execution shows `REMOVED`;
+`MISSING` describes absent recorded destinations, `PRESERVE` describes
+unresolved/changed entries, and `ERROR`/`SKIP` report failures and unattempted
+work. Output is sorted by destination. Preflight conflicts prevent all
+removals; runtime failures retain partial success. Source referents and
+parent directories are never cleaned up.
+
+| Command | Exit 0 | Exit 1 | Exit 2 |
+| --- | --- | --- | --- |
+| `down`, `down --dry-run` | Successful recorded plan/removal, including no records or verified missing entries; warnings alone permitted | Preserved conflicts, state/configuration/inspection failures, partial failure, or output failure | Invalid usage |
+
+Only newly created links are tracked in
+`$XDG_STATE_HOME/dots/ownership.json`, defaulting to
+`~/.local/state/dots/ownership.json` for unset, empty, or relative values.
+Private state uses `0700` directories and `0600` files. Existing M1/M2 and
+manual links remain untracked even when `up` reports `OK`: target equivalence
+does not establish ownership. There is no adoption, force, or relinking.
+
+A restrictive umask that removes owner permissions can make first-time state
+creation fail, leaving incomplete private state while preserving managed paths.
+dots does not automatically repair its permissions. See the
+[bootstrap recovery procedure](docs/OWNERSHIP.md) before retrying.
+
+Removal selects the current configuration and target. Historical targets
+remain recorded without automatic removal. Root ordering, exclusions,
+missing sources, and broken referents do not redefine ownership; `down`
+loads configuration without scanning sources. Recorded broken destination
+links remain eligible when their own identity and ancestry match.
+
+**External processes must not modify affected destinations or ancestors
+during `up` creation/registration or `down` validation/removal.** The stable
+registry lock coordinates dots processes, not arbitrary filesystem writers.
+Descriptor-relative operations and immediate identity checks cannot protect
+against replacement after the final check.
+
+Interrupted creation never grants ownership automatically. An unfinished
+transaction conservatively invalidates prior removal authority; intact
+links may therefore need manual recovery. Corrupt/unsupported state fails
+without automatic reset. Uncertain removals retain records; completed calls
+are counted even when later persistence fails. Dry-run never initializes or
+locks state, performs recovery, or writes temporary files. Actual commands
+can update bookkeeping while reporting zero destination changes.
+
+See [ownership, transactions, and recovery](docs/OWNERSHIP.md) for state
+transitions, permissions, filesystem limits, and the manual recovery policy.
 
 ## Listing and status
 
@@ -265,7 +323,7 @@ merge, but a file cannot occupy a required directory's destination.
 
 Warnings and source diagnostics follow the entries. Structural conflicts
 retain their participants and do not hide unrelated entries. No links
-are automatically replaced or removed, including broken links.
+are automatically replaced or removed by `up`, including broken links.
 
 The executable exits 0 for clean or warning-only plans, 1 for runtime
 errors or conflicts, and 2 for invalid usage. `--force` is unavailable.
@@ -278,14 +336,15 @@ absolute or relative links are left unchanged. Files, directories, wrong
 links, and broken links are conflicts; nothing is automatically replaced.
 
 Installation validates the entire plan before writing. Any source error,
-conflict, or preparation failure prevents all changes, including parent
+conflict, or preparation failure prevents all destination changes, including parent
 creation. Warnings alone permit installation. Dry-run retains its read-only
 inspection path; it cannot guarantee later write permissions or resources.
 
 The filesystem package prepares directory handles, then creates parents and
 symlinks relative to those handles. The pinned `golang.org/x/sys v0.35.0`
 dependency supplies macOS/Linux primitives while retaining Go 1.23 support.
-No filesystem framework or ownership manifest is used.
+The filesystem package also maintains the private ownership registry;
+no filesystem framework is used.
 
 Existing directory symlinks are accepted, including those resolving outside
 `target_dir`. Their resolved directory identities are pinned. Newly
@@ -325,8 +384,9 @@ pathname writes.
 
 See [the handoff](docs/HANDOFF.md) for requirements and
 [migration from rcm](docs/MIGRATING_FROM_RCM.md) for manual migration.
-Ownership tracking, replacement, cleanup, import, and releases remain future
-milestones.
+See [ownership and removal safety](docs/OWNERSHIP.md) for the registry-backed
+installation/removal contract. Replacement, broad cleanup, import, and
+releases remain outside this milestone.
 
 ## License
 

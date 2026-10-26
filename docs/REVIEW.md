@@ -98,3 +98,39 @@ build, race tests, and prek passed, including the new untracked files. Proposed
 commit messages passed the committed hook. Go 1.23 tests, Linux vet, and supported
 cross-builds passed. These are local review-readiness results; native macOS/Linux
 CI and formal closure follow the approved commit/push/PR/merge workflow.
+
+## Milestone 3 design and implementation reviews
+
+The user approved a private creation registry and cooperative concurrency
+during both installation/registration and removal. Architecture and safety
+specialists reviewed the transaction protocol before mutation implementation.
+Their unfinished-transaction refinement prevents failed revocation persistence
+from silently reactivating old authority. Receipt/quarantine designs and
+automatic adoption were explicitly excluded.
+
+| Finding family | Resolution and verification |
+| --- | --- |
+| Uncertain authority | Durable unfinished barrier precedes validation; interrupted work invalidates prior authority, and occupied creation intents never promote |
+| Schema ambiguity | Exact complete key sets reject duplicates, capitalization variants, unknown/null fields, and missing required evidence |
+| Snapshot capacity | Read/write limits agree; every publication reserves the worst-case global invalidation encoding, with extra fingerprint capacity before creation |
+| Scope and aliases | Historical claims use recorded slot identities without visiting old paths; source protection covers both root aliases and resolved contents |
+| Removal boundary | Use the validated pinned parent directly, retaining immediate identity/text/ancestry checks and the documented final-name race limitation |
+| Failure reporting | Preserve every selected row, successful syscall counts, recovery warnings on early returns, and completed/unattempted distinctions |
+| Failed preflight authority | Local Codex review identified a CLI bypass; failed actual installation preflights now validate/revoke existing ownership without destination writes |
+| Ancestor durability | Pre-push review identified missing synchronization of newly created parent bindings; synchronize each containing directory and test failures at every level before ownership publication |
+| Source-boundary error classification | Copilot identified lost ENOTDIR identity when a source directory becomes a file; preserve the classified error so recorded broken links remain removable, with no-write and permission-error regressions |
+| Snapshot permissions | Copilot identified that owner-restricting umasks could publish unusable state; validate each new snapshot before publication, with isolated up/down subprocess tests preserving prior registry bytes, identity, permissions, and removal authority |
+| Inspection uncertainty reporting | Copilot identified an empty-records message after failed ownership inspection; require success before asserting empty state, with actual/dry-run error, empty-state, destination-preservation, and no-write regressions |
+| Cross-scope removal claims | Copilot identified selected-only collision checks; compare all recorded slots/routes at preflight and before unlink, without visiting historical targets. Test case/Unicode equivalence, capability failures, distinct names, historical preservation, and late capability changes |
+| Registry read diagnostics | Copilot identified a nil read-error diagnostic for oversized state; distinguish read failures from the 16 MiB limit, with no-mutation tests for both removal modes |
+| Bootstrap permissions | Copilot's summary mentioned restrictive umasks for new directories/locks without detailed findings. Existing behavior fails closed; subprocess fixtures verify no destination changes, no automatic permission repair, retained lock identity, and successful isolated manual recovery |
+| Recovery coverage | Phase-targeted persistence failures, actual child-process interruptions, independent command contention, and cross-profile/historical invalidation fixtures |
+| Read-only behavior | Snapshot tests include absent, malformed, unfinished, unsafe, and locked state; inspection commands remain independent of ownership state |
+
+The lead incorporated verified findings and remained the only editor.
+Final independent reviews from architecture, testing, and safety specialists
+reported no remaining actionable findings or material coverage gaps under
+the approved model. Specialists did not execute tests or modify files.
+Process-exit fixtures test interruption recovery, not universal power-loss
+durability. Required local validation and the closeout audit are reported
+separately; formal completion still requires approved publication and CI.

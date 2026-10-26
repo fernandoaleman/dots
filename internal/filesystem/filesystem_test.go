@@ -1,12 +1,27 @@
 package filesystem
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
 )
+
+func TestPhysicalDestinationPreservesNonDirectoryErrors(t *testing.T) {
+	root := t.TempDir()
+	blocked := filepath.Join(root, "file")
+	fixtureFile(t, blocked)
+	alias := filepath.Join(root, "alias")
+	fixtureLink(t, "file", alias)
+	for _, name := range []string{filepath.Join(blocked, "entry"), filepath.Join(alias, "entry"), filepath.Join(blocked, "nested", "entry")} {
+		if _, err := physicalDestination(name); !errors.Is(err, syscall.ENOTDIR) {
+			t.Errorf("non-directory error classification lost for %q: %v", name, err)
+		}
+	}
+}
 
 func fixtureFile(t *testing.T, name string) {
 	t.Helper()

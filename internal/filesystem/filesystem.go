@@ -283,7 +283,7 @@ func physicalDestination(name string) (string, error) {
 				return "", err
 			}
 			if !info.IsDir() {
-				return "", fmt.Errorf("ancestor %q is not a directory", parent)
+				return "", fmt.Errorf("ancestor %q: %w", parent, syscall.ENOTDIR)
 			}
 			for i := len(missing) - 1; i >= 0; i-- {
 				if missing[i] == ".." {

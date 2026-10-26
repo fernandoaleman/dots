@@ -4,6 +4,15 @@
 
 ### Added
 
+- Isolated restrictive-umask bootstrap tests and documented permission recovery
+  for newly created ownership directories and stable locks.
+- Registry-backed `dots down` and strictly read-only `dots down --dry-run`,
+  with current-target selection, recorded identity checks, and partial-failure
+  reporting. Newly created links gain ownership; existing links are never adopted.
+- Private XDG ownership state, stable process locking, durable transaction
+  snapshots, conservative interrupted-operation recovery, and temporary fixtures.
+- Documented cooperative concurrency requirements and legacy-link limitations.
+
 - Read-only `dots ls` for resolver-selected mappings and `dots status` for
   deterministic destination classifications, summaries, and documented exits.
 - Structured inspection diagnostics separating wrong/broken links, occupied
@@ -33,6 +42,15 @@
 
 ### Fixed
 
+- Block removal when another recorded profile or target claims an equivalent
+  physical destination, including failed name-capability checks.
+- Report oversized ownership registries explicitly rather than as nil read errors.
+- Suppress the empty-ownership message when removal inspection fails, preserving
+  the distinction between unknown ownership and successfully inspected empty state.
+- Reject ownership snapshots with umask-restricted permissions before publication,
+  preserving the previous usable registry and managed links on failure.
+- Preserve non-directory source error classification so recorded broken links
+  remain removable when configured source roots or their referents become files.
 - Classify symlinks with non-directory target components as broken links,
   while retaining inspection errors for permission and capability failures.
 - Detect Unicode normalization and full case-folding destination collisions.

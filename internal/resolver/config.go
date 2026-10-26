@@ -14,6 +14,8 @@ import (
 
 // Config defines ordered sources and their destination root.
 type Config struct {
+	// Path is the expanded configuration locator, preserving symlink/.. traversal.
+	Path           string   `toml:"-"`
 	DotfilesDirs   []string `toml:"dotfiles_dirs"`
 	TargetDir      string   `toml:"target_dir"`
 	Excludes       []string `toml:"excludes"`
@@ -51,6 +53,7 @@ func Load(explicit, home, xdg, cwd string) (Config, error) {
 		sort.Strings(names)
 		return cfg, fmt.Errorf("configuration %q: unknown keys: %s", name, strings.Join(names, ", "))
 	}
+	cfg.Path = name
 	if len(cfg.DotfilesDirs) == 0 {
 		return cfg, fmt.Errorf("configuration %q: dotfiles_dirs must not be empty", name)
 	}
