@@ -17,10 +17,38 @@ A successful resolver plan is not permission to modify the filesystem.
 It does not inspect the input or validate native name equivalence,
 physical source-slot occupancy, protected paths, historical ownership
 claims, permissions, same-filesystem relocation, locking, or recovery.
-Excluded entries can still occupy physical source paths. The later
-filesystem preflight must check these conditions independently, under the
-approved transaction protocol. Public CLI preview and mutation remain
-unimplemented until the required safety checks are integrated.
+Excluded entries can still occupy physical source paths. Read-only filesystem
+path preflight now independently observes filesystem conditions. Registry
+contents and historical claims remain unchecked. Public CLI preview and
+mutation remain unimplemented; execution will require fresh preparation under
+the approved transaction protocol. Registry v2 remains a design proposal.
+
+The filesystem API accepts value-only requests and returns observations,
+including missing source parents. It retains no handles or mutation authority.
+It reuses M3 descriptor walks, native name checks, reserved-path protection,
+and reserved source, configuration, and state-path protection. It never
+initializes state, acquires a lock, synchronizes, recovers, migrates, creates
+directories, or probes by writing files. It does not read registry snapshots or
+validate existing lock files; these checks remain a separate read-only step.
+
+Input paths belong to the configured named target route. As with M1,
+observed existing destination-directory symlinks are inspected and pinned,
+including aliases outside the physical target root. Configured source-root
+aliases are supported; symlinks below a source root remain opaque and cannot
+be used as import parents. Raw configured symlink-plus-parent traversal is
+preserved. All observed bindings are revalidated before inspection returns.
+Existing source parents must match their enumerated spelling; native lookup
+aliases are refused so later resolution preserves the proposed mapping.
+Write/search access is checked where entries would be added or removed;
+a readable root need not be writable when the nested source parent exists.
+
+Preflight rejects known permission, read-only-mount, or device incompatibilities.
+These observations cannot guarantee later rename support, permissions, resource
+availability, or durability. Existing regular input files must be user-owned,
+single-linked, and free of privileged mode bits. Source occupants are refused
+even when excluded from resolver evidence. Configuration and reserved state
+paths are protected. Registry validity and recorded ownership claims are not
+checked at this stage. Successful observations never authorize a later write.
 
 ## Selection and mapping
 

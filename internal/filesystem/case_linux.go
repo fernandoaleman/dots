@@ -9,6 +9,8 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+const importReadOnlyFlag = unix.ST_RDONLY
+
 func directoryCaseSensitive(name string) (bool, error) {
 	var volume syscall.Statfs_t
 	if err := syscall.Statfs(name, &volume); err != nil {
