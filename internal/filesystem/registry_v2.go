@@ -116,6 +116,9 @@ func validateImports(s snapshot) error {
 		if i.SourceBinding != nil && !validSourceBinding(i) {
 			return fmt.Errorf("invalid import source binding")
 		}
+		if importEndpointConflict(i) {
+			return fmt.Errorf("import endpoints identify overlapping or ambiguous physical slots")
+		}
 		switch i.Phase {
 		case "prepared":
 			if i.RelocatedFile != nil {
@@ -145,6 +148,18 @@ func validateImports(s snapshot) error {
 		}
 	}
 	return nil
+}
+
+func importEndpointConflict(i importIntent) bool {
+	// Snapshots cannot prove current directory capabilities without visiting
+	// historical paths. Refuse potential native aliases only in a shared parent.
+	sameSlot := func(parent entryID, name string) bool {
+		return parent == i.InputBinding.Parent && potentialNameKey(name) == potentialNameKey(filepath.Base(string(i.Input)))
+	}
+	if len(i.SourceAnchor.Missing) != 0 && sameSlot(i.SourceAnchor.Parent, string(i.SourceAnchor.Missing[0])) {
+		return true // The input file cannot also be a prospective source parent.
+	}
+	return i.SourceBinding != nil && sameSlot(i.SourceBinding.Parent, filepath.Base(string(i.Source)))
 }
 
 func lowerHex(s string, length int) bool {

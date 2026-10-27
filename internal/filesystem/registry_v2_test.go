@@ -465,3 +465,67 @@ func TestNonemptyRevisionAdmission(t *testing.T) {
 		}
 	}
 }
+
+func TestRegistryV2EndpointAliases(t *testing.T) {
+	for _, phase := range []string{"prepared", "relocated"} {
+		for _, tt := range []struct {
+			name, input, source string
+			parent              string
+			valid               bool
+		}{
+			{"exact alias", "file", "file", "same", false},
+			{"case alias", "File", "file", "same", false},
+			{"unicode alias", "é", "e\u0301", "same", false},
+			{"ignorable alias", "file", "fi\u200ble", "same", false},
+			{"distinct names", "file", "other", "same", true},
+			{"different inode", "file", "file", "inode", true},
+			{"different device", "file", "file", "device", true},
+		} {
+			t.Run(phase+"/"+tt.name, func(t *testing.T) {
+				o, _, s := v2Fixture(t, false)
+				i := &s.Imports[0]
+				i.Input, i.Source = i.Target+"/"+pathBytes(tt.input), i.Root+"/"+pathBytes(tt.source)
+				parent := i.InputBinding.Parent
+				if tt.parent == "inode" {
+					parent.Inode++
+				}
+				if tt.parent == "device" {
+					parent.Device++
+				}
+				i.SourceAnchor.importBinding = importBinding{Parent: parent, Routes: []recordedRoute{}}
+				binding := i.SourceAnchor.importBinding
+				i.SourceBinding = &binding
+				i.Phase = phase
+				if phase == "relocated" {
+					f := i.OriginalFile
+					i.RelocatedFile = &f
+				}
+				data, err := json.Marshal(s)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err := decodeV2Test(data); (err == nil) != tt.valid {
+					t.Fatalf("valid=%v: %v", tt.valid, err)
+				}
+				writeImportSnapshot(t, o, s)
+				before := treeState(t, filepath.Dir(o.Profile))
+				if _, err := Down(o, false); err == nil {
+					t.Fatal("snapshot authorized mutation")
+				}
+				if !reflect.DeepEqual(before, treeState(t, filepath.Dir(o.Profile))) {
+					t.Fatal("snapshot rejection changed fixture")
+				}
+			})
+		}
+	}
+	_, _, s := v2Fixture(t, false)
+	i := &s.Imports[0]
+	i.Source = i.Root + "/nested/file"
+	i.Input = i.Target + "/Nested"
+	i.SourceAnchor.importBinding = i.InputBinding
+	i.SourceAnchor.Missing = []pathBytes{"nested"}
+	i.SourceBinding = nil
+	if err := validateSnapshot(s); err == nil {
+		t.Fatal("input accepted as prospective source parent")
+	}
+}
