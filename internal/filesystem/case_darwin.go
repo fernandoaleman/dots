@@ -7,6 +7,8 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+const importReadOnlyFlag = unix.MNT_RDONLY
+
 func directoryCaseSensitive(name string) (bool, error) {
 	// _PC_CASE_SENSITIVE from Apple's sys/unistd.h.
 	// https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/unistd.h
