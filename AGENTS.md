@@ -13,6 +13,11 @@ Codex and Claude Code equally.
 
 ## Product principles
 
+- Keep dots lightweight, reliable, and easy to use for people at every level of technical experience.
+- Prioritize predictable behavior, flexible advanced workflows, and strong protection against realistic accidental data loss.
+- Prefer minimal, maintainable implementations. Internal complexity is justified when it delivers meaningful reliability or safety.
+- Support ordinary macOS and Linux filesystem layouts without disproportionate defenses against deliberately adversarial manipulation. Do not claim universal filesystem-alias protection.
+- Document alias-coverage limitations separately from cooperative concurrency requirements: an existing mount or alias is not itself a concurrent change.
 - One Git repository, one Go module, **one `dots` executable**.
 - Prefer small, idiomatic Go code and the standard library. Add dependencies only with a clear rationale.
 - Keep responsibilities separated into three logical packages under `internal/`:

@@ -52,7 +52,7 @@ func TestInspectImportLinuxBindConfiguration(t *testing.T) {
 		}
 		t.Fatal(err)
 	}
-	for _, kind := range []string{"directory", "file", "blocked provider", "state directory", "source directory", "state file", "read-only route"} {
+	for _, kind := range []string{"directory", "file", "blocked provider", "state directory", "source directory", "state file", "lock file", "provider forward", "provider reverse", "losing provider", "unrelated bind", "read-only route"} {
 		t.Run(kind, func(t *testing.T) {
 			request := importInspectionFixture(t, false)
 			profile := filepath.Dir(request.Root) + "/active/config.toml"
@@ -80,8 +80,11 @@ func TestInspectImportLinuxBindConfiguration(t *testing.T) {
 				}
 				request.Input, request.Source = mountpoint+"/"+leaf, request.Root+"/cfg/"+leaf
 			}
-			if kind == "state file" {
+			if kind == "state file" || kind == "lock file" {
 				from = request.Ownership.Registry
+				if kind == "lock file" {
+					from = importLockPath(request.Ownership.Registry)
+				}
 				fixtureFile(t, from)
 			}
 			if kind == "blocked provider" {
@@ -103,6 +106,24 @@ func TestInspectImportLinuxBindConfiguration(t *testing.T) {
 				request.Input = mountpoint + "/.zshrc"
 				request.Source = request.Root + "/zshrc"
 			}
+			provider := ""
+			if strings.HasPrefix(kind, "provider") || kind == "losing provider" || kind == "unrelated bind" {
+				other := filepath.Dir(request.Root) + "/second"
+				provider = other + "/bashrc"
+				fixtureFile(t, provider)
+				request.Ownership.Sources = append(request.Ownership.Sources, other)
+				from, mountpoint = provider, request.Input
+				if kind == "provider reverse" {
+					from, mountpoint = request.Input, provider
+				}
+				if kind == "unrelated bind" {
+					mountpoint = request.Ownership.Target + "/.unrelated"
+					fixtureFile(t, mountpoint)
+				}
+			}
+			if kind == "blocked provider" {
+				fixtureFile(t, request.Root+"/other")
+			}
 			if err := unix.Mount(from, mountpoint, "", unix.MS_BIND, ""); err != nil {
 				if errors.Is(err, unix.EPERM) || errors.Is(err, unix.EACCES) || errors.Is(err, unix.ENODEV) {
 					t.Skipf("bind mounts unavailable: %v", err)
@@ -121,6 +142,18 @@ func TestInspectImportLinuxBindConfiguration(t *testing.T) {
 			}
 			request.Entries = []Destination{{Path: request.Input, Source: request.Source}}
 			want := "active configuration"
+			if provider != "" {
+				request.Entries = append(request.Entries, Destination{Path: request.Ownership.Target + "/.bashrc", Source: provider})
+				if kind == "losing provider" {
+					winner := request.Root + "/bashrc"
+					fixtureFile(t, winner)
+					request.Entries = append(request.Entries, Destination{Path: request.Ownership.Target + "/.bashrc", Source: winner})
+				}
+				want = "aliases existing source provider"
+			}
+			if kind == "lock file" {
+				want = "stable ownership lock"
+			}
 			if kind == "read-only route" {
 				want = "not writable and searchable"
 			}
@@ -136,7 +169,11 @@ func TestInspectImportLinuxBindConfiguration(t *testing.T) {
 			}
 			before := treeState(t, filepath.Dir(request.Root))
 			_, err := InspectImport(request)
-			if err == nil || !strings.Contains(err.Error(), want) {
+			if kind == "unrelated bind" {
+				if err != nil {
+					t.Fatalf("unrelated bind refused: %v", err)
+				}
+			} else if err == nil || !strings.Contains(err.Error(), want) {
 				t.Fatalf("bind-mounted configuration accepted: %v", err)
 			}
 			if after := treeState(t, filepath.Dir(request.Root)); !reflect.DeepEqual(before, after) {
