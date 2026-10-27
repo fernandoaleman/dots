@@ -529,3 +529,64 @@ func TestRegistryV2EndpointAliases(t *testing.T) {
 		t.Fatal("input accepted as prospective source parent")
 	}
 }
+
+func TestRegistryV2EndpointAncestryAliases(t *testing.T) {
+	for _, phase := range []string{"prepared", "relocated"} {
+		for _, direction := range []string{"input in source", "source in input"} {
+			for _, tt := range []struct {
+				name, endpoint, route string
+				kind                  uint32
+				valid                 bool
+			}{
+				{"directory", "file", "file", unix.S_IFDIR, false},
+				{"symlink", "file", "file", unix.S_IFLNK, false},
+				{"case", "File", "file", unix.S_IFDIR, false},
+				{"unicode", "é", "e\u0301", unix.S_IFLNK, false},
+				{"distinct", "file", "other", unix.S_IFDIR, true},
+			} {
+				t.Run(phase+"/"+direction+"/"+tt.name, func(t *testing.T) {
+					o, _, s := v2Fixture(t, false)
+					i := &s.Imports[0]
+					parent, target := i.InputBinding.Parent, i.SourceBinding.Parent
+					if direction == "source in input" {
+						parent, target = target, parent
+					}
+					entry := target
+					text := pathBytes("")
+					if tt.kind == unix.S_IFLNK {
+						entry.Inode += 1000
+						text = "/recorded-alias"
+					}
+					binding := importBinding{target, []recordedRoute{{Parent: parent, Name: pathBytes(tt.route), Entry: entry, Type: tt.kind, Text: text, Target: target}}}
+					if direction == "input in source" {
+						i.Input = i.Target + "/" + pathBytes(tt.endpoint)
+						i.SourceAnchor.importBinding, i.SourceBinding = binding, &binding
+					} else {
+						i.Source = i.Root + "/" + pathBytes(tt.endpoint)
+						i.InputBinding = binding
+					}
+					i.Phase = phase
+					if phase == "relocated" {
+						f := i.OriginalFile
+						i.RelocatedFile = &f
+					}
+					data, err := json.Marshal(s)
+					if err != nil {
+						t.Fatal(err)
+					}
+					if _, err := decodeV2Test(data); (err == nil) != tt.valid {
+						t.Fatalf("valid=%v: %v", tt.valid, err)
+					}
+					writeImportSnapshot(t, o, s)
+					before := treeState(t, filepath.Dir(o.Profile))
+					if _, err := Down(o, false); err == nil {
+						t.Fatal("snapshot authorized mutation")
+					}
+					if !reflect.DeepEqual(before, treeState(t, filepath.Dir(o.Profile))) {
+						t.Fatal("snapshot rejection changed fixture")
+					}
+				})
+			}
+		}
+	}
+}

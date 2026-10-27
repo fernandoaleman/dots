@@ -153,13 +153,29 @@ func validateImports(s snapshot) error {
 func importEndpointConflict(i importIntent) bool {
 	// Snapshots cannot prove current directory capabilities without visiting
 	// historical paths. Refuse potential native aliases only in a shared parent.
-	sameSlot := func(parent entryID, name string) bool {
-		return parent == i.InputBinding.Parent && potentialNameKey(name) == potentialNameKey(filepath.Base(string(i.Input)))
+	sameSlot := func(a entryID, x string, b entryID, y string) bool {
+		return a == b && potentialNameKey(x) == potentialNameKey(y)
 	}
-	if len(i.SourceAnchor.Missing) != 0 && sameSlot(i.SourceAnchor.Parent, string(i.SourceAnchor.Missing[0])) {
-		return true // The input file cannot also be a prospective source parent.
+	inRoutes := func(parent entryID, name string, routes []recordedRoute) bool {
+		for _, route := range routes {
+			if sameSlot(parent, name, route.Parent, string(route.Name)) {
+				return true
+			}
+		}
+		return false
 	}
-	return i.SourceBinding != nil && sameSlot(i.SourceBinding.Parent, filepath.Base(string(i.Source)))
+	inputName := filepath.Base(string(i.Input))
+	source, sourceName := i.SourceAnchor.importBinding, filepath.Base(string(i.Source))
+	if len(i.SourceAnchor.Missing) != 0 {
+		sourceName = string(i.SourceAnchor.Missing[0])
+	}
+	if i.SourceBinding != nil {
+		// A validated binding includes the anchor routes and realized suffix.
+		source, sourceName = *i.SourceBinding, filepath.Base(string(i.Source))
+	}
+	return sameSlot(i.InputBinding.Parent, inputName, source.Parent, sourceName) ||
+		inRoutes(i.InputBinding.Parent, inputName, source.Routes) ||
+		inRoutes(source.Parent, sourceName, i.InputBinding.Routes)
 }
 
 func lowerHex(s string, length int) bool {

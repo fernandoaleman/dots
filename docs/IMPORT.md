@@ -184,7 +184,9 @@ Change timestamps remain evidence but may differ across rename.
 Input and source slots must also be distinct in recorded physical namespaces.
 For a shared parent identity, exact or potentially case/Unicode-equivalent
 names are refused, including an input that occupies a missing source-parent
-slot. Parsing never visits historical paths to query directory capabilities;
+slot. Each endpoint is also compared with every opposite ancestry route entry;
+a regular-file endpoint cannot double as an opposite directory or symlink route.
+Parsing never visits historical paths to query directory capabilities;
 ambiguous spellings are refused even if a live case-sensitive directory could
 distinguish them. Distinct names and different recorded parents remain valid.
 
