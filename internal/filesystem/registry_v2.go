@@ -141,7 +141,7 @@ func validateImports(s snapshot) error {
 				continue
 			}
 			if importRecordOverlap(i.Input, i.InputBinding, r) ||
-				importRecordOverlap(i.Source, i.SourceAnchor.importBinding, r) ||
+				importRecordOverlap(i.sourceAnchorPath(), i.SourceAnchor.importBinding, r) ||
 				(i.SourceBinding != nil && importRecordOverlap(i.Source, *i.SourceBinding, r)) {
 				return fmt.Errorf("import overlaps recorded ownership claim %q", r.Destination)
 			}
@@ -151,29 +151,21 @@ func validateImports(s snapshot) error {
 }
 
 func importEndpointConflict(i importIntent) bool {
-	// Snapshots cannot prove current directory capabilities without visiting
-	// historical paths. Refuse potential native aliases only in a shared parent.
-	sameSlot := func(a entryID, x string, b entryID, y string) bool {
-		return a == b && potentialNameKey(x) == potentialNameKey(y)
-	}
 	inRoutes := func(parent entryID, name string, routes []recordedRoute) bool {
 		for _, route := range routes {
-			if sameSlot(parent, name, route.Parent, string(route.Name)) {
+			if sameImportSlot(parent, name, route.Parent, string(route.Name)) {
 				return true
 			}
 		}
 		return false
 	}
 	inputName := filepath.Base(string(i.Input))
-	source, sourceName := i.SourceAnchor.importBinding, filepath.Base(string(i.Source))
-	if len(i.SourceAnchor.Missing) != 0 {
-		sourceName = string(i.SourceAnchor.Missing[0])
-	}
+	source, sourceName := i.SourceAnchor.importBinding, filepath.Base(string(i.sourceAnchorPath()))
 	if i.SourceBinding != nil {
 		// A validated binding includes the anchor routes and realized suffix.
 		source, sourceName = *i.SourceBinding, filepath.Base(string(i.Source))
 	}
-	return sameSlot(i.InputBinding.Parent, inputName, source.Parent, sourceName) ||
+	return sameImportSlot(i.InputBinding.Parent, inputName, source.Parent, sourceName) ||
 		inRoutes(i.InputBinding.Parent, inputName, source.Routes) ||
 		inRoutes(source.Parent, sourceName, i.InputBinding.Routes)
 }
@@ -249,18 +241,34 @@ func sameImportFile(a, b importFile) bool {
 func importRecordOverlap(path pathBytes, b importBinding, r ownershipRecord) bool {
 	a, other := string(path), string(r.Destination)
 	if a == other || strings.HasPrefix(a, other+"/") || strings.HasPrefix(other, a+"/") ||
-		(b.Parent == r.Parent && filepath.Base(a) == filepath.Base(other)) {
+		sameImportSlot(b.Parent, filepath.Base(a), r.Parent, filepath.Base(other)) {
 		return true
 	}
 	for _, route := range b.Routes {
-		if route.Parent == r.Parent && route.Name == pathBytes(filepath.Base(other)) {
+		if sameImportSlot(route.Parent, string(route.Name), r.Parent, filepath.Base(other)) {
 			return true
 		}
 	}
 	for _, route := range r.Routes {
-		if route.Parent == b.Parent && route.Name == pathBytes(filepath.Base(a)) {
+		if sameImportSlot(route.Parent, string(route.Name), b.Parent, filepath.Base(a)) {
 			return true
 		}
 	}
 	return false
+}
+
+// Pair the existing anchor identity with its immediate prospective child, not
+// a final basename beneath missing parents. Preserve raw symlink/.. traversal.
+func (i importIntent) sourceAnchorPath() pathBytes {
+	path := i.Source
+	for range i.SourceAnchor.Missing {
+		path = pathBytes(parentPath(string(path)))
+	}
+	return path
+}
+
+func sameImportSlot(a entryID, x string, b entryID, y string) bool {
+	// Do not traverse historical paths for native capabilities. Ambiguous names
+	// in a shared recorded parent conservatively reserve the same slot.
+	return a == b && potentialNameKey(x) == potentialNameKey(y)
 }

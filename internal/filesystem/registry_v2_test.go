@@ -590,3 +590,86 @@ func TestRegistryV2EndpointAncestryAliases(t *testing.T) {
 		}
 	}
 }
+
+func TestRegistryV2MissingSourceClaims(t *testing.T) {
+	for _, missing := range [][]pathBytes{{"nested"}, {"nested", "deeper"}} {
+		for _, tt := range []struct {
+			name, claim, phase, location string
+			valid                        bool
+		}{
+			{"first missing", "nested", "prepared", "anchor", false},
+			{"case alias", "Nested", "prepared", "anchor", false},
+			{"unrelated final basename", "file", "prepared", "anchor", true},
+			{"unrelated slot", "other", "prepared", "anchor", true},
+			{"historical route", "other", "prepared", "route", false},
+			{"realized final slot", "file", "prepared", "final", false},
+			{"relocated final slot", "file", "relocated", "final", false},
+			{"relocated anchor slot", "nested", "relocated", "anchor", false},
+			{"relocated unrelated basename", "file", "relocated", "anchor", true},
+		} {
+			t.Run(fmt.Sprintf("depth=%d/%s", len(missing), tt.name), func(t *testing.T) {
+				o, _, s := v2Fixture(t, true)
+				i := &s.Imports[0]
+				i.Source = i.Root
+				for _, name := range missing {
+					i.Source += "/" + name
+				}
+				i.Source += "/file"
+				i.SourceAnchor.Missing = missing
+				i.SourceBinding = nil
+				if tt.location == "final" || tt.phase == "relocated" {
+					binding := i.SourceAnchor.importBinding
+					binding.Routes = append([]recordedRoute{}, binding.Routes...)
+					for n, name := range missing {
+						next := entryID{binding.Parent.Device, binding.Parent.Inode + uint64(n) + 1000}
+						binding.Routes = append(binding.Routes, recordedRoute{Parent: binding.Parent, Name: name, Entry: next, Type: unix.S_IFDIR, Target: next})
+						binding.Parent = next
+					}
+					i.SourceBinding = &binding
+				}
+				i.Phase = tt.phase
+				if tt.phase == "relocated" {
+					f := i.OriginalFile
+					i.RelocatedFile = &f
+				}
+				r := &s.Records[0]
+				r.Profile, r.Target, r.Destination = "/old-profile", "/historical", pathBytes("/historical/"+tt.claim)
+				r.Parent, r.Routes = i.SourceAnchor.Parent, []recordedRoute{}
+				if tt.location == "final" {
+					r.Parent = i.SourceBinding.Parent
+				}
+				if tt.location == "route" {
+					next := entryID{r.Parent.Device, r.Parent.Inode + 1000}
+					r.Routes = []recordedRoute{{Parent: r.Parent, Name: missing[0], Entry: next, Type: unix.S_IFDIR, Target: next}}
+					r.Parent = next
+				}
+				data, err := json.Marshal(s)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err := decodeV2Test(data); (err == nil) != tt.valid {
+					t.Fatalf("valid=%v: %v", tt.valid, err)
+				}
+				writeImportSnapshot(t, o, s)
+				before := treeState(t, filepath.Dir(o.Profile))
+				reader, err := openRegistry(o, false, nativeRegistryOps())
+				if reader != nil {
+					defer reader.Close()
+				}
+				if (err == nil) != tt.valid {
+					t.Fatalf("registry admission valid=%v: %v", tt.valid, err)
+				}
+				if !reflect.DeepEqual(before, treeState(t, filepath.Dir(o.Profile))) {
+					t.Fatal("claim inspection changed fixture")
+				}
+			})
+		}
+	}
+}
+
+func TestImportAnchorProjectionPreservesTraversal(t *testing.T) {
+	i := importIntent{Root: "/alias/../source", Source: "/alias/../source/nested/deeper/file", SourceAnchor: importAnchor{Missing: []pathBytes{"nested", "deeper"}}}
+	if got := i.sourceAnchorPath(); got != "/alias/../source/nested" {
+		t.Fatalf("changed raw traversal: %q", got)
+	}
+}

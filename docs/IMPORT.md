@@ -188,7 +188,10 @@ slot. Each endpoint is also compared with every opposite ancestry route entry;
 a regular-file endpoint cannot double as an opposite directory or symlink route.
 Parsing never visits historical paths to query directory capabilities;
 ambiguous spellings are refused even if a live case-sensitive directory could
-distinguish them. Distinct names and different recorded parents remain valid.
+distinguish them. Historical ownership comparisons use the same slot rule.
+For missing source parents, the anchor reserves the first missing component;
+a complete source binding separately reserves the final source slot. Distinct
+names and different recorded parents remain valid.
 
 Every ordinary mutation, including empty-plan installation and failed-up
 ownership revalidation, refuses pending imports across all scopes. Refusal
