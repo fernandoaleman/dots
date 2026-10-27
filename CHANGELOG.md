@@ -4,6 +4,9 @@
 
 ### Added
 
+- Strict ownership-registry v2 reading and pending-import mutation gates,
+  preserving v1 behavior without producing import intents or exposing recovery.
+
 - Isolated restrictive-umask bootstrap tests and documented permission recovery
   for newly created ownership directories and stable locks.
 - Registry-backed `dots down` and strictly read-only `dots down --dry-run`,

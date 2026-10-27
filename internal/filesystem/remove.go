@@ -40,7 +40,14 @@ func down(options Ownership, dryRun bool, ops registryOps) (report RemovalReport
 		}
 		err = errors.Join(err, r.Close())
 	}()
+	if err := r.allowMutation(); err != nil {
+		return report, err
+	}
 	if !dryRun {
+		// Begin/finish and at most intent plus retirement per recorded link.
+		if err := r.reserveRevisions(2 + 2*uint64(len(r.data.Records))); err != nil {
+			return report, err
+		}
 		if err := r.begin(); err != nil {
 			return report, err
 		}

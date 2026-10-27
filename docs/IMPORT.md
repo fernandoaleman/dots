@@ -18,17 +18,18 @@ It does not inspect the input or validate native name equivalence,
 physical source-slot occupancy, protected paths, historical ownership
 claims, permissions, same-filesystem relocation, locking, or recovery.
 Excluded entries can still occupy physical source paths. Read-only filesystem
-path preflight now independently observes filesystem conditions. Existing v1
+path preflight now independently observes filesystem conditions. Existing v1/v2
 registry contents and historical claims now constrain admission. Public CLI preview and
 mutation remain unimplemented; execution will require fresh preparation under
-the approved transaction protocol. Registry v2 remains a design proposal.
+the approved transaction protocol. Strict registry v2 reading and pending-import gates are implemented; no command
+produces v2 import state or performs recovery.
 
 The filesystem API accepts value-only requests and returns observations,
 including missing source parents. It retains no handles or mutation authority.
 It reuses M3 descriptor walks, native name checks, reserved-path protection,
 and reserved source, configuration, and state-path protection. It never
 initializes state, acquires a lock, synchronizes, recovers, migrates, creates
-directories, or probes by writing files. It reads existing v1 registry snapshots and validates lock metadata,
+directories, or probes by writing files. It reads existing v1/v2 registry snapshots and validates lock metadata,
 without acquiring the lock or granting locking authority.
 
 Input paths belong to the configured named target route. As with M1,
@@ -55,7 +56,7 @@ recorded ownership claims are checked without recovery. Successful observations
 never authorize a later write.
 
 Reserved state and source directories are protected by pinned ancestry as well
-as projected names. Path-layer state metadata is separate from the v1 registry-claim checks below. Configuration protection compares pinned parent namespaces and regular-file
+as projected names. Path-layer state metadata is separate from the versioned registry-claim checks below. Configuration protection compares pinned parent namespaces and regular-file
 device/inode identity, including file and directory bind aliases. Named and
 referent evidence is revalidated before returning; unavailable evidence blocks
 inspection. Portable identity tests run on macOS and Linux. Native Linux bind
@@ -77,7 +78,7 @@ identity checks are independent of destination reachability. Source symlink
 leaves stay opaque; they are never recursively followed. Required unavailable,
 changed, or ambiguous evidence refuses the affected import. Path-layer registry and lock
 checks are metadata-only. The additional registry-claim layer reads existing
-v1 snapshots; neither layer acquires a lock or initializes state.
+v1/v2 snapshots; neither layer acquires a lock or initializes state.
 
 On macOS, a private `F_GETPATH_NOFIRMLINK` query supplements pinned-directory
 inspection with backing-path ancestry. The result must be a bounded, complete,
@@ -112,13 +113,13 @@ external processes must not modify affected paths, ancestors, input contents,
 metadata, or source selection during authoritative operations. Final checks
 catch observed changes; they cannot close every TOCTOU window or make a
 previously unknown alias visible. M4 has not implemented authoritative import
-execution, registry v2, or a public `dots add` command.
+execution, registry v2 production, or a public `dots add` command.
 
 ## Read-only registry-claim preflight
 
-Import inspection reuses the M3 bounded strict v1 loader and private-state
+Import inspection reuses the bounded strict versioned loader and private-state
 validation. A missing state directory, missing registry and lock, or a safe
-lock without a registry is empty history. A valid v1 snapshot with no records
+lock without a registry is empty history. A valid snapshot with no records or pending imports
 is also empty history. An existing empty file is not a valid empty snapshot.
 Malformed, duplicate, unsupported, oversized, unsafe, or inaccessible state
 refuses inspection. A registry without its stable lock requires independent
@@ -155,8 +156,50 @@ These checks are read-only observations, not serialization or mutation
 authority. They cannot detect every intervening publication or a change after
 return. Actual relocation still requires separate transactional authorization,
 an exclusive stable lock, fresh authoritative state, and repeated filesystem
-preflight. No registry v2 parsing, upgrade, import intent, synchronization,
-recovery write, or public `dots add` command is implemented here.
+preflight. No registry upgrade, import-intent production, synchronization, recovery write,
+or public `dots add` command is implemented here.
+
+## Registry v2 reader and mutation gates
+
+V1 retains exactly `version`, `revision`, `unfinished`, and `records`; it
+prohibits `imports`. V2 requires those fields plus a nonnull `imports` array
+with zero or one entry. A pending import requires `unfinished = true`.
+Parsing dispatches by version and structural position, rejecting duplicate,
+unknown, missing, null, malformed, and contradictory evidence. Existing M3
+ownership-record validation is unchanged.
+
+An intent contains `id`, `phase`, `profile`, `target`, `root`, `input`,
+`source`, `input_binding`, `source_anchor`, `original_file`, and `digest`.
+Pathnames retain M3 base64 encoding. The identifier is 32 lowercase hex
+characters; the digest is `sha256-v1` with 64 lowercase hex characters.
+Bindings contain `parent` and `routes`; the source anchor also contains a
+literal `missing` parent suffix. File observations contain `fingerprint`,
+`uid`, `gid`, and `nlink`, requiring a regular, single-linked file without
+privileged mode bits. Source bindings must extend the recorded anchor through
+exact directory components. `source_binding` is optional only while source
+parents are missing. `prepared` prohibits `relocated_file`; `relocated`
+requires both complete fields and rename-stable original-file equality.
+Change timestamps remain evidence but may differ across rename.
+
+Every ordinary mutation, including empty-plan installation and failed-up
+ownership revalidation, refuses pending imports across all scopes. Refusal
+preserves registry and destination contents and reports both file locations.
+Down preview also refuses removal authority. Read-only inspection takes no
+lock and performs no recovery; ls, status, and up preview remain unchanged.
+
+Ordinary writes preserve the loaded version, including an empty v2 imports
+array. They cannot upgrade or downgrade it. The shared 16 MiB bound includes
+import evidence and recovery expansion; reserved byte counts reject negative
+or overflowing requests. Revision headroom is checked before writes and
+ordinary transaction entry. Complete future-import capacity reservation must
+be added with its separately authorized producer, before parent creation.
+
+Import phases are diagnostic evidence, never restart authority. Recovery
+support is not yet available: preserve both reported locations and ownership
+state, stop affected writers, and seek explicit recovery guidance. Do not edit
+registry JSON, replay temporary snapshots, delete the lock, or retry by
+recreating a symlink. The protocol below describes future work, not an
+implemented recovery mechanism.
 
 ## Selection and mapping
 

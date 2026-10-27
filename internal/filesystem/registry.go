@@ -109,6 +109,7 @@ type snapshot struct {
 	Revision   uint64            `json:"revision"`
 	Unfinished bool              `json:"unfinished"`
 	Records    []ownershipRecord `json:"records"`
+	Imports    []importIntent    `json:"imports,omitempty"`
 }
 
 const registrySizeLimit = 16 << 20
@@ -137,6 +138,8 @@ type registry struct {
 	data    snapshot
 	ops     registryOps
 	warning string
+	blocked error // Pending imports loaded from disk cannot be cleared in memory.
+	version int   // Loaded wire version; ordinary commands may not change it.
 }
 
 func namespace() (*PreparedPlan, error) {
@@ -154,7 +157,7 @@ func openRegistry(options Ownership, writable bool, ops registryOps) (_ *registr
 	if err != nil {
 		return nil, err
 	}
-	r := &registry{options: options, space: p, lock: -1, ops: ops, data: snapshot{Version: 1, Records: []ownershipRecord{}}}
+	r := &registry{options: options, space: p, lock: -1, ops: ops, version: 1, data: snapshot{Version: 1, Records: []ownershipRecord{}}}
 	defer func() {
 		if err != nil {
 			err = errors.Join(err, r.Close())
@@ -305,84 +308,15 @@ func (r *registry) load() error {
 	if err := validateSnapshot(r.data); err != nil {
 		return err
 	}
+	r.version = r.data.Version
+	r.blocked = r.data.allowMutation()
 	sort.Slice(r.data.Records, func(i, j int) bool { return r.data.Records[i].Destination < r.data.Records[j].Destination })
 	return r.validate()
 }
 
-// strictJSON rejects duplicate keys and missing/null fields, so an omitted
-// unfinished marker cannot turn an interrupted transaction into a clean one.
-func strictJSON(data []byte) error {
-	d := json.NewDecoder(bytes.NewReader(data))
-	d.UseNumber()
-	var value func() error
-	value = func() error {
-		token, err := d.Token()
-		if err != nil {
-			return err
-		}
-		if token == nil {
-			return fmt.Errorf("null state field")
-		}
-		if delimiter, ok := token.(json.Delim); ok {
-			keys := make(map[string]bool)
-			for d.More() {
-				if delimiter == '{' {
-					key, err := d.Token()
-					if err != nil {
-						return err
-					}
-					name := key.(string)
-					if keys[name] {
-						return fmt.Errorf("duplicate key %q", name)
-					}
-					keys[name] = true
-				}
-				if err := value(); err != nil {
-					return err
-				}
-			}
-			if _, err := d.Token(); err != nil {
-				return err
-			}
-			if delimiter == '{' {
-				var required []string
-				switch {
-				case keys["version"]:
-					required = []string{"version", "revision", "unfinished", "records"}
-				case keys["phase"]:
-					required = []string{"phase", "profile", "target", "destination", "text", "parent", "routes", "leaf"}
-				case keys["device"]:
-					required = []string{"device", "inode"}
-				case keys["name"]:
-					required = []string{"name", "parent", "entry", "type", "text", "target"}
-				case keys["id"]:
-					required = []string{"id", "mode", "size", "modified_seconds", "modified_nanoseconds", "changed_seconds", "changed_nanoseconds"}
-				default:
-					return fmt.Errorf("unknown state object")
-				}
-				if len(keys) != len(required) {
-					return fmt.Errorf("unknown or noncanonical state field")
-				}
-				for _, key := range required {
-					if !keys[key] {
-						return fmt.Errorf("missing state field %q", key)
-					}
-				}
-			}
-		}
-		return nil
-	}
-	if err := value(); err != nil {
-		return err
-	}
-	if _, err := d.Token(); err != io.EOF {
-		return fmt.Errorf("trailing or invalid JSON")
-	}
-	return nil
-}
-
 func validateSnapshot(s snapshot) error {
-	if s.Version != 1 || s.Records == nil {
+	if (s.Version != 1 && s.Version != 2) || s.Records == nil ||
+		(s.Version == 1 && s.Imports != nil) || (s.Version == 2 && s.Imports == nil) {
 		return fmt.Errorf("unsupported or incomplete ownership registry")
 	}
 	claims := make(map[string]bool)
@@ -429,7 +363,7 @@ func validateSnapshot(s snapshot) error {
 		}
 		physicalClaims[physical] = true
 	}
-	return nil
+	return validateImports(s)
 }
 
 func validAbsolute(path string) bool { return filepath.IsAbs(path) && !strings.ContainsRune(path, 0) }
@@ -438,14 +372,20 @@ func validBasename(name string) bool {
 }
 
 func (r *registry) save() error {
+	if err := r.allowMutation(); err != nil {
+		return err
+	}
+	if r.data.Version != r.version {
+		return fmt.Errorf("registry version changes are not supported by ordinary commands")
+	}
 	if r.lock < 0 {
 		return fmt.Errorf("ownership mutation requires a lock")
 	}
 	if err := r.validate(); err != nil {
 		return err
 	}
-	if r.data.Revision == math.MaxUint64 {
-		return fmt.Errorf("ownership revision counter exhausted")
+	if err := revisionCapacity(r.data.Revision, 1); err != nil {
+		return err
 	}
 	r.data.Revision++
 	sort.Slice(r.data.Records, func(i, j int) bool { return r.data.Records[i].Destination < r.data.Records[j].Destination })
@@ -503,7 +443,7 @@ func snapshotBytes(s snapshot, reserve int) ([]byte, error) {
 		return nil, err
 	}
 	worst := s
-	worst.Revision, worst.Unfinished = math.MaxUint64, false
+	worst.Revision, worst.Unfinished = math.MaxUint64, len(s.Imports) != 0
 	worst.Records = append([]ownershipRecord{}, s.Records...)
 	for i := range worst.Records {
 		worst.Records[i].Phase = "invalidated"
@@ -512,7 +452,7 @@ func snapshotBytes(s snapshot, reserve int) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(data)+1 > registrySizeLimit || len(recovery)+1+reserve > registrySizeLimit {
+	if reserve < 0 || len(data) >= registrySizeLimit || len(recovery) >= registrySizeLimit || reserve > registrySizeLimit-len(recovery)-1 {
 		return nil, fmt.Errorf("ownership registry exceeds 16 MiB including recovery capacity; previous snapshot retained")
 	}
 	return append(data, '\n'), nil
@@ -527,6 +467,12 @@ func randomName() (string, error) {
 }
 
 func (r *registry) begin() error {
+	if err := r.allowMutation(); err != nil {
+		return err
+	}
+	if err := revisionCapacity(r.data.Revision, 2); err != nil {
+		return err
+	}
 	if r.data.Unfinished {
 		// A durable barrier preceded every authority-revoking observation.
 		// Revoke conservatively without visiting historical targets.
@@ -541,7 +487,13 @@ func (r *registry) begin() error {
 	return r.save()
 }
 
-func (r *registry) finish() error { r.data.Unfinished = false; return r.save() }
+func (r *registry) finish() error {
+	if err := r.allowMutation(); err != nil {
+		return err
+	}
+	r.data.Unfinished = false
+	return r.save()
+}
 
 func (r *registry) Close() error {
 	var err error
