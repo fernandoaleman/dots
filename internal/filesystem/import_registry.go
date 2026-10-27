@@ -147,6 +147,9 @@ func (v *importRegistryInspection) Close() error {
 }
 
 func (v *importRegistryInspection) checkClaims(paths *importPathInspection, entries []preparedEntry, rules func(int) (nameRules, error)) error {
+	if err := v.registry.allowMutation(); err != nil {
+		return err
+	}
 	if v.registry.data.Unfinished {
 		return fmt.Errorf("unfinished ownership transaction blocks import; read-only inspection performs no recovery")
 	}

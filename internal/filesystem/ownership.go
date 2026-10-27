@@ -133,6 +133,9 @@ func RevalidateOwnership(options Ownership) (warnings []string, err error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := probe.allowMutation(); err != nil {
+		return nil, errors.Join(err, probe.Close())
+	}
 	history := len(probe.data.Records) != 0
 	if err := probe.Close(); err != nil {
 		return nil, err
@@ -150,6 +153,9 @@ func RevalidateOwnership(options Ownership) (warnings []string, err error) {
 		}
 		err = errors.Join(err, r.Close())
 	}()
+	if err := r.reserveRevisions(3); err != nil {
+		return nil, err
+	}
 	if err := r.begin(); err != nil {
 		return nil, err
 	}
@@ -210,6 +216,10 @@ func installOwned(destinations []Destination, options Ownership, ops registryOps
 		}
 		err = errors.Join(err, r.Close())
 	}()
+	// Begin, possible claim retirement, two publications per link, finish.
+	if err := r.reserveRevisions(3 + 2*uint64(len(destinations))); err != nil {
+		return report, err
+	}
 	if err := r.begin(); err != nil {
 		return report, err
 	}

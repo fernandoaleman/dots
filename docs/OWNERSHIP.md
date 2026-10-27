@@ -83,7 +83,13 @@ as the final successful transaction step.
 | `removing` | Persist before final validation/unlink. Confirmed absence permits retirement after parent synchronization. Never automatically remove a present entry from an interrupted transaction. |
 | `invalidated` | Authority disabled permanently for this record. Preserve a present occupant even if the original fingerprint returns. Verified absence can retire the record; later fresh creation uses new live evidence, not reactivation. |
 
-On startup with an unfinished snapshot, mutating commands conservatively
+Pending v2 imports block ordinary mutations before this recovery, including
+registry-only changes and empty-plan/history paths. Recovery support for
+imports is not yet available; preserve state and both reported file locations.
+Do not modify registry JSON or infer authority from recorded import phases.
+See [the v2 reader boundary](IMPORT.md#registry-v2-reader-and-mutation-gates).
+
+On startup with an unfinished snapshot **without pending imports**, mutating commands conservatively
 invalidate all prior `owned`/`removing` records before continuing, without
 visiting historical targets. `creating` remains nonauthorizing. This can
 revoke removal authority for intact links unrelated to the failure. There
