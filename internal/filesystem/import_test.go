@@ -823,7 +823,8 @@ func TestInspectImportRegistryIdentityRecheck(t *testing.T) {
 			}
 			existing := mode == "existing alias" || mode == "distinct replacement"
 			if existing {
-				fixtureFile(t, request.Ownership.Registry)
+				writeImportSnapshot(t, request.Ownership, snapshot{Version: 1, Revision: 1, Records: []ownershipRecord{}})
+				fixtureFile(t, importLockPath(request.Ownership.Registry))
 			}
 			before, err := os.ReadFile(request.Input)
 			if err != nil {
@@ -849,7 +850,7 @@ func TestInspectImportRegistryIdentityRecheck(t *testing.T) {
 					}
 				}
 				if mode == "distinct replacement" {
-					fixtureFile(t, request.Ownership.Registry)
+					writeImportSnapshot(t, request.Ownership, snapshot{Version: 1, Revision: 2, Records: []ownershipRecord{}})
 				} else {
 					fixtureLink(t, request.Input, request.Ownership.Registry)
 				}
@@ -863,8 +864,8 @@ func TestInspectImportRegistryIdentityRecheck(t *testing.T) {
 			}
 			_, err = inspectImport(request, ops)
 			if mode == "distinct replacement" {
-				if err != nil {
-					t.Fatalf("unrelated registry replacement rejected: %v", err)
+				if err == nil || !strings.Contains(err.Error(), "ownership state binding changed") {
+					t.Fatalf("snapshot replacement went undetected: %v", err)
 				}
 			} else if mode == "stat failure" {
 				if !errors.Is(err, unix.EACCES) {

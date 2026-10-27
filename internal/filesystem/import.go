@@ -27,17 +27,18 @@ type ImportInspection struct {
 }
 
 type importInspectionOps struct {
-	writable      func(int) error
-	statFile      func(int, *unix.Stat_t) error
-	statConfig    func(string, *unix.Stat_t) error
-	statState     func(string, *unix.Stat_t) error
-	statLock      func(string, *unix.Stat_t) error
-	statProvider  func(int, string, *unix.Stat_t, int) error
-	directoryPath func(int) (string, error)
-	openInput     func(int, string, int, uint32) (int, error)
-	nameRules     func(int) (nameRules, error)
-	device        func(int) (uint64, error)
-	checkpoint    func()
+	writable           func(int) error
+	statFile           func(int, *unix.Stat_t) error
+	statConfig         func(string, *unix.Stat_t) error
+	statState          func(string, *unix.Stat_t) error
+	statLock           func(string, *unix.Stat_t) error
+	statProvider       func(int, string, *unix.Stat_t, int) error
+	directoryPath      func(int) (string, error)
+	openInput          func(int, string, int, uint32) (int, error)
+	nameRules          func(int) (nameRules, error)
+	device             func(int) (uint64, error)
+	registryCheckpoint func()
+	checkpoint         func()
 }
 
 func nativeImportInspectionOps() importInspectionOps {
@@ -54,7 +55,7 @@ func nativeImportInspectionOps() importInspectionOps {
 }
 
 // InspectImport only observes files, permissions and namespace evidence.
-// Registry contents and historical ownership claims are not inspected yet.
+// Existing v1 registry contents and historical claims constrain admission.
 // It never locks, initializes, synchronizes, recovers or changes paths.
 // Execution must repeat authoritative checks under the stable registry lock.
 // Successful permission/device checks do not guarantee a later rename can work.
@@ -118,7 +119,7 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 	if err != nil || len(missing) != 0 {
 		return report, errors.Join(fmt.Errorf("input parent must be an accessible directory"), err)
 	}
-	sourceParent, missing, _, err := p.importParents(root, rootRoutes, relative)
+	sourceParent, missing, sourceRoutes, err := p.importParents(root, rootRoutes, relative)
 	if err != nil {
 		return report, err
 	}
@@ -360,6 +361,15 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 		}
 	}
 
+	view, err := openImportRegistry(o, ops.registryCheckpoint)
+	if err != nil {
+		return report, err
+	}
+	defer func() { err = errors.Join(err, view.Close()) }()
+	defer func() { err = errors.Join(err, view.revalidate()) }()
+	if err := view.checkClaims(paths, []preparedEntry{entry, {destination: Destination{Path: request.Source}, parent: sourceParent, missing: missing, routes: sourceRoutes}}, ops.nameRules); err != nil {
+		return report, err
+	}
 	if ops.checkpoint != nil {
 		ops.checkpoint()
 	}
