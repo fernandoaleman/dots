@@ -29,7 +29,7 @@ It reuses M3 descriptor walks, native name checks, reserved-path protection,
 and reserved source, configuration, and state-path protection. It never
 initializes state, acquires a lock, synchronizes, recovers, migrates, creates
 directories, or probes by writing files. It does not read registry snapshots or
-validate existing lock files; these checks remain a separate read-only step.
+validate lock contents or locking authority. Registry-claim inspection remains a separate read-only step.
 
 Input paths belong to the configured named target route. As with M1,
 observed existing destination-directory symlinks are inspected and pinned,
@@ -69,12 +69,52 @@ Related slots, input inode aliases, uncertain referents, and broken aliases
 that depend on prospective source parents still block import. Observed blockers
 are revalidated before returning. Source-resolution diagnostics are unchanged.
 
-This is an intermediate read-only foundation, not a complete import safety
-check. A separate unpublished supplement will add stable-lock and scanned
-regular-provider identity checks (including precedence losers), plus macOS
-`F_GETPATH_NOFIRMLINK` backing-path comparisons. Current targeted path and
-configuration checks do not discover every filesystem alias. Registry-claim
-inspection follows separately. None of these observations authorize relocation.
+## Bounded path and known-object safety
+
+Path preflight protects the active configuration, ownership registry, stable
+`ownership.lock`, configured source namespaces, and every regular source
+provider included in scanning evidence, including precedence losers. Provider
+identity checks are independent of destination reachability. Source symlink
+leaves stay opaque; they are never recursively followed. Required unavailable,
+changed, or ambiguous evidence refuses the affected import. Registry and lock
+checks are metadata-only: no contents are parsed, ownership claims validated,
+lock acquired, or state initialized. These observations do not replace the
+future registry-claim preflight.
+
+On macOS, a private `F_GETPATH_NOFIRMLINK` query supplements pinned-directory
+inspection with backing-path ancestry. The result must be a bounded, complete,
+absolute path whose opened identity matches the original descriptor. Missing
+suffixes are projected only below an existing pinned directory. Query failures,
+missing returned paths, identity mismatches, and observed late binding changes
+refuse inspection. Named paths, resolver mappings, profile identity, and M3
+operation paths are preserved; backing paths are comparison evidence only.
+Apple documents the query in its [fcntl definitions](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/fcntl.h).
+
+Linux retains descriptor-relative namespace and known-file identity checks,
+including file/directory bind aliases where the observed identities expose
+those relationships. It does not require procfs or mount privileges for normal
+preflight. Tests may use already available mount capabilities in an isolated
+child namespace, with explicit skips otherwise. Unrelated mounts and proven
+independent blocked destinations do not cause blanket refusal.
+
+Critical-file identities, provider entries, native path observations, and
+relevant pinned bindings are rechecked before returning, including subsequent
+error exits where evidence has already been collected. Inspection creates no
+files, directories, locks, or temporary state and is never mutation authority.
+
+This is targeted protection, not universal alias discovery. No global mount
+inventory or protected-tree scan is performed. Unseen inverse aliases into
+excluded files, other private-state entries, or unscanned objects may not be
+detected. A legitimate bind mount or unusual layout is not automatically
+adversarial. If a known required safety observation fails, inspection refuses
+that import rather than certifying the missing evidence.
+
+These coverage limits are separate from the cooperative concurrency contract:
+external processes must not modify affected paths, ancestors, input contents,
+metadata, or source selection during authoritative operations. Final checks
+catch observed changes; they cannot close every TOCTOU window or make a
+previously unknown alias visible. M4 has not implemented authoritative import
+execution, registry v2, or a public `dots add` command.
 
 ## Selection and mapping
 

@@ -664,8 +664,10 @@ func TestInspectImportBlockedProviderScope(t *testing.T) {
 				path, rejected = blocker+"/nvim/init.lua", true
 				fixtureLink(t, request.Root+"/config", blocker)
 			}
+			provider := request.Root + "/other/nvim/init.lua"
+			fixtureFile(t, provider)
 			request.Entries = append(request.Entries, Destination{
-				Path: path, Source: request.Root + "/config/nvim/init.lua", Directory: mode == "required directory",
+				Path: path, Source: provider, Directory: mode == "required directory",
 			})
 			evidence := append([]Destination(nil), request.Entries...)
 			before := treeState(t, filepath.Dir(request.Root))
@@ -692,6 +694,7 @@ func TestInspectImportLateProtectionChanges(t *testing.T) {
 			if mode == "blocker" {
 				path = request.Ownership.Target + "/.config"
 				fixtureFile(t, path)
+				fixtureFile(t, request.Root+"/other")
 				request.Entries = append(request.Entries, Destination{Path: path + "/child", Source: request.Root + "/other"})
 			}
 			content, err := os.ReadFile(path)
@@ -720,6 +723,7 @@ func TestInspectImportBlockedProviderPermission(t *testing.T) {
 	request := importInspectionFixture(t, false)
 	blocker := request.Ownership.Target + "/.private"
 	fixtureFile(t, blocker+"/child")
+	fixtureFile(t, request.Root+"/other")
 	request.Entries = append(request.Entries, Destination{Path: blocker + "/child", Source: request.Root + "/other"})
 	before := treeState(t, filepath.Dir(request.Root))
 	if err := os.Chmod(blocker, 0); err != nil {
@@ -754,6 +758,7 @@ func TestInspectImportDanglingReferentChanges(t *testing.T) {
 			fixtureLink(t, external, alias)
 			blocker := request.Ownership.Target + "/.other"
 			fixtureLink(t, alias+"/config/nvim", blocker)
+			fixtureFile(t, request.Root+"/other")
 			request.Entries = append(request.Entries, Destination{Path: blocker + "/child", Source: request.Root + "/other"})
 			before, err := os.ReadFile(request.Input)
 			if err != nil {
