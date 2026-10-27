@@ -43,12 +43,38 @@ Write/search access is checked where entries would be added or removed;
 a readable root need not be writable when the nested source parent exists.
 
 Preflight rejects known permission, read-only-mount, or device incompatibilities.
+Permission and mount checks reopen the selected named route and verify its
+identity; inode-equivalent bind mounts can have different read-only flags.
 These observations cannot guarantee later rename support, permissions, resource
 availability, or durability. Existing regular input files must be user-owned,
 single-linked, and free of privileged mode bits. Source occupants are refused
 even when excluded from resolver evidence. Configuration and reserved state
-paths are protected. Registry validity and recorded ownership claims are not
-checked at this stage. Successful observations never authorize a later write.
+paths are protected. Missing configured roots reserve their projected paths;
+imports cannot occupy, contain, or fall beneath them. Registry validity and
+recorded ownership claims are not checked at this stage. Successful observations
+never authorize a later write.
+
+Reserved state and source directories are protected by pinned ancestry as well
+as projected names. State-file metadata checks never load registry contents or
+validate ownership claims. Configuration protection compares pinned parent namespaces and regular-file
+device/inode identity, including file and directory bind aliases. Named and
+referent evidence is revalidated before returning; unavailable evidence blocks
+inspection. Portable identity tests run on macOS and Linux. Native Linux bind
+fixtures run only in a child private mount namespace when existing capabilities
+permit it; they skip explicitly otherwise, without requesting privileges.
+
+All resolver evidence is retained. A blocked destination unrelated to the
+requested input may be ignored only after its first obstruction is inspected.
+Related slots, input inode aliases, uncertain referents, and broken aliases
+that depend on prospective source parents still block import. Observed blockers
+are revalidated before returning. Source-resolution diagnostics are unchanged.
+
+This is an intermediate read-only foundation, not a complete import safety
+check. A separate unpublished supplement will add stable-lock and scanned
+regular-provider identity checks (including precedence losers), plus macOS
+`F_GETPATH_NOFIRMLINK` backing-path comparisons. Current targeted path and
+configuration checks do not discover every filesystem alias. Registry-claim
+inspection follows separately. None of these observations authorize relocation.
 
 ## Selection and mapping
 

@@ -29,6 +29,8 @@ type ImportInspection struct {
 type importInspectionOps struct {
 	writable   func(int) error
 	statFile   func(int, *unix.Stat_t) error
+	statConfig func(string, *unix.Stat_t) error
+	statState  func(string, *unix.Stat_t) error
 	openInput  func(int, string, int, uint32) (int, error)
 	nameRules  func(int) (nameRules, error)
 	device     func(int) (uint64, error)
@@ -37,7 +39,7 @@ type importInspectionOps struct {
 
 func nativeImportInspectionOps() importInspectionOps {
 	return importInspectionOps{
-		writable: importWritable, statFile: unix.Fstat,
+		writable: importWritable, statFile: unix.Fstat, statConfig: unix.Stat, statState: unix.Stat,
 		openInput: unix.Openat, nameRules: directoryNameRulesFD,
 		device: func(fd int) (uint64, error) {
 			var stat unix.Stat_t
@@ -106,6 +108,14 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 	if err != nil {
 		return report, err
 	}
+	inputParent, missing, inputRoutes, err := p.walk(parentPath(request.Input))
+	if err != nil || len(missing) != 0 {
+		return report, errors.Join(fmt.Errorf("input parent must be an accessible directory"), err)
+	}
+	sourceParent, missing, _, err := p.importParents(root, rootRoutes, relative)
+	if err != nil {
+		return report, err
+	}
 	for _, name := range o.Sources {
 		if name == request.Root {
 			continue
@@ -115,6 +125,22 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 			return report, fmt.Errorf("inspect configured source root: %w", err)
 		}
 		if len(missing) != 0 {
+			// Missing roots still reserve their projected namespace. Importing a
+			// leaf over, above, or below one would change future source scanning.
+			boundary, err := projectedDirectory(name)
+			if err != nil {
+				return report, fmt.Errorf("inspect missing configured source root: %w", err)
+			}
+			source, err := physicalDestination(request.Source)
+			if err != nil {
+				return report, err
+			}
+			if _, _, _, err := p.walk(parentPath(source)); err != nil {
+				return report, err
+			}
+			if shared, err := p.importProjectedOverlap(source, boundary); err != nil || shared {
+				return report, errors.Join(fmt.Errorf("import source overlaps missing configured source root: %q", name), err)
+			}
 			continue
 		}
 		routes, err := p.importRootRoutes(name, other.id)
@@ -125,19 +151,28 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 			return report, fmt.Errorf("configured source roots overlap or alias")
 		}
 	}
-	inputParent, missing, inputRoutes, err := p.walk(parentPath(request.Input))
-	if err != nil || len(missing) != 0 {
-		return report, errors.Join(fmt.Errorf("input parent must be an accessible directory"), err)
-	}
-	sourceParent, missing, _, err := p.importParents(root, rootRoutes, relative)
-	if err != nil {
-		return report, err
-	}
 	parts := strings.Split(relative, "/")
 	existing := len(parts) - 1 - len(missing)
 	for i := existing; i < len(parts)-1; i++ {
 		report.MissingParents = append(report.MissingParents,
 			strings.TrimRight(request.Root, "/")+"/"+strings.Join(parts[:i+1], "/"))
+	}
+	if _, _, _, err := p.walk(parentPath(o.Profile)); err != nil {
+		return report, fmt.Errorf("inspect named configuration ancestry: %w", err)
+	}
+	var namedConfig unix.Stat_t
+	if err := unix.Lstat(o.Profile, &namedConfig); err != nil {
+		return report, err
+	}
+	for _, path := range []string{request.Input, request.Source} {
+		if err := p.importProtectedDirectory(path, parentPath(o.Registry)); err != nil {
+			return report, err
+		}
+	}
+	for _, source := range o.Sources {
+		if err := p.importProtectedDirectory(request.Input, source); err != nil {
+			return report, err
+		}
 	}
 	for _, path := range []string{request.Input, request.Source} {
 		config := o.Profile
@@ -154,7 +189,12 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 			if err != nil {
 				return report, err
 			}
-			shared, err := overlap(actual, protected)
+			for _, parent := range []string{parentPath(actual), parentPath(protected)} {
+				if _, _, _, err := p.walk(parent); err != nil {
+					return report, fmt.Errorf("inspect protected configuration ancestry: %w", err)
+				}
+			}
+			shared, err := p.importProjectedOverlap(actual, protected)
 			if err != nil || shared {
 				return report, errors.Join(fmt.Errorf("import path overlaps active configuration: %q", path), err)
 			}
@@ -182,6 +222,30 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 	if !importRegular(observed) {
 		return report, fmt.Errorf("import input must be a user-owned regular file with one link and no privileged bits")
 	}
+	var configuration unix.Stat_t
+	if err := ops.statConfig(o.Profile, &configuration); err != nil {
+		return report, fmt.Errorf("inspect active configuration identity: %w", err)
+	}
+	if idOf(observed) == idOf(configuration) {
+		return report, fmt.Errorf("import input aliases active configuration")
+	}
+	checkStateIdentity := func() error {
+		var stateFile unix.Stat_t
+		if err := ops.statState(o.Registry, &stateFile); err == nil {
+			if idOf(observed) == idOf(stateFile) {
+				return fmt.Errorf("import input aliases reserved ownership state")
+			}
+		} else if !errors.Is(err, unix.ENOENT) {
+			return fmt.Errorf("inspect reserved state identity: %w", err)
+		}
+		return nil
+	}
+	if err := checkStateIdentity(); err != nil {
+		return report, err
+	}
+	// Keep the reserved-object proof current on success and later failures.
+	// Cleanup still closes the namespace after this metadata-only recheck.
+	defer func() { err = errors.Join(err, checkStateIdentity()) }()
 	fd, err := ops.openInput(inputParent.fd, filepath.Base(request.Input),
 		unix.O_RDONLY|unix.O_CLOEXEC|unix.O_NOFOLLOW|unix.O_NONBLOCK, 0)
 	if err != nil {
@@ -199,27 +263,27 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 		observed.Gid != input.Gid || observed.Nlink != input.Nlink {
 		return report, fmt.Errorf("input changed while opening")
 	}
-	for _, dir := range []*directory{sourceParent, inputParent} {
-		if err := ops.writable(dir.fd); err != nil {
-			return report, fmt.Errorf("import directory is not writable and searchable: %w", err)
+	// Inode deduplication is useful for alias comparisons, but permissions and
+	// read-only mount flags belong to the selected route, not just its inode.
+	sourceParentName := strings.TrimRight(request.Root, "/")
+	if existing != 0 {
+		sourceParentName += "/" + strings.Join(parts[:existing], "/")
+	}
+	for _, candidate := range []struct {
+		name     string
+		expected directoryID
+	}{
+		{sourceParentName, sourceParent.id}, {parentPath(request.Input), inputParent.id},
+	} {
+		if err := importCheckRoute(candidate.name, candidate.expected, input, ops); err != nil {
+			return report, err
 		}
 	}
-	for _, dir := range []*directory{sourceParent, inputParent} {
-		device, err := ops.device(dir.fd)
-		if err != nil {
-			return report, fmt.Errorf("inspect import filesystem device: %w", err)
-		}
-		if uint64(input.Dev) != device {
-			return report, fmt.Errorf("cross-filesystem import is unsupported")
-		}
-	}
+
 	prospective := -1
 	for i, entry := range request.Entries {
 		if !validAbsolute(entry.Path) || !validAbsolute(entry.Source) {
 			return report, fmt.Errorf("invalid import collision evidence")
-		}
-		if _, err := physicalDestination(entry.Path); err != nil {
-			return report, fmt.Errorf("inspect import collision evidence: %w", err)
 		}
 		if !entry.Directory && entry.Path == request.Input && entry.Source == request.Source {
 			if prospective >= 0 {
@@ -241,14 +305,22 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 	if reason := collisionReasons(request.Entries, rulesAt)[prospective]; reason != "" {
 		return report, fmt.Errorf("import collision: %s", reason)
 	}
-	entry := preparedEntry{destination: Destination{Path: request.Input}, parent: inputParent, routes: inputRoutes}
+	entry := preparedEntry{destination: Destination{Path: request.Input}, parent: inputParent, routes: inputRoutes, leaf: input}
+	var blockerChecks []func() error
 	for i, evidence := range request.Entries {
 		if i == prospective {
 			continue
 		}
 		otherParent, otherMissing, routes, err := p.walk(parentPath(evidence.Path))
 		if err != nil {
-			return report, err
+			check, err := p.importBlockedEvidence(entry, evidence.Path, request.Source, ops.nameRules)
+			if err != nil {
+				return report, err
+			}
+			if check != nil {
+				blockerChecks = append(blockerChecks, check)
+			}
+			continue
 		}
 		if len(otherMissing) != 0 {
 			continue
@@ -280,6 +352,18 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 			return report, err
 		}
 	}
+	for _, check := range blockerChecks {
+		if err := check(); err != nil {
+			return report, err
+		}
+	}
+	var currentConfig, currentNamed unix.Stat_t
+	if err := ops.statConfig(o.Profile, &currentConfig); err != nil || fingerprintOf(configuration) != fingerprintOf(currentConfig) {
+		return report, errors.Join(fmt.Errorf("active configuration changed during inspection"), err)
+	}
+	if err := unix.Lstat(o.Profile, &currentNamed); err != nil || fingerprintOf(namedConfig) != fingerprintOf(currentNamed) {
+		return report, errors.Join(fmt.Errorf("named configuration changed during inspection"), err)
+	}
 	var current unix.Stat_t
 	if err := unix.Fstatat(inputParent.fd, filepath.Base(request.Input), &current, unix.AT_SYMLINK_NOFOLLOW); err != nil ||
 		fingerprintOf(input) != fingerprintOf(current) || input.Uid != current.Uid || input.Gid != current.Gid ||
@@ -290,6 +374,189 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 		return report, err
 	}
 	return report, nil
+}
+
+func (p *PreparedPlan) importProtectedDirectory(path, boundary string) error {
+	actual, err := physicalDestination(path)
+	if err != nil {
+		return err
+	}
+	protected, missing, _, err := p.walk(boundary)
+	if err != nil {
+		return err
+	}
+	if _, _, _, err := p.walk(parentPath(actual)); err != nil {
+		return err
+	}
+	if len(missing) == 0 {
+		for name := parentPath(actual); ; name = parentPath(name) {
+			if dir := p.paths[name]; dir != nil && dir.id == protected.id {
+				return fmt.Errorf("import path occupies protected namespace: %q", path)
+			}
+			if name == "/" {
+				break
+			}
+		}
+	}
+	projected, err := projectedDirectory(boundary)
+	if err != nil {
+		return err
+	}
+	if shared, err := p.importProjectedOverlap(actual, projected); err != nil || shared {
+		return errors.Join(fmt.Errorf("import path overlaps protected namespace: %q", path), err)
+	}
+	return nil
+}
+
+// A nontraversable provider may be ignored only after its first obstruction
+// is proved unrelated to the selected input and its pinned ancestry.
+
+func (p *PreparedPlan) importBlockedEvidence(entry preparedEntry, path, source string, rules func(int) (nameRules, error)) (func() error, error) {
+	parent, routes := p.root, []binding(nil)
+	prefix := ""
+	for _, name := range strings.Split(strings.TrimPrefix(parentPath(path), "/"), "/") {
+		if name == "" || name == "." {
+			continue
+		}
+		prefix += "/" + name
+		next, missing, observed, walkErr := p.walk(prefix)
+		if walkErr == nil {
+			if len(missing) != 0 {
+				return nil, nil
+			}
+			parent, routes = next, observed
+			continue
+		}
+		if !errors.Is(walkErr, unix.ENOENT) && !errors.Is(walkErr, unix.ENOTDIR) {
+			return nil, walkErr
+		}
+		claim := ownershipRecord{Destination: pathBytes(prefix), Parent: idOfDirectory(parent), Routes: recordRoutes(routes)}
+		if shared, err := recordedClaimOverlap(p, entry, claim, rules); err != nil || shared {
+			return nil, errors.Join(fmt.Errorf("import destination overlaps blocked provider: %q", path), err)
+		}
+		var named, referent unix.Stat_t
+		if err := unix.Fstatat(parent.fd, name, &named, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+			return nil, err
+		}
+		refErr := unix.Fstatat(parent.fd, name, &referent, 0)
+		missingReferent := errors.Is(refErr, unix.ENOENT)
+		var frontierParent *directory
+		var frontierName string
+		if missingReferent {
+			text, err := readlinkAt(parent.fd, name)
+			if err != nil {
+				return nil, err
+			}
+			if !filepath.IsAbs(text) {
+				text = parentPath(prefix) + "/" + text
+			}
+			var tail []string
+			frontierParent, tail, _, err = p.walk(parentPath(text))
+			if err != nil {
+				return nil, err
+			}
+			frontierName = filepath.Base(text)
+			if len(tail) != 0 {
+				frontierName = tail[0]
+			}
+			var absent unix.Stat_t
+			if err := unix.Fstatat(frontierParent.fd, frontierName, &absent, unix.AT_SYMLINK_NOFOLLOW); !errors.Is(err, unix.ENOENT) {
+				return nil, errors.Join(fmt.Errorf("cannot establish dangling referent frontier"), err)
+			}
+			projected, err := projectedDirectory(text)
+			if err != nil {
+				return nil, err
+			}
+			actualSource, err := physicalDestination(source)
+			if err != nil {
+				return nil, err
+			}
+			if _, _, _, err := p.walk(parentPath(projected)); err != nil {
+				return nil, err
+			}
+			if _, _, _, err := p.walk(parentPath(actualSource)); err != nil {
+				return nil, err
+			}
+			if shared, err := p.importProjectedOverlap(projected, actualSource); err != nil || shared {
+				return nil, errors.Join(fmt.Errorf("blocked provider depends on import source parents: %q", path), err)
+			}
+		} else if refErr != nil || referent.Mode&unix.S_IFMT == unix.S_IFDIR || idOf(referent) == idOf(entry.leaf) {
+			return nil, errors.Join(fmt.Errorf("cannot exclude import overlap with blocked provider: %q", path), walkErr, refErr)
+		}
+		return func() error {
+			var current, currentRef unix.Stat_t
+			err := unix.Fstatat(parent.fd, name, &current, unix.AT_SYMLINK_NOFOLLOW)
+			if err != nil || fingerprintOf(current) != fingerprintOf(named) {
+				return errors.Join(fmt.Errorf("provider obstruction changed during inspection: %q", path), err)
+			}
+			err = unix.Fstatat(parent.fd, name, &currentRef, 0)
+			if missingReferent && errors.Is(err, unix.ENOENT) {
+				err := unix.Fstatat(frontierParent.fd, frontierName, &currentRef, unix.AT_SYMLINK_NOFOLLOW)
+				if errors.Is(err, unix.ENOENT) {
+					return nil
+				}
+				return errors.Join(fmt.Errorf("dangling referent frontier changed during inspection: %q", path), err)
+			}
+			if !missingReferent && err == nil && fingerprintOf(currentRef) == fingerprintOf(referent) {
+				return nil
+			}
+			return errors.Join(fmt.Errorf("provider referent changed during inspection: %q", path), err)
+		}, nil
+	}
+	return nil, fmt.Errorf("provider ancestry changed during inspection: %q", path)
+}
+
+// Compare projected tails beneath every shared pinned directory identity.
+// Different bind-mount paths can describe the same future filesystem slot.
+func (p *PreparedPlan) importProjectedOverlap(left, right string) (bool, error) {
+	for a := parentPath(left); ; a = parentPath(a) {
+		leftDir := p.paths[a]
+		if a == "/" {
+			leftDir = p.root
+		}
+		if leftDir != nil {
+			for b := parentPath(right); ; b = parentPath(b) {
+				rightDir := p.paths[b]
+				if b == "/" {
+					rightDir = p.root
+				}
+				if rightDir != nil && leftDir.id == rightDir.id {
+					x := strings.TrimPrefix(left, strings.TrimRight(a, "/")+"/")
+					y := strings.TrimPrefix(right, strings.TrimRight(b, "/")+"/")
+					same, err := compareDestinationNames("/"+x, "/"+y, func(name string) (nameRules, error) {
+						return p.rulesAt(strings.TrimRight(a, "/") + name)
+					})
+					if err != nil {
+						return false, err
+					}
+					if same {
+						// A nested mount can give shared ancestors different
+						// descendant namespaces. Prefer observed lower bindings.
+						xParts, yParts := strings.Split(x, "/"), strings.Split(y, "/")
+						leftPath, rightPath := a, b
+						for i := 0; i < min(len(xParts), len(yParts)); i++ {
+							leftPath = filepath.Join(leftPath, xParts[i])
+							rightPath = filepath.Join(rightPath, yParts[i])
+							lowerLeft, lowerRight := p.paths[leftPath], p.paths[rightPath]
+							if lowerLeft != nil && lowerRight != nil && lowerLeft.id != lowerRight.id {
+								same = false
+								break
+							}
+						}
+						if same {
+							return true, nil
+						}
+					}
+				}
+				if b == "/" {
+					break
+				}
+			}
+		}
+		if a == "/" {
+			return false, nil
+		}
+	}
 }
 
 func importRelative(root, name string) (string, error) {
@@ -405,4 +672,32 @@ func importExactParent(parent int, name string) error {
 		}
 	}
 	return fmt.Errorf("source parent spelling differs from import path: %q", name)
+}
+
+// Reopen the selected named route without inode deduplication. Distinct bind
+// mounts of the same directory can have different read-only mount flags.
+func importCheckRoute(name string, expected directoryID, input unix.Stat_t, ops importInspectionOps) (err error) {
+	fd, err := unix.Open(name, directoryFlags, 0)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, unix.Close(fd)) }()
+	var current unix.Stat_t
+	if err := unix.Fstat(fd, &current); err != nil {
+		return err
+	}
+	if identity(current) != expected {
+		return fmt.Errorf("import directory route changed")
+	}
+	if err := ops.writable(fd); err != nil {
+		return fmt.Errorf("import directory is not writable and searchable: %w", err)
+	}
+	device, err := ops.device(fd)
+	if err != nil {
+		return fmt.Errorf("inspect import filesystem device: %w", err)
+	}
+	if uint64(input.Dev) != device {
+		return fmt.Errorf("cross-filesystem import is unsupported")
+	}
+	return nil
 }
