@@ -408,12 +408,8 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 			inputParent: inputParent, sourceParent: sourceParent, inputStat: input,
 			inputRoutes: inputRoutes, sourceRoutes: sourceRoutes, missing: append([]string(nil), missing...),
 			sourceParentName: sourceParentName}
-		ops.retain.check = func() error {
-			var current unix.Stat_t
-			problem := unix.Fstatat(inputParent.fd, filepath.Base(request.Input), &current, unix.AT_SYMLINK_NOFOLLOW)
-			if problem == nil && (fingerprintOf(current) != fingerprintOf(input) || current.Uid != input.Uid || current.Gid != input.Gid || current.Nlink != input.Nlink) {
-				problem = fmt.Errorf("import input changed after inspection")
-			}
+		ops.retain.bindings = func() error {
+			var problem error
 			for _, route := range p.routes {
 				problem = errors.Join(problem, validateBinding(route))
 			}
@@ -421,6 +417,14 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 				problem = errors.Join(problem, check())
 			}
 			return errors.Join(problem, paths.revalidate(), checkConfiguration(), checkStateIdentity(), checkProviders())
+		}
+		ops.retain.check = func() error {
+			var current unix.Stat_t
+			problem := unix.Fstatat(inputParent.fd, filepath.Base(request.Input), &current, unix.AT_SYMLINK_NOFOLLOW)
+			if problem == nil && (fingerprintOf(current) != fingerprintOf(input) || current.Uid != input.Uid || current.Gid != input.Gid || current.Nlink != input.Nlink) {
+				problem = fmt.Errorf("import input changed after inspection")
+			}
+			return errors.Join(problem, ops.retain.bindings())
 		}
 		retained = true // The private caller closes retained resources, even on deferred-check errors.
 	}

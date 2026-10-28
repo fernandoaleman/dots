@@ -22,6 +22,7 @@ type importObservation struct {
 	missing                   []string
 	sourceParentName          string
 	check                     func() error
+	bindings                  func() error
 }
 
 func (o *importObservation) Close() error {
@@ -60,6 +61,7 @@ type preparedImport struct {
 	steps                    uint64
 	bound                    int
 	closed, barrierAttempted bool
+	used                     bool
 	ops                      importPrepareOps
 }
 
@@ -75,6 +77,7 @@ func prepareImport(preview ImportRequest, refresh func() (ImportRequest, error),
 	p := &preparedImport{view: view, selectedFD: -1, ops: ops}
 	defer func() {
 		if err != nil {
+			err = errors.Join(err, view.registry.validatePublication())
 			if p.barrierAttempted {
 				err = fmt.Errorf("import preparation stopped; preserve original %q, proposed source %q and ownership state: %w", preview.Input, preview.Source, err)
 			}
@@ -94,6 +97,14 @@ func prepareImport(preview ImportRequest, refresh func() (ImportRequest, error),
 		return nil, err
 	}
 	if err := view.revalidate(); err != nil {
+		return nil, err
+	}
+	expected, err := publicationFor(r.data, view.entries[0])
+	if err != nil {
+		return nil, err
+	}
+	r.publication = &expected
+	if err := r.validatePublication(); err != nil {
 		return nil, err
 	}
 	if err := r.allowMutation(); err != nil {
@@ -252,11 +263,11 @@ func (p *preparedImport) checkpoint(name string) {
 }
 
 func (p *preparedImport) check() error {
-	if p.closed || p.view.registry.lock < 0 {
-		return fmt.Errorf("import preparation is closed")
+	if p.closed || p.view.registry.lock < 0 || p.view.registry.publication == nil {
+		return fmt.Errorf("import preparation is closed or registry continuity evidence is missing")
 	}
 	o, r := &p.observation, p.view.registry
-	if err := errors.Join(r.validate(), privateFD(r.dir.fd, true), privateFD(r.lock, false), o.check()); err != nil {
+	if err := errors.Join(r.validate(), r.validatePublication(), privateFD(r.dir.fd, true), privateFD(r.lock, false), o.check()); err != nil {
 		return err
 	}
 	var current unix.Stat_t

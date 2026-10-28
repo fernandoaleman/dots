@@ -114,9 +114,9 @@ These coverage limits are separate from the cooperative concurrency contract:
 external processes must not modify affected paths, ancestors, input contents,
 metadata, or source selection during authoritative operations. Final checks
 catch observed changes; they cannot close every TOCTOU window or make a
-previously unknown alias visible. M4 has not implemented authoritative import
-execution or a public `dots add` command. Private preparation below is the
-only new v2 producer.
+previously unknown alias visible. Private preparation and same-invocation
+completion below implement import execution internally. A public `dots add`
+command remains unimplemented.
 
 ## Read-only registry-claim preflight
 
@@ -213,8 +213,8 @@ Import phases are diagnostic evidence, never restart authority. Recovery
 support is not yet available: preserve both reported locations and ownership
 state, stop affected writers, and seek explicit recovery guidance. Do not edit
 registry JSON, replay temporary snapshots, delete the lock, or retry by
-recreating a symlink. The protocol below describes future work, not an
-implemented recovery mechanism.
+recreating a symlink. The administrative recovery policy below remains future
+work, not an implemented recovery mechanism.
 
 ## Private transaction preparation (Stage 2)
 
@@ -250,9 +250,53 @@ The handle retains the lock until Close. Closing or failing never clears the
 barrier, retires intent, removes parents, restores files or resumes work.
 Failures after publication preserve potentially visible snapshots and partial
 parents; unrecorded parent progress requires conservative future investigation.
-There is no file relocation, import symlink, imported ownership claim or recovery
-mechanism. Crash tests cover process interruption, not physical power-loss
-behavior; synchronization guarantees retain the documented filesystem limits.
+Preparation alone never relocates files or creates links. The private Stage 3
+completion described below may consume its retained authority. Crash tests cover
+process interruption, not physical power-loss behavior; synchronization guarantees
+retain the documented filesystem limits.
+
+## Private completion (Stage 3)
+
+The private, single-use completion consumes only an uninterrupted preparation
+holding the same exclusive lock. It repeats namespace, configuration, provider,
+claim, permissions, source-slot, original identity and SHA-256 checks. Selected
+parent routes are retained independently of inode deduplication. Metadata must
+remain stable during each digest observation; only rename comparison permits
+ctime changes.
+
+macOS uses descriptor-relative `renameatx_np(RENAME_EXCL)`; Linux uses
+`renameat2(RENAME_NOREPLACE)`. Existing occupants, cross-device operations and
+unsupported exclusive semantics fail with no weaker fallback. After rename,
+completion verifies the relocated identity/content and original-slot absence,
+synchronizes the file and both parents, then publishes `relocated` evidence.
+It durably publishes the associated M3 `creating` record before create-only
+symlink installation, captures the live-created link through M3's shared helper,
+synchronizes its parent, and durably publishes `owned` while retaining the import.
+Only then does one atomic snapshot retire the intent and clear `unfinished`.
+Every snapshot remains within preparation's byte and revision reservation.
+
+The live handle retains the last durable registry file's identity, revision and
+canonical content digest across preparation and completion. Strict read-only
+reloads verify the entire expected snapshot without replacing proposed state.
+Checks precede relocation and each publication, including immediately before
+snapshot replacement. Evidence advances only after directory synchronization and
+verification against the inode of the transaction's own temporary snapshot.
+Missing, replaced or changed state stops the invocation; no new baseline is
+adopted. Failed publication retains prior evidence and uncertainty diagnostics.
+
+A failure closes authority without retry or rollback. Before any rename attempt,
+the original remains in place. A rename error can leave its outcome uncertain;
+a successful rename followed by sync/publication failure can leave a `prepared`
+intent although the original is now at the source path. A failed link or owned
+publication preserves the source, any created link, and pending evidence; an
+observed matching link is never adopted. A failed final directory sync can leave
+a visibly completed snapshot whose durability is uncertain. All such failures
+report both locations and preserve available state; no automatic recovery or
+parent cleanup occurs. Phases are diagnostics, never restart authority.
+
+The implementation has no public caller. First-use bootstrap, administrative
+recovery and public `dots add` remain deferred. Native filesystem capabilities
+are required; cross-builds do not substitute for native Linux validation.
 
 ## Selection and mapping
 

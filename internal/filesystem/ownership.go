@@ -356,27 +356,37 @@ func (r *registry) afterCreate(entry preparedEntry, parent *directory) error {
 		if record.Destination != pathBytes(entry.destination.Path) {
 			continue
 		}
-		var stat unix.Stat_t
-		if err := unix.Fstatat(parent.fd, filepath.Base(entry.destination.Path), &stat, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+		leaf, err := r.captureCreated(entry, parent)
+		if err != nil {
 			return err
 		}
-		text, err := readlinkAt(parent.fd, filepath.Base(entry.destination.Path))
-		if err != nil || text != entry.destination.Source || stat.Mode&unix.S_IFMT != unix.S_IFLNK {
-			return fmt.Errorf("created symlink changed before ownership capture: %q", entry.destination.Path)
-		}
-		for _, route := range entry.routes {
-			if err := validateBinding(route); err != nil {
-				return err
-			}
-		}
-		if err := r.ops.sync(parent.fd); err != nil {
-			return fmt.Errorf("sync installed symlink parent: %w", err)
-		}
-		leaf := fingerprintOf(stat)
 		record.Leaf, record.Phase = &leaf, "owned"
 		return r.save()
 	}
 	return fmt.Errorf("missing live creation intent")
+}
+
+// captureCreated is shared only by callers that just created this link live.
+// It neither grants ownership to observed links nor publishes registry state.
+func (r *registry) captureCreated(entry preparedEntry, parent *directory) (fingerprint, error) {
+	var stat unix.Stat_t
+	if err := unix.Fstatat(parent.fd, filepath.Base(entry.destination.Path), &stat, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+		return fingerprint{}, err
+	}
+	text, err := readlinkAt(parent.fd, filepath.Base(entry.destination.Path))
+	if err != nil || text != entry.destination.Source || stat.Mode&unix.S_IFMT != unix.S_IFLNK {
+		return fingerprint{}, fmt.Errorf("created symlink changed before ownership capture: %q", entry.destination.Path)
+	}
+	for _, route := range entry.routes {
+		if err := validateBinding(route); err != nil {
+			return fingerprint{}, err
+		}
+	}
+	if err := r.ops.sync(parent.fd); err != nil {
+		return fingerprint{}, fmt.Errorf("sync installed symlink parent: %w", err)
+	}
+	leaf := fingerprintOf(stat)
+	return leaf, nil
 }
 
 func inspectRecord(p *PreparedPlan, record ownershipRecord) (bool, error) {
