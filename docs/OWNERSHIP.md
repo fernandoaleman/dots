@@ -155,6 +155,12 @@ Never follow the leaf referent, remove files/directories under non-racing
 operation, recursively delete contents, or clean up parents. Owned broken
 links remain eligible when their own evidence matches.
 
+Private import preparation can now hold this same lock while publishing an
+unfinished barrier, v2 intent and source-parent bindings. It preserves existing
+ownership records and cannot relocate files, create import links or recover
+interrupted state. Its private Close only releases resources. See
+[the Stage 2 boundary](IMPORT.md#private-transaction-preparation-stage-2).
+
 ## Read-only operation and recovery
 
 `down --dry-run` opens only existing state. It never initializes or acquires

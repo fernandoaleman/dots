@@ -39,6 +39,7 @@ type importInspectionOps struct {
 	device             func(int) (uint64, error)
 	registryCheckpoint func()
 	checkpoint         func()
+	retain             *importObservation // Private lock-held preparation only.
 }
 
 func nativeImportInspectionOps() importInspectionOps {
@@ -55,7 +56,7 @@ func nativeImportInspectionOps() importInspectionOps {
 }
 
 // InspectImport only observes files, permissions and namespace evidence.
-// Existing v1 registry contents and historical claims constrain admission.
+// Existing versioned registry contents and historical claims constrain admission.
 // It never locks, initializes, synchronizes, recovers or changes paths.
 // Execution must repeat authoritative checks under the stable registry lock.
 // Successful permission/device checks do not guarantee a later rename can work.
@@ -100,11 +101,16 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 		return report, err
 	}
 
+	retained := false
 	p, err := namespace()
 	if err != nil {
 		return report, err
 	}
-	defer func() { err = errors.Join(err, p.Close()) }()
+	defer func() {
+		if !retained {
+			err = errors.Join(err, p.Close())
+		}
+	}()
 	paths := &importPathInspection{plan: p, query: ops.directoryPath, paths: make(map[*directory]string)}
 	defer func() { err = errors.Join(err, paths.revalidate()) }()
 	root, missing, rootRoutes, err := p.walk(request.Root)
@@ -263,7 +269,11 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 	if err != nil {
 		return report, fmt.Errorf("open regular import input without following symlinks: %w", err)
 	}
-	defer func() { err = errors.Join(err, unix.Close(fd)) }()
+	defer func() {
+		if !retained {
+			err = errors.Join(err, unix.Close(fd))
+		}
+	}()
 	var input unix.Stat_t
 	if err := ops.statFile(fd, &input); err != nil {
 		return report, err
@@ -392,6 +402,27 @@ func inspectImport(request ImportRequest, ops importInspectionOps) (report Impor
 	}
 	if err := absent(); err != nil {
 		return report, err
+	}
+	if ops.retain != nil {
+		*ops.retain = importObservation{plan: p, input: os.NewFile(uintptr(fd), request.Input),
+			inputParent: inputParent, sourceParent: sourceParent, inputStat: input,
+			inputRoutes: inputRoutes, sourceRoutes: sourceRoutes, missing: append([]string(nil), missing...),
+			sourceParentName: sourceParentName}
+		ops.retain.check = func() error {
+			var current unix.Stat_t
+			problem := unix.Fstatat(inputParent.fd, filepath.Base(request.Input), &current, unix.AT_SYMLINK_NOFOLLOW)
+			if problem == nil && (fingerprintOf(current) != fingerprintOf(input) || current.Uid != input.Uid || current.Gid != input.Gid || current.Nlink != input.Nlink) {
+				problem = fmt.Errorf("import input changed after inspection")
+			}
+			for _, route := range p.routes {
+				problem = errors.Join(problem, validateBinding(route))
+			}
+			for _, check := range blockerChecks {
+				problem = errors.Join(problem, check())
+			}
+			return errors.Join(problem, paths.revalidate(), checkConfiguration(), checkStateIdentity(), checkProviders())
+		}
+		retained = true // The private caller closes retained resources, even on deferred-check errors.
 	}
 	return report, nil
 }

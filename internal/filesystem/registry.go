@@ -229,9 +229,15 @@ func privateFD(fd int, directory bool) error {
 	return nil
 }
 
-func (r *registry) acquire() error {
+func (r *registry) acquire() error { return r.acquireLock(true) }
+
+// Import preparation requires a preexisting lock and must not bootstrap state
+// or synchronize anything before authoritative preflight has been admitted.
+func (r *registry) acquireExisting() error { return r.acquireLock(false) }
+
+func (r *registry) acquireLock(bootstrap bool) error {
 	fd, err := unix.Openat(r.dir.fd, "ownership.lock", unix.O_RDWR|unix.O_CLOEXEC|unix.O_NOFOLLOW|unix.O_NONBLOCK, 0)
-	if errors.Is(err, unix.ENOENT) {
+	if errors.Is(err, unix.ENOENT) && bootstrap {
 		var s unix.Stat_t
 		if statErr := unix.Fstatat(r.dir.fd, "ownership.json", &s, unix.AT_SYMLINK_NOFOLLOW); !errors.Is(statErr, unix.ENOENT) {
 			return fmt.Errorf("ownership registry exists without its stable lock; manual recovery required")
@@ -256,8 +262,10 @@ func (r *registry) acquire() error {
 		return err
 	}
 	r.lockID = idOf(s)
-	if err := r.ops.sync(r.dir.fd); err != nil {
-		return fmt.Errorf("sync ownership lock directory: %w", err)
+	if bootstrap {
+		if err := r.ops.sync(r.dir.fd); err != nil {
+			return fmt.Errorf("sync ownership lock directory: %w", err)
+		}
 	}
 	return r.validate()
 }
@@ -378,6 +386,12 @@ func (r *registry) save() error {
 	if r.data.Version != r.version {
 		return fmt.Errorf("registry version changes are not supported by ordinary commands")
 	}
+	return r.publishSnapshot()
+}
+
+// publishSnapshot shares persistence only; callers must separately establish
+// ordinary mutation authority or a fresh, private preparation capability.
+func (r *registry) publishSnapshot() error {
 	if r.lock < 0 {
 		return fmt.Errorf("ownership mutation requires a lock")
 	}
