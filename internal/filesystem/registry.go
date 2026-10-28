@@ -130,16 +130,17 @@ func nativeRegistryOps() registryOps {
 }
 
 type registry struct {
-	options Ownership
-	space   *PreparedPlan
-	dir     *directory
-	lock    int
-	lockID  entryID
-	data    snapshot
-	ops     registryOps
-	warning string
-	blocked error // Pending imports loaded from disk cannot be cleared in memory.
-	version int   // Loaded wire version; ordinary commands may not change it.
+	options     Ownership
+	space       *PreparedPlan
+	dir         *directory
+	lock        int
+	lockID      entryID
+	data        snapshot
+	ops         registryOps
+	warning     string
+	blocked     error                // Pending imports loaded from disk cannot be cleared in memory.
+	version     int                  // Loaded wire version; ordinary commands may not change it.
+	publication *registryPublication // Optional continuity evidence for a live private import.
 }
 
 func namespace() (*PreparedPlan, error) {
@@ -395,7 +396,7 @@ func (r *registry) publishSnapshot() error {
 	if r.lock < 0 {
 		return fmt.Errorf("ownership mutation requires a lock")
 	}
-	if err := r.validate(); err != nil {
+	if err := errors.Join(r.validate(), r.validatePublication()); err != nil {
 		return err
 	}
 	if err := revisionCapacity(r.data.Revision, 1); err != nil {
@@ -433,10 +434,20 @@ func (r *registry) publishSnapshot() error {
 	if writeErr == nil {
 		writeErr = r.ops.sync(fd)
 	}
+	var published unix.Stat_t
+	if writeErr == nil && r.publication != nil {
+		writeErr = unix.Fstat(fd, &published)
+	}
 	if err := errors.Join(writeErr, r.ops.closeFile(f)); err != nil {
 		return fmt.Errorf("write ownership snapshot: %w", err)
 	}
-	if err := r.validate(); err != nil {
+	if r.publication != nil {
+		temporary := importStateEntry{parent: r.dir, name: name, stat: published, exists: true}
+		if err := temporary.revalidate(); err != nil {
+			return fmt.Errorf("transaction temporary registry snapshot changed before publication: %w", err)
+		}
+	}
+	if err := errors.Join(r.validate(), r.validatePublication()); err != nil {
 		return err
 	}
 	if err := r.ops.rename(r.dir.fd, name, r.dir.fd, "ownership.json"); err != nil {
@@ -444,6 +455,20 @@ func (r *registry) publishSnapshot() error {
 	}
 	if err := r.ops.sync(r.dir.fd); err != nil {
 		return fmt.Errorf("sync published ownership snapshot; outcome uncertain: %w", err)
+	}
+	if r.publication != nil {
+		entry, err := observeImportState(r.dir, "ownership.json")
+		if err != nil || !entry.exists || idOf(entry.stat) != idOf(published) {
+			return errors.Join(fmt.Errorf("durable registry snapshot no longer identifies this transaction's published file"), err)
+		}
+		next, err := publicationFor(r.data, entry)
+		if err != nil {
+			return err
+		}
+		if err := next.check(r); err != nil {
+			return err
+		}
+		*r.publication = next // Refresh only after durable publication and verification.
 	}
 	return nil
 }

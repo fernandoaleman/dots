@@ -157,9 +157,22 @@ links remain eligible when their own evidence matches.
 
 Private import preparation can now hold this same lock while publishing an
 unfinished barrier, v2 intent and source-parent bindings. It preserves existing
-ownership records and cannot relocate files, create import links or recover
-interrupted state. Its private Close only releases resources. See
-[the Stage 2 boundary](IMPORT.md#private-transaction-preparation-stage-2).
+ownership records. Its private Close only releases resources. Stage 3 can
+consume the same uninterrupted lock/capability to exclusively relocate the file,
+publish relocated evidence, then reuse M3 record construction and live-link
+capture. Ordinary pending-import gates are unchanged. The import remains pending
+through durable `creating` and `owned` publication; only final atomic completion
+retires the intent and clears the barrier. Failures preserve available evidence,
+the source file and any created link; they never resume, adopt, roll back or
+clean up parents. A rename or final snapshot-sync error may have an uncertain
+outcome. No public import command, bootstrap or recovery is provided. See
+[private completion](IMPORT.md#private-completion-stage-3).
+
+Private imports also retain the last durable registry snapshot's identity,
+revision and complete-state digest. They revalidate it across the preparation
+handoff and before later publications, rather than trusting a new observation.
+Only verified durable publication refreshes this evidence. Unexpected state is
+preserved and reported; it is never reconstructed or overwritten to resume work.
 
 ## Read-only operation and recovery
 
