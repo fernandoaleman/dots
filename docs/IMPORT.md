@@ -22,7 +22,9 @@ path preflight now independently observes filesystem conditions. Existing v1/v2
 registry contents and historical claims now constrain admission. Public CLI preview and
 mutation remain unimplemented; execution will require fresh preparation under
 the approved transaction protocol. Strict registry v2 reading and pending-import gates are implemented; no command
-produces v2 import state or performs recovery.
+produces v2 import state or performs recovery. Private Stage 2 preparation
+now creates durable intent and source-parent evidence in isolated integration
+fixtures; it has no public caller.
 
 The filesystem API accepts value-only requests and returns observations,
 including missing source parents. It retains no handles or mutation authority.
@@ -113,7 +115,8 @@ external processes must not modify affected paths, ancestors, input contents,
 metadata, or source selection during authoritative operations. Final checks
 catch observed changes; they cannot close every TOCTOU window or make a
 previously unknown alias visible. M4 has not implemented authoritative import
-execution, registry v2 production, or a public `dots add` command.
+execution or a public `dots add` command. Private preparation below is the
+only new v2 producer.
 
 ## Read-only registry-claim preflight
 
@@ -203,8 +206,8 @@ Ordinary writes preserve the loaded version, including an empty v2 imports
 array. They cannot upgrade or downgrade it. The shared 16 MiB bound includes
 import evidence and recovery expansion; reserved byte counts reject negative
 or overflowing requests. Revision headroom is checked before writes and
-ordinary transaction entry. Complete future-import capacity reservation must
-be added with its separately authorized producer, before parent creation.
+ordinary transaction entry. Private Stage 2 now reserves the complete proposed import transaction before
+parent creation; public import execution remains unimplemented.
 
 Import phases are diagnostic evidence, never restart authority. Recovery
 support is not yet available: preserve both reported locations and ownership
@@ -212,6 +215,44 @@ state, stop affected writers, and seek explicit recovery guidance. Do not edit
 registry JSON, replay temporary snapshots, delete the lock, or retry by
 recreating a symlink. The protocol below describes future work, not an
 implemented recovery mechanism.
+
+## Private transaction preparation (Stage 2)
+
+The private `prepareImport` handle requires an existing safe state directory
+and stable lock. It refuses missing bootstrap prerequisites without artifacts;
+M3 bootstrap is unchanged. First-use bootstrap must be settled separately
+before public add. Existing pending imports, unfinished M3 transactions and
+unresolved creation/removal records are refused without recovery.
+
+Preparation acquires the exclusive lock, reloads state and invokes a fresh
+resolver callback under that lock. The locked registry/profile/target and
+selected paths must match the preview. It repeats path and ownership-claim
+inspection, retains descriptors/recheck evidence, hashes the original with
+identity/metadata validation, then reserves snapshot and revision capacity.
+No lower package imports the resolver; public CLI integration remains unwired.
+
+The size bound includes realized routes with maximum identity widths,
+relocated evidence, simultaneous import and M3 ownership capture, counter
+growth and global invalidation. Eleven revision increments cover seven forward
+publications plus invalidation, retirement and fresh begin/finish. This finite
+logical reservation does not reserve disk space or promise unlimited recovery
+retries; later stages must account for any additional publication.
+
+After synchronizing the original file and state directory, preparation
+publishes an unfinished barrier in the loaded version, then atomically publishes
+v2 with a complete prepared intent. Existing ownership records are preserved.
+Only then may it create source parents, using the selected mount-route descriptor,
+exclusive mkdir, nofollow opens, exact spelling and private 0700 permissions.
+Each new directory and containing binding is synchronized before proceeding.
+The complete source binding becomes durable before preparation returns.
+
+The handle retains the lock until Close. Closing or failing never clears the
+barrier, retires intent, removes parents, restores files or resumes work.
+Failures after publication preserve potentially visible snapshots and partial
+parents; unrecorded parent progress requires conservative future investigation.
+There is no file relocation, import symlink, imported ownership claim or recovery
+mechanism. Crash tests cover process interruption, not physical power-loss
+behavior; synchronization guarantees retain the documented filesystem limits.
 
 ## Selection and mapping
 
