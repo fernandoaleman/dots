@@ -1,7 +1,9 @@
 package filesystem
 
 import (
+	"bytes"
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 )
@@ -33,9 +35,18 @@ func (s registryPublication) check(r *registry) error {
 	if err := probe.load(); err != nil {
 		return fmt.Errorf("validate expected registry snapshot: %w", err)
 	}
-	data, err := snapshotBytes(probe.data, 0)
-	if err == nil && (probe.data.Revision != s.revision || sha256.Sum256(data) != s.digest) {
-		err = fmt.Errorf("registry revision or transaction contents differ from last live publication")
+	digest := sha256.New()
+	encoder := json.NewEncoder(digest)
+	encoder.SetIndent("", "  ")
+	err := encoder.Encode(probe.data) // Same canonical bytes and newline as snapshotBytes.
+	if err == nil && (probe.data.Revision != s.revision || !bytes.Equal(digest.Sum(nil), s.digest[:])) {
+		// Matching contents already passed recovery-capacity checks when the
+		// expected evidence was established. Changed contents retain the checked
+		// path so capacity failures keep their existing diagnostic precedence.
+		_, err = snapshotBytes(probe.data, 0)
+		if err == nil {
+			err = fmt.Errorf("registry revision or transaction contents differ from last live publication")
+		}
 	}
 	return errors.Join(err, s.entry.revalidate())
 }
