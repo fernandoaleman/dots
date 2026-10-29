@@ -67,7 +67,8 @@ type preparedImport struct {
 
 // refresh must reload configuration and run the resolver, not replay a preview.
 // A callback keeps resolution in its owning package; no public caller is wired.
-// This private stage requires existing state/lock and never bootstraps them.
+// Preliminary admission is read-only. Later bootstrap failures may retain only
+// private state artifacts until the unchanged barrier/intent sequence begins.
 func prepareImport(preview ImportRequest, refresh func() (ImportRequest, error), ops importPrepareOps) (_ *preparedImport, err error) {
 	preview.Ownership.Sources = append([]string(nil), preview.Ownership.Sources...)
 	view, err := openImportRegistry(preview.Ownership, nil)
@@ -75,26 +76,72 @@ func prepareImport(preview ImportRequest, refresh func() (ImportRequest, error),
 		return nil, err
 	}
 	p := &preparedImport{view: view, selectedFD: -1, ops: ops}
+	bootstrapAttempted := false
 	defer func() {
 		if err != nil {
 			err = errors.Join(err, view.registry.validatePublication())
 			if p.barrierAttempted {
 				err = fmt.Errorf("import preparation stopped; preserve original %q, proposed source %q and ownership state: %w", preview.Input, preview.Source, err)
 			}
+			if bootstrapAttempted {
+				err = fmt.Errorf("private state bootstrap attempted; state directories and stable lock may remain; no automatic cleanup: %w", err)
+			}
 			err = errors.Join(err, p.Close())
 		}
 	}()
 	r := view.registry
-	if r.dir == nil || view.lock < 0 {
-		return nil, fmt.Errorf("private import preparation requires an existing private state directory and stable lock; bootstrap is not implemented")
-	}
 	r.ops = ops.registry
-	if err := r.acquireExisting(); err != nil {
+	if err := r.checkImportAdmission(); err != nil {
 		return nil, err
 	}
-	r.data = snapshot{Version: 1, Records: []ownershipRecord{}}
-	if err := r.load(); err != nil {
+	preliminary, err := refreshImportRequest(preview, refresh)
+	if err != nil {
 		return nil, err
+	}
+	inspection := ops.inspect
+	inspection.retain = nil
+	if _, err := inspectImport(preliminary, inspection); err != nil {
+		return nil, err
+	}
+	p.checkpoint("preliminary")
+	if err := view.revalidate(); err != nil {
+		return nil, err
+	}
+	if r.dir == nil || view.lock < 0 {
+		bootstrapAttempted = true
+		p.checkpoint("before-bootstrap")
+		if err := view.revalidate(); err != nil {
+			return nil, err
+		}
+		if err := r.openStateDirectory(true); err != nil {
+			return nil, err
+		}
+		if err := r.acquire(); err != nil {
+			return nil, err
+		}
+		// There was no registry before initialization. Do not adopt a snapshot
+		// that appeared while creating/acquiring its previously absent lock.
+		state, err := observeImportState(r.dir, "ownership.json")
+		if err != nil || state.exists {
+			return nil, errors.Join(fmt.Errorf("ownership registry appeared during bootstrap; retry fresh admission"), err)
+		}
+		p.checkpoint("bootstrap-observe")
+		view.entries = nil // Bootstrap intentionally replaced the old absence evidence.
+		if err := view.observe(nil); err != nil {
+			return nil, err
+		}
+		if err := state.revalidate(); err != nil {
+			return nil, err
+		}
+		p.checkpoint("bootstrap")
+	} else {
+		if err := r.acquireExisting(); err != nil {
+			return nil, err
+		}
+		r.data = snapshot{Version: 1, Records: []ownershipRecord{}}
+		if err := r.load(); err != nil {
+			return nil, err
+		}
 	}
 	if err := view.revalidate(); err != nil {
 		return nil, err
@@ -107,28 +154,13 @@ func prepareImport(preview ImportRequest, refresh func() (ImportRequest, error),
 	if err := r.validatePublication(); err != nil {
 		return nil, err
 	}
-	if err := r.allowMutation(); err != nil {
+	if err := r.checkImportAdmission(); err != nil {
 		return nil, err
 	}
-	if r.data.Unfinished {
-		return nil, fmt.Errorf("unfinished ownership transaction blocks private import preparation; no recovery performed")
-	}
-	for _, record := range r.data.Records {
-		if record.Phase == "creating" || record.Phase == "removing" {
-			return nil, fmt.Errorf("unresolved ownership operation blocks private import preparation")
-		}
-	}
-	if refresh == nil {
-		return nil, fmt.Errorf("import preparation requires fresh resolution under the lock")
-	}
-	fresh, err := refresh()
+	p.checkpoint("locked")
+	fresh, err := refreshImportRequest(preview, refresh)
 	if err != nil {
 		return nil, err
-	}
-	fresh.Ownership.Sources = append([]string(nil), fresh.Ownership.Sources...)
-	fresh.Entries = append([]Destination(nil), fresh.Entries...)
-	if fresh.Input != preview.Input || fresh.Source != preview.Source || fresh.Root != preview.Root || !reflect.DeepEqual(fresh.Ownership, preview.Ownership) {
-		return nil, fmt.Errorf("import selection or ownership scope changed since preview")
 	}
 	p.request = fresh
 	ops.inspect.retain = &p.observation
@@ -187,6 +219,9 @@ func prepareImport(preview ImportRequest, refresh func() (ImportRequest, error),
 	}
 	if err := ops.registry.sync(int(o.input.Fd())); err != nil {
 		return nil, fmt.Errorf("sync original import file: %w", err)
+	}
+	if err := ops.registry.sync(r.lock); err != nil {
+		return nil, fmt.Errorf("sync stable ownership lock: %w", err)
 	}
 	if err := ops.registry.sync(r.dir.fd); err != nil {
 		return nil, fmt.Errorf("sync existing state directory: %w", err)
@@ -254,6 +289,37 @@ func prepareImport(preview ImportRequest, refresh func() (ImportRequest, error),
 		return nil, err
 	}
 	return p, nil
+}
+
+func refreshImportRequest(preview ImportRequest, refresh func() (ImportRequest, error)) (ImportRequest, error) {
+	if refresh == nil {
+		return ImportRequest{}, fmt.Errorf("import preparation requires fresh resolution before bootstrap and under the lock")
+	}
+	fresh, err := refresh()
+	if err != nil {
+		return ImportRequest{}, err
+	}
+	fresh.Ownership.Sources = append([]string(nil), fresh.Ownership.Sources...)
+	fresh.Entries = append([]Destination(nil), fresh.Entries...)
+	if fresh.Input != preview.Input || fresh.Source != preview.Source || fresh.Root != preview.Root || !reflect.DeepEqual(fresh.Ownership, preview.Ownership) {
+		return ImportRequest{}, fmt.Errorf("import selection or ownership scope changed since preview")
+	}
+	return fresh, nil
+}
+
+func (r *registry) checkImportAdmission() error {
+	if err := r.allowMutation(); err != nil {
+		return err
+	}
+	if r.data.Unfinished {
+		return fmt.Errorf("unfinished ownership transaction blocks private import preparation; no recovery performed")
+	}
+	for _, record := range r.data.Records {
+		if record.Phase == "creating" || record.Phase == "removing" {
+			return fmt.Errorf("unresolved ownership operation blocks private import preparation")
+		}
+	}
+	return nil
 }
 
 func (p *preparedImport) checkpoint(name string) {
