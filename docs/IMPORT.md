@@ -218,14 +218,32 @@ work, not an implemented recovery mechanism.
 
 ## Private transaction preparation (Stage 2)
 
-The private `prepareImport` handle requires an existing safe state directory
-and stable lock. It refuses missing bootstrap prerequisites without artifacts;
-M3 bootstrap is unchanged. First-use bootstrap must be settled separately
-before public add. Existing pending imports, unfinished M3 transactions and
-unresolved creation/removal records are refused without recovery.
+The private `prepareImport` handle first refreshes resolution and performs full
+read-only filesystem, namespace and ownership admission. Rejected preliminary
+admission and every preview create nothing and perform no synchronization.
+Existing pending imports, unfinished M3 transactions and unresolved
+creation/removal records are refused without recovery.
 
-Preparation acquires the exclusive lock, reloads state and invokes a fresh
-resolver callback under that lock. The locked registry/profile/target and
+After preliminary admission, missing private state directories and the stable
+lock are initialized through M3's descriptor-relative bootstrap. Existing
+ancestor bindings remain pinned and revalidated. New directories require 0700;
+the exclusively created lock requires 0600, both subject to umask. Existing
+permissions, files and symlinks are never repaired, replaced or removed. A
+registry without its stable lock remains an error. Competing first-use attempts
+may encounter a changed preliminary observation or lock contention; retry must
+start fresh. Only the validated exclusive-lock holder may advance preparation.
+
+Bootstrap may leave private directories and the stable lock after a later
+failure. It never rolls them back, publishes an empty initialization snapshot,
+or changes the original input. Partial initialization or synchronization
+uncertainty fails conservatively and reports retained artifacts. Fresh admission
+must validate them on retry; unsafe artifacts require separate investigation.
+
+Preparation retains the exclusive lock, reloads state and invokes the resolver
+callback again under that lock. Bootstrap refreshes only intentionally obsolete
+absence observations; unexpected registry appearance, including during refreshed
+observation capture, refuses admission without overwriting it. Existing registry
+identity evidence is retained across lock acquisition. The locked registry/profile/target and
 selected paths must match the preview. It repeats path and ownership-claim
 inspection, retains descriptors/recheck evidence, hashes the original with
 identity/metadata validation, then reserves snapshot and revision capacity.
@@ -238,7 +256,7 @@ publications plus invalidation, retirement and fresh begin/finish. This finite
 logical reservation does not reserve disk space or promise unlimited recovery
 retries; later stages must account for any additional publication.
 
-After synchronizing the original file and state directory, preparation
+After synchronizing the original file, held stable lock and state directory, preparation
 publishes an unfinished barrier in the loaded version, then atomically publishes
 v2 with a complete prepared intent. Existing ownership records are preserved.
 Only then may it create source parents, using the selected mount-route descriptor,
@@ -294,8 +312,8 @@ a visibly completed snapshot whose durability is uncertain. All such failures
 report both locations and preserve available state; no automatic recovery or
 parent cleanup occurs. Phases are diagnostics, never restart authority.
 
-The implementation has no public caller. First-use bootstrap, administrative
-recovery and public `dots add` remain deferred. Native filesystem capabilities
+The implementation has no public caller. First-use bootstrap is private;
+administrative recovery and public `dots add` remain deferred. Native filesystem capabilities
 are required; cross-builds do not substitute for native Linux validation.
 
 ## Selection and mapping

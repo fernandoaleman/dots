@@ -81,12 +81,14 @@ func TestPrivateImportPreparation(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				refreshed := false
+				refreshes := 0
 				p, err := prepareImport(q, func() (ImportRequest, error) {
-					refreshed = true
-					if other, err := openRegistry(q.Ownership, true, nativeRegistryOps()); err == nil {
-						_ = other.Close()
-						t.Fatal("refresh ran without exclusive lock")
+					refreshes++
+					if refreshes == 2 {
+						if other, err := openRegistry(q.Ownership, true, nativeRegistryOps()); err == nil {
+							_ = other.Close()
+							t.Fatal("refresh ran without exclusive lock")
+						}
 					}
 					return q, nil
 				}, nativeImportPrepareOps())
@@ -95,7 +97,7 @@ func TestPrivateImportPreparation(t *testing.T) {
 				}
 				defer p.Close()
 				s := ownershipSnapshot(t, q.Ownership)
-				if !refreshed || s.Version != 2 || !s.Unfinished || len(s.Imports) != 1 || s.Imports[0].SourceBinding == nil || !reflect.DeepEqual(history, s.Records) {
+				if refreshes != 2 || s.Version != 2 || !s.Unfinished || len(s.Imports) != 1 || s.Imports[0].SourceBinding == nil || !reflect.DeepEqual(history, s.Records) {
 					t.Fatalf("bad prepared state: %+v", s)
 				}
 				if size, _ := os.Stat(q.Ownership.Registry); size.Size() > int64(p.bound) {
@@ -149,15 +151,13 @@ func TestPrivateImportPreparation(t *testing.T) {
 }
 
 func TestImportPreparationRejectedWithoutWrites(t *testing.T) {
-	for _, mode := range []string{"missing state", "missing lock", "pending", "unfinished", "creating", "refresh error", "changed selection", "occupied", "permission", "revision", "busy"} {
+	for _, mode := range []string{"missing lock", "pending", "unfinished", "creating", "refresh error", "changed selection", "occupied", "permission", "revision", "busy"} {
 		t.Run(mode, func(t *testing.T) {
 			q := preparationFixture(t, true, 1)
 			ops := nativeImportPrepareOps()
 			refresh := func() (ImportRequest, error) { return q, nil }
 			var held *registry
 			switch mode {
-			case "missing state":
-				q.Ownership.Registry = filepath.Join(filepath.Dir(q.Root), "absent/dots/ownership.json")
 			case "missing lock":
 				if err := os.Remove(importLockPath(q.Ownership.Registry)); err != nil {
 					t.Fatal(err)

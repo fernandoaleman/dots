@@ -164,45 +164,11 @@ func openRegistry(options Ownership, writable bool, ops registryOps) (_ *registr
 			err = errors.Join(err, r.Close())
 		}
 	}()
-	parent, missing, _, err := p.walk(parentPath(options.Registry))
-	if err != nil {
-		return nil, fmt.Errorf("open ownership directory: %w", err)
-	}
-	if !writable && len(missing) != 0 {
-		return r, nil
-	}
-	for _, name := range missing {
-		if err := unix.Mkdirat(parent.fd, name, 0o700); err != nil && !errors.Is(err, unix.EEXIST) {
-			return nil, fmt.Errorf("create state directory: %w", err)
-		}
-		next, err := p.openDirectory(parent.fd, name, unix.O_NOFOLLOW)
-		if err != nil {
-			return nil, err
-		}
-		if err := privateFD(next.fd, true); err != nil {
-			return nil, err
-		}
-		var stat unix.Stat_t
-		if err := unix.Fstatat(parent.fd, name, &stat, unix.AT_SYMLINK_NOFOLLOW); err != nil || idOf(stat) != idOfDirectory(next) {
-			return nil, fmt.Errorf("state directory changed during creation")
-		}
-		p.routes = append(p.routes, binding{parent: parent, name: name, entry: stat, target: next})
-		if err := ops.sync(next.fd); err != nil {
-			return nil, fmt.Errorf("sync state directory: %w", err)
-		}
-		if err := ops.sync(parent.fd); err != nil {
-			return nil, fmt.Errorf("sync state ancestor: %w", err)
-		}
-		parent = next
-	}
-	r.dir = parent
-	if err := privateFD(parent.fd, true); err != nil {
+	if err := r.openStateDirectory(writable); err != nil {
 		return nil, err
 	}
-	// The dedicated dots directory itself cannot be a symlink, even when
-	// ordinary HOME/XDG ancestors contain stable directory aliases.
-	if len(p.routes) != 0 && p.routes[len(p.routes)-1].entry.Mode&unix.S_IFMT == unix.S_IFLNK {
-		return nil, fmt.Errorf("ownership directory must not be a symlink")
+	if r.dir == nil {
+		return r, nil
 	}
 	if writable {
 		if err := r.acquire(); err != nil {
@@ -213,6 +179,59 @@ func openRegistry(options Ownership, writable bool, ops registryOps) (_ *registr
 		return nil, err
 	}
 	return r, nil
+}
+
+// Reuse the namespace already pinned by read-only admission when initializing
+// import state. Opening or creating state alone never authorizes an import.
+func (r *registry) openStateDirectory(writable bool) error {
+	p := r.space
+	if err := r.validate(); err != nil {
+		return err
+	}
+	parent, missing, _, err := p.walk(parentPath(r.options.Registry))
+	if err != nil {
+		return fmt.Errorf("open ownership directory: %w", err)
+	}
+	if !writable && len(missing) != 0 {
+		return nil
+	}
+	for _, name := range missing {
+		if err := r.validate(); err != nil {
+			return err
+		}
+		if err := unix.Mkdirat(parent.fd, name, 0o700); err != nil && !errors.Is(err, unix.EEXIST) {
+			return fmt.Errorf("create state directory: %w", err)
+		}
+		next, err := p.openDirectory(parent.fd, name, unix.O_NOFOLLOW)
+		if err != nil {
+			return err
+		}
+		if err := privateFD(next.fd, true); err != nil {
+			return err
+		}
+		var stat unix.Stat_t
+		if err := unix.Fstatat(parent.fd, name, &stat, unix.AT_SYMLINK_NOFOLLOW); err != nil || idOf(stat) != idOfDirectory(next) {
+			return fmt.Errorf("state directory changed during creation")
+		}
+		p.routes = append(p.routes, binding{parent: parent, name: name, entry: stat, target: next})
+		if err := r.ops.sync(next.fd); err != nil {
+			return fmt.Errorf("sync state directory: %w", err)
+		}
+		if err := r.ops.sync(parent.fd); err != nil {
+			return fmt.Errorf("sync state ancestor: %w", err)
+		}
+		parent = next
+	}
+	r.dir = parent
+	if err := privateFD(parent.fd, true); err != nil {
+		return err
+	}
+	// The dedicated dots directory itself cannot be a symlink, even when
+	// ordinary HOME/XDG ancestors contain stable directory aliases.
+	if len(p.routes) != 0 && p.routes[len(p.routes)-1].entry.Mode&unix.S_IFMT == unix.S_IFLNK {
+		return fmt.Errorf("ownership directory must not be a symlink")
+	}
+	return r.validate()
 }
 
 func privateFD(fd int, directory bool) error {
@@ -232,8 +251,8 @@ func privateFD(fd int, directory bool) error {
 
 func (r *registry) acquire() error { return r.acquireLock(true) }
 
-// Import preparation requires a preexisting lock and must not bootstrap state
-// or synchronize anything before authoritative preflight has been admitted.
+// Existing-state import preparation retains the read-only binding evidence
+// while acquiring its lock, without initializing or synchronizing state.
 func (r *registry) acquireExisting() error { return r.acquireLock(false) }
 
 func (r *registry) acquireLock(bootstrap bool) error {

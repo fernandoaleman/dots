@@ -155,7 +155,23 @@ Never follow the leaf referent, remove files/directories under non-racing
 operation, recursively delete contents, or clean up parents. Owned broken
 links remain eligible when their own evidence matches.
 
-Private import preparation can now hold this same lock while publishing an
+Private import preparation performs preliminary read-only admission before
+initializing missing state through these same M3 bootstrap primitives. It keeps
+the pinned namespace, validates and acquires the stable lock, reloads state and
+repeats resolver/filesystem/claim admission under that lock. It synchronizes the
+held lock and directory before publishing the first barrier. No empty registry
+is published for initialization; absent state starts in v1 and upgrades only
+when the complete prepared v2 intent is published.
+
+Rejected preliminary admission and previews remain zero-write. Once private
+bootstrap starts, failures may retain state-only directories and the stable
+lock, including partial initialization. They never trigger automatic cleanup,
+permission repair, source-parent creation before durable intent, or input-file
+changes. Concurrent first-use attempts must retry changed observations or busy
+locks; they never replace an existing lock. Existing registry state without its
+lock still refuses mutation.
+
+Private import preparation can hold this same lock while publishing an
 unfinished barrier, v2 intent and source-parent bindings. It preserves existing
 ownership records. Its private Close only releases resources. Stage 3 can
 consume the same uninterrupted lock/capability to exclusively relocate the file,
@@ -165,7 +181,7 @@ through durable `creating` and `owned` publication; only final atomic completion
 retires the intent and clears the barrier. Failures preserve available evidence,
 the source file and any created link; they never resume, adopt, roll back or
 clean up parents. A rename or final snapshot-sync error may have an uncertain
-outcome. No public import command, bootstrap or recovery is provided. See
+outcome. No public import command or import recovery is provided. See
 [private completion](IMPORT.md#private-completion-stage-3).
 
 Private imports also retain the last durable registry snapshot's identity,

@@ -58,53 +58,63 @@ func openImportRegistry(options Ownership, checkpoint func()) (_ *importRegistry
 			err = errors.Join(err, view.revalidate(), view.Close())
 		}
 	}()
-	parent, missing, _, err := r.space.walk(parentPath(options.Registry))
-	if err != nil {
+	if err := view.observe(checkpoint); err != nil {
 		return nil, err
+	}
+	return view, nil
+}
+
+// The caller owns the registry and any held exclusive lock. Bootstrap refreshes
+// obsolete absence observations here; ordinary inspection never initializes it.
+func (view *importRegistryInspection) observe(checkpoint func()) error {
+	r := view.registry
+	parent, missing, _, err := r.space.walk(parentPath(r.options.Registry))
+	if err != nil {
+		return err
 	}
 	if r.dir == nil {
 		if len(missing) == 0 {
-			return nil, fmt.Errorf("ownership directory appeared during import inspection")
+			return fmt.Errorf("ownership directory appeared during import inspection")
 		}
 		frontier, err := observeImportState(parent, missing[0])
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if frontier.exists {
-			return nil, fmt.Errorf("ownership directory frontier appeared during import inspection")
+			return fmt.Errorf("ownership directory frontier appeared during import inspection")
 		}
 		view.entries = append(view.entries, frontier)
 	} else {
 		if len(missing) != 0 || parent.id != r.dir.id {
-			return nil, fmt.Errorf("ownership directory changed during import inspection")
+			return fmt.Errorf("ownership directory changed during import inspection")
 		}
 		state, err := observeImportState(parent, "ownership.json")
 		if err != nil {
-			return nil, err
+			return err
 		}
 		lock, err := observeImportState(parent, "ownership.lock")
 		if err != nil {
-			return nil, err
+			return err
 		}
 		view.entries = append(view.entries, state, lock)
 		if state.exists && !lock.exists {
-			return nil, fmt.Errorf("ownership registry exists without its stable lock; manual recovery required")
+			return fmt.Errorf("ownership registry exists without its stable lock; manual recovery required")
 		}
 		if lock.exists {
 			fd, err := unix.Openat(parent.fd, "ownership.lock", unix.O_RDONLY|unix.O_NOFOLLOW|unix.O_NONBLOCK|unix.O_CLOEXEC, 0)
 			if err != nil {
-				return nil, fmt.Errorf("inspect stable ownership lock: %w", err)
+				return fmt.Errorf("inspect stable ownership lock: %w", err)
 			}
 			view.lock = fd
 			if err := privateFD(fd, false); err != nil {
-				return nil, err
+				return err
 			}
 			var held unix.Stat_t
 			if err := unix.Fstat(fd, &held); err != nil {
-				return nil, err
+				return err
 			}
 			if fingerprintOf(held) != fingerprintOf(lock.stat) {
-				return nil, fmt.Errorf("stable ownership lock changed during import inspection")
+				return fmt.Errorf("stable ownership lock changed during import inspection")
 			}
 		}
 		if checkpoint != nil {
@@ -114,13 +124,10 @@ func openImportRegistry(options Ownership, checkpoint func()) (_ *importRegistry
 		// so the claim data belongs to the snapshot whose binding is rechecked.
 		r.data = snapshot{Version: 1, Records: []ownershipRecord{}}
 		if err := r.load(); err != nil {
-			return nil, err
+			return err
 		}
 	}
-	if err := view.revalidate(); err != nil {
-		return nil, err
-	}
-	return view, nil
+	return view.revalidate()
 }
 
 func (v *importRegistryInspection) revalidate() error {
