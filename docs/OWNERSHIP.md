@@ -192,6 +192,18 @@ preserved and reported; it is never reconstructed or overwritten to resume work.
 
 ## Read-only operation and recovery
 
+Private recovery inspection now reuses the strict state reader and lock-free
+registry observations using only a registry locator. It reports v1/v2 state,
+unfinished barriers and pending intent evidence without consulting current
+configuration, acquiring flock, synchronizing, initializing or changing state.
+Exact stored ID/revision selection is required to inspect import locations;
+history is summarized without visiting unrelated recorded paths. Structured
+checks distinguish an observational retirement candidate from mutation authority.
+Final registry, lock, route and leaf observations reject detected changes.
+No retirement, barrier settlement or public recovery command is implemented.
+See [private inspection](IMPORT.md#private-read-only-inspection) for evidence
+checks and limitations. Do not edit registry JSON to retire an intent.
+
 `down --dry-run` opens only existing state. It never initializes or acquires
 a lock, retires records, replays transactions, or creates temporary files.
 Unfinished state cannot authorize removal of a present entry. Its output is
