@@ -154,6 +154,12 @@ func openRegistry(options Ownership, writable bool, ops registryOps) (_ *registr
 	if err := options.validate(); err != nil {
 		return nil, err
 	}
+	return openRegistryState(options, writable, ops)
+}
+
+// Callers validate their locators before entering this shared state opener.
+// Recovery observation needs only a registry path, never live profile/target options.
+func openRegistryState(options Ownership, writable bool, ops registryOps) (_ *registry, err error) {
 	p, err := namespace()
 	if err != nil {
 		return nil, err

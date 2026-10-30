@@ -360,6 +360,43 @@ against arbitrary concurrent replacement.
 
 ## Failure and recovery
 
+### Private read-only inspection
+
+Private recovery inspection is implemented for development and testing; there
+is no public `dots recover` command. It takes only the registry location,
+independent of TOML configuration and current source selection. Summary mode
+reports snapshot version/revision, the unfinished barrier, stored intent scope
+and paths, and the number of owned/removing records whose authority would need
+separate consideration. Summary mode never traverses recorded import or
+historical ownership paths. Detailed inspection requires the exact stored
+intent ID and revision; stale selections refuse before visiting those paths.
+
+Detailed observations compare recorded parent identities and routes, inspect
+both leaves without following symlinks, and check regular-file identity,
+ownership, link count, metadata and SHA-256. Input-only requires exact original
+evidence. Source-only requires a complete recorded source binding and exact
+relocated evidence when present; in the prepared rename gap only the original
+ctime may differ. Missing source parents are checked at their recorded absent
+frontier; newly present unrecorded parents remain blocked. Symlinks, including
+apparently correct links, are occupants and do not prove ownership.
+
+Inspection takes no flock, creates no state and performs no synchronization.
+It can observe a snapshot while a writer holds its lock, then rechecks registry
+identity, revision and full contents, lock/privacy evidence, recorded bindings,
+leaf metadata and absence witnesses before returning. Observed changes invalidate
+candidate conclusions while preserving earlier diagnostic failures.
+Selected named parents retain independent read-only descriptors rather than
+using inode-deduplicated views for leaf checks. Final named-parent reopen checks
+also compare child evidence through the selected path. Matching
+observations cannot prove durability or the absence of every race or alias.
+They carry no live capability and never authorize retirement or settlement;
+those future operations must repeat authoritative checks under the exclusive
+lock. Barrier-only M3 state is distinguished from a pending import. Reading
+valid state does not require spare future write capacity; capacity reservation
+and synchronization remain requirements of future authorized mutation.
+
+### Future administrative mutation
+
 Before relocation, failures preserve the original file in place.
 After relocation, preserve the file in the source repository, created
 entries, and unresolved evidence. The original pathname may be absent.

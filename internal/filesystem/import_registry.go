@@ -52,6 +52,10 @@ func openImportRegistry(options Ownership, checkpoint func()) (_ *importRegistry
 	if err != nil {
 		return nil, err
 	}
+	return inspectImportRegistry(r, checkpoint)
+}
+
+func inspectImportRegistry(r *registry, checkpoint func()) (_ *importRegistryInspection, err error) {
 	view := &importRegistryInspection{registry: r, lock: -1}
 	defer func() {
 		if err != nil {
