@@ -200,9 +200,21 @@ Exact stored ID/revision selection is required to inspect import locations;
 history is summarized without visiting unrelated recorded paths. Structured
 checks distinguish an observational retirement candidate from mutation authority.
 Final registry, lock, route and leaf observations reject detected changes.
-No retirement, barrier settlement or public recovery command is implemented.
+Private retirement is implemented separately under the existing exclusive lock;
+barrier settlement and public recovery commands remain unimplemented.
 See [private inspection](IMPORT.md#private-read-only-inspection) for evidence
 checks and limitations. Do not edit registry JSON to retire an intent.
+
+Retirement requires the exact stored intent ID and registry revision without
+current configuration. It verifies a single intact survivor and an absent
+counterpart, reserves both publications, durably invalidates all prior owned/
+removing authority across scopes while retaining history and the intent, then
+repeats file evidence checks and synchronizes the survivor and existing parents.
+Final publication removes only that intent and retains `unfinished=true`.
+Creating and invalidated records are preserved; no authority is restored and
+no user entry is moved, removed, adopted or replaced. Failure preserves available
+registry evidence, including uncertain published outcomes; no retry or settlement
+is automatic. See [private retirement](IMPORT.md#private-administrative-retirement).
 
 `down --dry-run` opens only existing state. It never initializes or acquires
 a lock, retires records, replays transactions, or creates temporary files.
