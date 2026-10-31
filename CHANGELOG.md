@@ -4,10 +4,15 @@
 
 ### Added
 
+- `dots add PATH` with explicit root selection, strictly read-only previews,
+  fresh first-use bootstrap and durable same-filesystem import transactions.
+  Existing content is never replaced or adopted; failures preserve evidence
+  for separately selected `dots recover` actions.
+
 - Configuration-independent `dots recover` inspection, strictly read-only
   retirement/settlement previews, and explicitly selected registry-only recovery
   actions requiring exact revisions. User files and symlinks remain untouched;
-  no automatic recovery or public `dots add` command is introduced.
+  no automatic recovery is introduced.
 
 - Strict ownership-registry v2 reading and pending-import mutation gates,
   preserving v1 behavior without producing import intents.

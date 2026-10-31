@@ -66,7 +66,8 @@ type preparedImport struct {
 }
 
 // refresh must reload configuration and run the resolver, not replay a preview.
-// A callback keeps resolution in its owning package; no public caller is wired.
+// A callback keeps resolution in its owning package; RunImport retains this lock
+// through completion without exposing the live capability to the CLI.
 // Preliminary admission is read-only. Later bootstrap failures may retain only
 // private state artifacts until the unchanged barrier/intent sequence begins.
 func prepareImport(preview ImportRequest, refresh func() (ImportRequest, error), ops importPrepareOps) (_ *preparedImport, err error) {

@@ -23,6 +23,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 	root.Usage = func() {
 		fmt.Fprintln(stderr, "Usage: dots [--config PATH] up|down [--dry-run]")
 		fmt.Fprintln(stderr, "       dots [--config PATH] ls|status")
+		fmt.Fprintln(stderr, "       dots [--config PATH] add [--root DIR] [--dry-run|-n] PATH")
 		fmt.Fprintln(stderr, "       dots recover [--retire ID | --settle] [--revision N] [--dry-run]")
 		root.PrintDefaults()
 	}
@@ -42,6 +43,14 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	command := rest[0]
+	if command == "add" {
+		if err := validateAddFlags(args[:len(args)-len(rest)]); err != nil {
+			return fail(stderr, 2, err)
+		}
+		configured := false
+		root.Visit(func(f *flag.Flag) { configured = configured || f.Name == "config" })
+		return addCommand(rest[1:], config, configured, stdout, stderr)
+	}
 	if command == "recover" {
 		configured := false
 		root.Visit(func(f *flag.Flag) { configured = configured || f.Name == "config" })
@@ -51,7 +60,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		return recoverCommand(rest[1:], stdout, stderr)
 	}
 	if command != "up" && command != "down" && command != "ls" && command != "status" {
-		return fail(stderr, 2, fmt.Errorf("unsupported command %q; use up, down, ls, status, or recover", command))
+		return fail(stderr, 2, fmt.Errorf("unsupported command %q; use up, down, ls, status, recover, or add", command))
 	}
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
 	flags.SetOutput(stderr)
