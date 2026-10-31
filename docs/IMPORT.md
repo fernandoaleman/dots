@@ -528,7 +528,8 @@ recovery, state writes, temporary-file creation, or filesystem mutations.
 Actual output distinguishes completed relocation, symlink creation, and
 ownership publication. Output or persistence failure does not undo writes.
 
-Flags precede PATH. Duplicate source/config/dry-run flags within add and explicit
+Flags precede PATH. Duplicate source/config/dry-run flags within add, `--config`
+repeated across global and command scopes, and explicit
 false dry-run values refuse rather than silently changing modes. The input and
 selected root expand `~` and relative locators without cleaning symlink/..
 traversal. Leading ./ is accepted; the input must use the configured target

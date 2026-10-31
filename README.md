@@ -76,7 +76,8 @@ dots add --root ~/dotfiles-local --dry-run ~/.config/nvim/init.lua
 ```
 
 Exact syntax: `dots [--config FILE] add [--config FILE] [--root DIR] [--dry-run|-n] PATH`.
-Flags precede the single PATH. The input must be an existing current-user-owned
+Flags precede the single PATH. Supply `--config` only once, before or after `add`.
+The input must be an existing current-user-owned
 regular file with one hard link and ordinary permissions, inside the configured
 target namespace. Directories, symlinks (including already managed links),
 special files and ambiguous path spellings refuse. Relative paths and leading

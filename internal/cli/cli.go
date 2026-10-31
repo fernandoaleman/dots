@@ -44,7 +44,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 	}
 	command := rest[0]
 	if command == "add" {
-		if err := validateAddFlags(args[:len(args)-len(rest)]); err != nil {
+		if err := validateAddFlags(args[:len(args)-len(rest)], false); err != nil {
 			return fail(stderr, 2, err)
 		}
 		configured := false

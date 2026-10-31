@@ -43,6 +43,9 @@ func TestAddPreviewReadOnly(t *testing.T) {
 	fixtureFile(t, input, "config data")
 	config := filepath.Join(base, "config.toml")
 	fixtureFile(t, config, "dotfiles_dirs = ['source']\ntarget_dir = 'target'\nexcludes = ['README.md']\n")
+	other := filepath.Join(base, "other.toml")
+	fixtureFile(t, filepath.Join(base, "other-source", "README.md"), "other repository")
+	fixtureFile(t, other, "dotfiles_dirs = ['other-source']\ntarget_dir = 'target'\nexcludes = ['README.md']\n")
 	before := snapshot(t, base)
 	var previous string
 	for _, args := range [][]string{{"--config", config, "add", "--dry-run", input}, {"add", "--config", config, "-n", input}} {
@@ -54,6 +57,23 @@ func TestAddPreviewReadOnly(t *testing.T) {
 			t.Fatal("preview output is nondeterministic")
 		}
 		previous = out.String()
+	}
+	for _, args := range [][]string{
+		{"--config", config, "add", "--config", other, input},
+		{"--config", config, "add", "--config", config, input},
+		{"--config=" + config, "--", "add", "--config=" + other, input},
+		{"--config", config, "--config", other, "add", input},
+		{"add", "--config", config, "--config", other, input},
+		{"--config", config, "add", "--config"},
+		{"add", "--config"},
+	} {
+		var out, err bytes.Buffer
+		if code := Run(args, &out, &err); code != 2 || err.Len() == 0 {
+			t.Fatal(args, code, out.String(), err.String())
+		}
+		if !reflect.DeepEqual(before, snapshot(t, base)) {
+			t.Fatal("rejected config selection relocated input or changed directories/state")
+		}
 	}
 	var stderr bytes.Buffer
 	if code := Run([]string{"add", "--config", config, "--dry-run", input}, recoveryShortWriter{}, &stderr); code != 1 {

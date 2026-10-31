@@ -26,7 +26,7 @@ func addCommand(args []string, config string, configured bool, stdout, stderr io
 		fmt.Fprintln(stderr, "Flags precede PATH; use -- before a filename beginning with -. Imports one existing regular file, without replacement or adoption.")
 		f.PrintDefaults()
 	}
-	if err := validateAddFlags(args); err != nil {
+	if err := validateAddFlags(args, configured); err != nil {
 		return fail(stderr, 2, err)
 	}
 	if err := f.Parse(args); err != nil {
@@ -55,8 +55,8 @@ func addCommand(args []string, config string, configured bool, stdout, stderr io
 
 // Validate both the global prefix and add flags so a missing string value cannot
 // consume a preview flag. Explicit = permits intentional flag-like pathnames.
-func validateAddFlags(args []string) error {
-	seen := map[string]bool{}
+func validateAddFlags(args []string, configured bool) error {
+	seen := map[string]bool{"config": configured}
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		if arg == "--" || !strings.HasPrefix(arg, "-") {
