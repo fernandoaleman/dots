@@ -398,7 +398,8 @@ func TestRecoveryInspectionHeldLockAndCleanup(t *testing.T) {
 	}
 }
 
-func TestRecoveryInspectionCapacity(t *testing.T) {
+func recoveryCapacityFixture(t *testing.T) (Ownership, snapshot) {
+	t.Helper()
 	o, _, s := v2Fixture(t, true)
 	original := s.Records[0]
 	for n := 0; n < 100; n++ {
@@ -422,6 +423,11 @@ func TestRecoveryInspectionCapacity(t *testing.T) {
 	if err := os.WriteFile(o.Registry, data, 0o600); err != nil {
 		t.Fatal(err)
 	}
+	return o, s
+}
+
+func TestRecoveryInspectionCapacity(t *testing.T) {
+	o, s := recoveryCapacityFixture(t)
 	summary, err := inspectRecovery(o.Registry, nil, nil)
 	if err != nil || summary.Intent == nil || summary.Revision != s.Revision {
 		t.Fatal("capacity must not prevent reading valid state", err)

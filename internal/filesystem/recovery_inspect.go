@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"sort"
 
 	"golang.org/x/sys/unix"
 )
@@ -119,10 +120,9 @@ func inspectRecovery(path string, selection *recoverySelection, checkpoint func(
 		return result, nil
 	}
 	i := r.data.Imports[0]
-	observed := &recoveryIntentInspection{ID: i.ID, Profile: string(i.Profile), Target: string(i.Target), Phase: i.Phase,
-		Input: recoverySlot{string(i.Input), "not inspected"}, Source: recoverySlot{string(i.Source), "not inspected"}}
+	observed := recoverySummary(i)
 	result.Intent = observed
-	result.SettlementReasons = []string{"pending import must be explicitly retired before barrier settlement; neither mutation is implemented"}
+	result.SettlementReasons = []string{"pending import must be explicitly retired before barrier settlement; no public recovery command is available"}
 	if selection == nil {
 		observed.check("selection", fmt.Errorf("select pending import %s at registry revision %d to inspect recorded locations", i.ID, result.Revision))
 		return result, nil
@@ -133,52 +133,102 @@ func inspectRecovery(path string, selection *recoverySelection, checkpoint func(
 	observed.check("retirement revision budget", revisionCapacity(r.data.Revision, 2))
 	_, capacityErr := snapshotBytes(r.data, 0)
 	observed.check("publication capacity", capacityErr)
+	evidenceFiles, err := inspectRecoveryFiles(i, observed, checkpoint)
+	if evidenceFiles != nil {
+		defer func() { err = errors.Join(err, evidenceFiles.Close()) }()
+	}
+	return result, err
+}
+
+func recoverySummary(i importIntent) *recoveryIntentInspection {
+	return &recoveryIntentInspection{ID: i.ID, Profile: string(i.Profile), Target: string(i.Target), Phase: i.Phase,
+		Input: recoverySlot{string(i.Input), "not inspected"}, Source: recoverySlot{string(i.Source), "not inspected"}}
+}
+
+// Pinned observations are not transaction authority. Only the private locked
+// retirement invocation may use them for synchronization; inspection closes them.
+type recoveryEvidence struct {
+	plan     *PreparedPlan
+	entries  []importStateEntry
+	files    []*os.File
+	selected map[*directory]string
+	closed   bool
+}
+
+func (h *recoveryEvidence) parents() []*directory {
+	var dirs []*directory
+	for dir := range h.selected {
+		dirs = append(dirs, dir)
+	}
+	sort.Slice(dirs, func(i, j int) bool { return h.selected[dirs[i]] < h.selected[dirs[j]] })
+	return dirs
+}
+
+func (h *recoveryEvidence) Close() error {
+	if h.closed {
+		return nil
+	}
+	h.closed = true
+	var err error
+	for _, f := range h.files {
+		err = errors.Join(err, f.Close())
+	}
+	for _, dir := range h.parents() {
+		err = errors.Join(err, unix.Close(dir.fd))
+	}
+	return errors.Join(err, h.plan.Close())
+}
+
+func (h *recoveryEvidence) check() error {
+	if h.closed {
+		return fmt.Errorf("recovery observations already closed")
+	}
+	var err error
+	for _, route := range h.plan.routes {
+		err = errors.Join(err, validateBinding(route))
+	}
+	for _, entry := range h.entries {
+		err = errors.Join(err, entry.revalidate())
+		// Compare pinned and named mount views, not inode identity alone.
+		dir, e := recoveryOpenParent(h.selected[entry.parent], idOfDirectory(entry.parent))
+		if e == nil {
+			current := entry
+			current.parent = dir
+			e = errors.Join(current.revalidate(), unix.Close(dir.fd))
+		}
+		err = errors.Join(err, e)
+	}
+	return err
+}
+
+func inspectRecoveryFiles(i importIntent, observed *recoveryIntentInspection, checkpoint func(string)) (_ *recoveryEvidence, err error) {
 	p, err := namespace()
 	if err != nil {
-		return result, err
+		return nil, err
 	}
-	defer func() { err = errors.Join(err, p.Close()) }()
-	var entries []importStateEntry
-	var files []*os.File
-	selected := map[*directory]string{}
-	defer func() {
-		for _, f := range files {
-			err = errors.Join(err, f.Close())
-		}
-		for dir := range selected {
-			err = errors.Join(err, unix.Close(dir.fd))
-		}
-	}()
-	// Revalidation must run before descriptors close, on success and error paths.
+	h := &recoveryEvidence{plan: p, selected: map[*directory]string{}}
 	defer func() {
 		if checkpoint != nil {
 			checkpoint("final")
 		}
-		for _, route := range p.routes {
-			err = errors.Join(err, validateBinding(route))
+		err = errors.Join(err, h.check())
+		if err != nil {
+			observed.RetirementObserved = false
+			observed.check("final file consistency", err)
 		}
-		for _, entry := range entries {
-			err = errors.Join(err, entry.revalidate())
-			// Reopen the named parent as well: inode identity alone cannot
-			// distinguish different bind-mount views of its child entries.
-			dir, e := recoveryOpenParent(selected[entry.parent], idOfDirectory(entry.parent))
-			if e == nil {
-				current := entry
-				current.parent = dir
-				e = errors.Join(current.revalidate(), unix.Close(dir.fd))
-			}
-			err = errors.Join(err, e)
+		if err != nil || !observed.RetirementObserved {
+			err = errors.Join(err, h.Close())
 		}
 	}()
-	input, _, inputErr := recoveryParent(p, string(i.Input), i.InputBinding, nil, selected)
+	input, _, inputErr := recoveryParent(p, string(i.Input), i.InputBinding, nil, h.selected)
 	observed.check("input ancestry", inputErr)
 	sourceBinding, missing := i.SourceAnchor.importBinding, i.SourceAnchor.Missing
 	if i.SourceBinding != nil {
 		sourceBinding, missing = *i.SourceBinding, nil
 	}
-	source, frontier, sourceErr := recoveryParent(p, string(i.Source), sourceBinding, missing, selected)
+	source, frontier, sourceErr := recoveryParent(p, string(i.Source), sourceBinding, missing, h.selected)
 	if frontier != nil {
-		entries = append(entries, *frontier)
+		h.entries = append(h.entries, *frontier)
 		observed.check("source anchor access", unix.Faccessat(frontier.parent.fd, ".", unix.X_OK, unix.AT_EACCESS))
 	}
 	observed.check("source ancestry", sourceErr)
@@ -201,7 +251,7 @@ func inspectRecovery(path string, selection *recoverySelection, checkpoint func(
 			observed.check(slot.Path+" type", e)
 			continue
 		}
-		entries = append(entries, entry)
+		h.entries = append(h.entries, entry)
 		slot.Kind = recoveryKind(entry)
 		observed.check(slot.Path+" parent access", unix.Faccessat(parent.fd, ".", unix.X_OK, unix.AT_EACCESS))
 		if !entry.exists || slot.Kind != "regular file" {
@@ -209,7 +259,7 @@ func inspectRecovery(path string, selection *recoverySelection, checkpoint func(
 		}
 		f, e := recoveryFile(parent, entry, i, n == 1, checkpoint)
 		if f != nil {
-			files = append(files, f)
+			h.files = append(h.files, f)
 		}
 		observed.check(slot.Path+" file evidence", e)
 	}
@@ -226,7 +276,7 @@ func inspectRecovery(path string, selection *recoverySelection, checkpoint func(
 	for _, check := range observed.Checks {
 		observed.RetirementObserved = observed.RetirementObserved && check.Passed
 	}
-	return result, nil
+	return h, nil
 }
 
 func recoveryParent(p *PreparedPlan, path string, expected importBinding, expectedMissing []pathBytes, selected map[*directory]string) (*directory, *importStateEntry, error) {

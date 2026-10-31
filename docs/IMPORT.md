@@ -395,7 +395,44 @@ lock. Barrier-only M3 state is distinguished from a pending import. Reading
 valid state does not require spare future write capacity; capacity reservation
 and synchronization remain requirements of future authorized mutation.
 
-### Future administrative mutation
+### Private administrative retirement
+
+Private retirement is implemented for isolated integration and development use;
+there is no public `dots recover` command. It requires the exact stored intent
+ID and expected registry revision, existing private state and the stable lock.
+It never initializes state or consults current TOML, resolver output or current
+source-root selection. A returned inspection result cannot authorize retirement.
+
+The uninterrupted invocation acquires and validates the existing exclusive
+lock, reloads strict v2 state and pins complete snapshot continuity. It verifies
+the recorded file/ancestry/hash evidence before any publication, including the
+same selected-parent view checks as inspection. It reserves two revisions and
+checks the complete invalidation and retirement encodings, including recovery
+expansion, before writing. This does not reserve disk space or later settlement
+headroom.
+
+Retirement first durably changes every `owned`/`removing` record to `invalidated`
+across all scopes, without visiting historical locations. It preserves creating
+and already-invalidated records, all recorded history, the complete import
+intent and `unfinished=true`. After verifying that the previous file witnesses
+still match, it repeats full file/hash inspection, synchronizes the survivor
+and the two existing selected parents (or the source's recorded existing anchor
+when parents are absent), and rechecks bindings, metadata, privacy and registry
+continuity immediately before publication. Only then does it durably remove
+the selected intent, keeping the unfinished barrier and invalidated history.
+
+Success reports the verified surviving file location and that explicit barrier
+settlement is still required. It does not complete the import, install a link,
+restore ownership, remove reservations, move data, or settle the barrier. No
+live handle is returned. Barrier settlement remains unimplemented.
+
+Known preliminary refusals leave the registry unchanged and create no state.
+Failures after invalidation preserve the pending intent and revoked authority;
+a failed final publication may leave retirement visibly published with uncertain
+durability. Preserve all evidence and investigate rather than automatically
+retrying or reconstructing an intent. Abrupt interruption never resumes this
+invocation's authority. Any later separately authorized attempt must select the
+then-current stored ID/revision and repeat all checks from existing state.
 
 Before relocation, failures preserve the original file in place.
 After relocation, preserve the file in the source repository, created
