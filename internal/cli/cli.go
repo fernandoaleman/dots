@@ -23,6 +23,7 @@ func Run(args []string, stdout, stderr io.Writer) int {
 	root.Usage = func() {
 		fmt.Fprintln(stderr, "Usage: dots [--config PATH] up|down [--dry-run]")
 		fmt.Fprintln(stderr, "       dots [--config PATH] ls|status")
+		fmt.Fprintln(stderr, "       dots recover [--retire ID | --settle] [--revision N] [--dry-run]")
 		root.PrintDefaults()
 	}
 	if err := root.Parse(args); err != nil {
@@ -41,8 +42,16 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	command := rest[0]
+	if command == "recover" {
+		configured := false
+		root.Visit(func(f *flag.Flag) { configured = configured || f.Name == "config" })
+		if configured {
+			return fail(stderr, 2, fmt.Errorf("recover does not use --config; recovery uses stored registry evidence"))
+		}
+		return recoverCommand(rest[1:], stdout, stderr)
+	}
 	if command != "up" && command != "down" && command != "ls" && command != "status" {
-		return fail(stderr, 2, fmt.Errorf("unsupported command %q; use up, down, ls, or status", command))
+		return fail(stderr, 2, fmt.Errorf("unsupported command %q; use up, down, ls, status, or recover", command))
 	}
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
 	flags.SetOutput(stderr)

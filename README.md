@@ -68,6 +68,58 @@ aliases `--dry-run`. Use `dots --help` or a command's `--help` for usage.
 and installation-only flags. JSON output is not available.
 `add` and other future commands remain unavailable.
 
+## Inspecting and recovering interrupted imports
+
+`dots recover` reads existing ownership state without TOML configuration,
+exclusive locking, initialization, synchronization or writes. It displays the
+registry location/revision, unfinished barrier, pending intent scope and paths,
+observed file slots and evidence failures. A successful inspection can report
+blocked recovery: it is an observation, not authorization to change state.
+
+```sh
+dots recover
+dots recover --retire INTENT_ID --revision N --dry-run
+dots recover --retire INTENT_ID --revision N
+dots recover --settle --revision N --dry-run
+dots recover --settle --revision N
+```
+
+Replace `INTENT_ID` with the displayed 32-character lowercase hexadecimal ID
+and `N` with the exact displayed unsigned decimal registry revision. Recovery
+uses `$XDG_STATE_HOME/dots/ownership.json`, falling back to
+`~/.local/state/dots/ownership.json` for unset, empty or relative XDG values.
+`--config` is rejected. Each mutation independently reloads and validates state
+under the existing exclusive registry lock; stale selections refuse.
+
+Retirement requires exactly one intact regular file at the recorded input or
+source location and a verified absent counterpart. It verifies ancestry,
+identity, metadata and content, invalidates prior owned/removing authority while
+preserving history, and retires only the intent. It never moves or modifies user
+files or symlinks. Success prints the surviving file's location and the new
+revision, leaving the unfinished barrier in place.
+
+Inspect again before separately selecting settlement at that new revision.
+Settlement refuses pending imports and unfinished owned/removing history. It
+preserves eligible records and the loaded registry version, clearing only the
+barrier. It does not repair user paths or complete the interrupted import.
+Missing state with revision zero and already-clean state at the exact revision
+are no-ops that initialize, rewrite and synchronize nothing.
+
+Both dry-runs acquire no exclusive lock and make zero writes. Their eligibility
+reports grant no authority to a later invocation. Exit 0 means successful
+inspection, eligible preview, completed action or no-op; exit 1 means blocked
+selected recovery, operational uncertainty or output failure; exit 2 means
+invalid usage. Duplicate, incomplete and conflicting action flags are rejected.
+An output failure does not undo a completed registry action: inspect again.
+
+If recovery refuses, preserve both displayed locations and registry evidence;
+investigate the reported blockers rather than retrying blindly. Symlinks,
+competing occupants, missing files or changed evidence can require manual
+investigation. Manual editing of `ownership.json` is unsupported. No automatic
+resume, rollback, adoption or cleanup occurs. The cooperative concurrency
+contract still applies. See [recovery details](docs/IMPORT.md#failure-and-recovery).
+Public `dots add` remains unavailable.
+
 The target platforms are macOS and Linux on arm64 and amd64. CI uses the
 Go version declared in `go.mod` and checks formatting, vet, tests,
 Staticcheck, build, and prek on macOS and Linux. CI uses the Makefile's

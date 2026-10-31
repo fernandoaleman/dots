@@ -19,10 +19,11 @@ physical source-slot occupancy, protected paths, historical ownership
 claims, permissions, same-filesystem relocation, locking, or recovery.
 Excluded entries can still occupy physical source paths. Read-only filesystem
 path preflight now independently observes filesystem conditions. Existing v1/v2
-registry contents and historical claims now constrain admission. Public CLI preview and
-mutation remain unimplemented; execution will require fresh preparation under
-the approved transaction protocol. Strict registry v2 reading and pending-import gates are implemented; no command
-produces v2 import state or performs recovery. Private Stage 2 preparation
+registry contents and historical claims now constrain admission. Public import preview and
+execution remain unimplemented; execution will require fresh preparation under
+the approved transaction protocol. Strict registry v2 reading and pending-import gates are implemented;
+public `dots recover` provides separate administrative recovery, but no public
+command produces import intents. Private Stage 2 preparation
 now creates durable intent and source-parent evidence in isolated integration
 fixtures; it has no public caller.
 
@@ -209,12 +210,11 @@ or overflowing requests. Revision headroom is checked before writes and
 ordinary transaction entry. Private Stage 2 now reserves the complete proposed import transaction before
 parent creation; public import execution remains unimplemented.
 
-Import phases are diagnostic evidence, never restart authority. Recovery
-support is not yet available: preserve both reported locations and ownership
-state, stop affected writers, and seek explicit recovery guidance. Do not edit
-registry JSON, replay temporary snapshots, delete the lock, or retry by
-recreating a symlink. The administrative recovery policy below remains future
-work, not an implemented recovery mechanism.
+Import phases are diagnostic evidence, never restart authority. Preserve both
+reported locations and ownership state, stop affected writers, and inspect with
+`dots recover` before explicitly selecting recovery. Do not edit registry JSON,
+replay temporary snapshots, delete the lock, or retry by recreating a symlink.
+The administrative recovery operations below never resume the import.
 
 ## Private transaction preparation (Stage 2)
 
@@ -313,7 +313,7 @@ report both locations and preserve available state; no automatic recovery or
 parent cleanup occurs. Phases are diagnostics, never restart authority.
 
 The implementation has no public caller. First-use bootstrap is private;
-administrative recovery and public `dots add` remain deferred. Native filesystem capabilities
+public `dots add` remains deferred; administrative recovery is exposed separately through `dots recover`. Native filesystem capabilities
 are required; cross-builds do not substitute for native Linux validation.
 
 ## Selection and mapping
@@ -360,10 +360,26 @@ against arbitrary concurrent replacement.
 
 ## Failure and recovery
 
+Public commands are `dots recover`, `dots recover --retire INTENT_ID --revision N`
+and `dots recover --settle --revision N`; append `--dry-run` to either action
+for a strictly read-only preview. The default command first reads a summary,
+then selects its observed intent ID/revision for detailed inspection. A change
+between observations refuses; neither observation grants authority. No live
+TOML is required and explicit `--config` is rejected. Stored paths are printed
+with quoting; file contents are never printed.
+
+Mutating actions repeat authoritative checks under the exclusive lock. Retirement
+prints the verified surviving location and leaves the barrier; settlement must
+be separately selected at the new revision. Preview explains intended registry
+changes and blockers without locking or syncing. Successful inspection may
+report blockers (exit 0); blocked selected previews/actions or operational errors
+exit 1; invalid flag combinations/values exit 2. Both actions remain registry-only.
+If recovery refuses, preserve occupants and evidence, investigate reported checks,
+and do not manually edit registry JSON. See the [usage guide](../README.md#inspecting-and-recovering-interrupted-imports).
+
 ### Private read-only inspection
 
-Private recovery inspection is implemented for development and testing; there
-is no public `dots recover` command. It takes only the registry location,
+The recovery inspector backs public `dots recover`. It takes only the registry location,
 independent of TOML configuration and current source selection. Summary mode
 reports snapshot version/revision, the unfinished barrier, stored intent scope
 and paths, and the number of owned/removing records whose authority would need
@@ -390,15 +406,15 @@ using inode-deduplicated views for leaf checks. Final named-parent reopen checks
 also compare child evidence through the selected path. Matching
 observations cannot prove durability or the absence of every race or alias.
 They carry no live capability and never authorize retirement or settlement;
-those future operations must repeat authoritative checks under the exclusive
+mutating operations must repeat authoritative checks under the exclusive
 lock. Barrier-only M3 state is distinguished from a pending import. Reading
 valid state does not require spare future write capacity; capacity reservation
 and synchronization remain requirements of future authorized mutation.
 
 ### Private administrative retirement
 
-Private retirement is implemented for isolated integration and development use;
-there is no public `dots recover` command. It requires the exact stored intent
+Retirement is exposed through `dots recover --retire INTENT_ID --revision N`.
+It requires the exact stored intent
 ID and expected registry revision, existing private state and the stable lock.
 It never initializes state or consults current TOML, resolver output or current
 source-root selection. A returned inspection result cannot authorize retirement.
@@ -464,8 +480,8 @@ adopt an interrupted link, or use registry editing as ordinary recovery.
 ### Private barrier settlement
 
 Private settlement clears only the registry's unfinished marker; retirement
-removes an eligible import intent after revoking prior authority. Neither is a
-public command. Settlement requires an explicit expected registry revision,
+removes an eligible import intent after revoking prior authority. Public
+`dots recover --settle --revision N` requires an explicit expected registry revision,
 existing safe private state and the validated stable exclusive lock, with fresh
 strict loading and full snapshot continuity. No live TOML or historical user
 path is consulted, and a preview grants no mutation authority.
@@ -497,8 +513,8 @@ without acquiring flock, writing or synchronizing. Actual settlement repeats
 admission under lock. Publication failures preserve available evidence; failure
 after replacement may leave clearance visible with uncertain durability. No
 retry, reconstruction, temporary-snapshot replay or cleanup is automatic. The
-eventual CLI must require explicit authorization for this separate operation;
-public `dots recover` and `dots add` remain unavailable.
+CLI requires explicit authorization for this separate operation; public
+`dots add` remains unavailable.
 
 ## Command contract
 

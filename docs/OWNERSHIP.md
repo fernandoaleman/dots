@@ -84,8 +84,9 @@ as the final successful transaction step.
 | `invalidated` | Authority disabled permanently for this record. Preserve a present occupant even if the original fingerprint returns. Verified absence can retire the record; later fresh creation uses new live evidence, not reactivation. |
 
 Pending v2 imports block ordinary mutations before this recovery, including
-registry-only changes and empty-plan/history paths. Recovery support for
-imports is not yet available; preserve state and both reported file locations.
+registry-only changes and empty-plan/history paths. Preserve state and both
+reported file locations, then inspect with `dots recover` before explicitly
+selecting administrative retirement and separate settlement.
 Do not modify registry JSON or infer authority from recorded import phases.
 See [the v2 reader boundary](IMPORT.md#registry-v2-reader-and-mutation-gates).
 
@@ -181,7 +182,7 @@ through durable `creating` and `owned` publication; only final atomic completion
 retires the intent and clears the barrier. Failures preserve available evidence,
 the source file and any created link; they never resume, adopt, roll back or
 clean up parents. A rename or final snapshot-sync error may have an uncertain
-outcome. No public import command or import recovery is provided. See
+outcome. No public import command is provided; explicit registry-only recovery is available through `dots recover`. See
 [private completion](IMPORT.md#private-completion-stage-3).
 
 Private imports also retain the last durable registry snapshot's identity,
@@ -192,6 +193,16 @@ preserved and reported; it is never reconstructed or overwritten to resume work.
 
 ## Read-only operation and recovery
 
+`dots recover` observes existing state without TOML, locking or writes. A pending
+summary supplies its exact ID/revision to detailed inspection; concurrent changes
+refuse rather than authorize recovery. `--retire INTENT_ID --revision N` and
+`--settle --revision N` separately authorize the locked registry-only actions.
+Add `--dry-run` for lock-free, zero-write observations that grant no later authority.
+Retirement leaves the barrier and reports the surviving file/new revision;
+settlement neither retires intents nor repairs user paths. Preserve evidence and
+investigate refusals; manual JSON edits are unsupported. Public `dots add` remains
+deferred. See [command usage](../README.md#inspecting-and-recovering-interrupted-imports).
+
 Private recovery inspection now reuses the strict state reader and lock-free
 registry observations using only a registry locator. It reports v1/v2 state,
 unfinished barriers and pending intent evidence without consulting current
@@ -201,7 +212,7 @@ history is summarized without visiting unrelated recorded paths. Structured
 checks distinguish an observational retirement candidate from mutation authority.
 Final registry, lock, route and leaf observations reject detected changes.
 Private retirement and barrier settlement are separate operations under the
-existing exclusive lock; public recovery commands remain unimplemented.
+existing exclusive lock, exposed by explicitly selected `dots recover` actions.
 See [private inspection](IMPORT.md#private-read-only-inspection) for evidence
 checks and limitations. Do not edit registry JSON to retire an intent.
 
