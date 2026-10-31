@@ -182,7 +182,9 @@ through durable `creating` and `owned` publication; only final atomic completion
 retires the intent and clears the barrier. Failures preserve available evidence,
 the source file and any created link; they never resume, adopt, roll back or
 clean up parents. A rename or final snapshot-sync error may have an uncertain
-outcome. No public import command is provided; explicit registry-only recovery is available through `dots recover`. See
+outcome. Public `dots add` now calls this native transaction through RunImport,
+with fresh CLI resolver callbacks and first-use bootstrap. Explicit registry-only
+recovery remains separate through `dots recover`. See
 [private completion](IMPORT.md#private-completion-stage-3).
 
 Private imports also retain the last durable registry snapshot's identity,
@@ -200,8 +202,8 @@ refuse rather than authorize recovery. `--retire INTENT_ID --revision N` and
 Add `--dry-run` for lock-free, zero-write observations that grant no later authority.
 Retirement leaves the barrier and reports the surviving file/new revision;
 settlement neither retires intents nor repairs user paths. Preserve evidence and
-investigate refusals; manual JSON edits are unsupported. Public `dots add` remains
-deferred. See [command usage](../README.md#inspecting-and-recovering-interrupted-imports).
+investigate refusals; manual JSON edits are unsupported. Public `dots add` never
+resumes or rolls back interrupted imports. See [command usage](../README.md#inspecting-and-recovering-interrupted-imports).
 
 Private recovery inspection now reuses the strict state reader and lock-free
 registry observations using only a registry locator. It reports v1/v2 state,

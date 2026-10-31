@@ -54,3 +54,20 @@ correctness, not ownership. Only new creations receive registry records.
 `down` removes eligible recorded links, so it cannot undo an entire legacy
 installation. See [ownership and recovery](OWNERSHIP.md) before using removal.
 See the README installation safety section before switching management.
+
+For an existing regular dotfile, the closest dots equivalent to `mkrc` is:
+
+```sh
+dots add --dry-run ~/.zshrc
+dots add ~/.zshrc
+```
+
+With multiple configured roots, explicitly select one with `--root DIR`.
+Unlike broad import tools, dots imports one current-user-owned, single-link
+regular file at a time and refuses symlinks, directories, occupied source slots
+and cross-filesystem relocation. It preserves resolver naming and exclusions,
+relocates without replacement, then installs and records a new symlink.
+Preview creates nothing; it does not authorize execution. Fresh installations
+need no setup command. Failed imports retain evidence and may leave the data
+at the repository path; inspect with `dots recover`, never manually edit registry
+JSON or assume automatic rollback. See [import usage](../README.md#importing-an-existing-dotfile).

@@ -1,7 +1,6 @@
 # Approved import policy
 
-This document records the approved M4 design. It does not indicate that
-`dots add` is implemented. [Issue #6 (import policy)](https://github.com/fernandoaleman/dots/issues/6)
+This document records the approved M4 design and implemented `dots add` safety contract. [Issue #6 (import policy)](https://github.com/fernandoaleman/dots/issues/6)
 and [Issue #7 (import implementation)](https://github.com/fernandoaleman/dots/issues/7)
 define milestone scope.
 
@@ -19,13 +18,12 @@ physical source-slot occupancy, protected paths, historical ownership
 claims, permissions, same-filesystem relocation, locking, or recovery.
 Excluded entries can still occupy physical source paths. Read-only filesystem
 path preflight now independently observes filesystem conditions. Existing v1/v2
-registry contents and historical claims now constrain admission. Public import preview and
-execution remain unimplemented; execution will require fresh preparation under
-the approved transaction protocol. Strict registry v2 reading and pending-import gates are implemented;
-public `dots recover` provides separate administrative recovery, but no public
-command produces import intents. Private Stage 2 preparation
-now creates durable intent and source-parent evidence in isolated integration
-fixtures; it has no public caller.
+registry contents and historical claims constrain admission. Public `dots add`
+uses this planning and preflight for preview, and RunImport for execution with
+fresh TOML/resolver callbacks before bootstrap and under the retained lock.
+Strict v2 reading and pending-import gates remain unchanged; successful actual
+imports lazily produce v2 intents and use the same preparation/completion protocol.
+`dots recover` provides separate administrative recovery, never automatic continuation.
 
 The filesystem API accepts value-only requests and returns observations,
 including missing source parents. It retains no handles or mutation authority.
@@ -116,8 +114,7 @@ external processes must not modify affected paths, ancestors, input contents,
 metadata, or source selection during authoritative operations. Final checks
 catch observed changes; they cannot close every TOCTOU window or make a
 previously unknown alias visible. Private preparation and same-invocation
-completion below implement import execution internally. A public `dots add`
-command remains unimplemented.
+completion below implement the transaction used by public `dots add`.
 
 ## Read-only registry-claim preflight
 
@@ -160,8 +157,8 @@ These checks are read-only observations, not serialization or mutation
 authority. They cannot detect every intervening publication or a change after
 return. Actual relocation still requires separate transactional authorization,
 an exclusive stable lock, fresh authoritative state, and repeated filesystem
-preflight. No registry upgrade, import-intent production, synchronization, recovery write,
-or public `dots add` command is implemented here.
+preflight. No registry upgrade, import-intent production, synchronization or recovery
+write is performed by this preflight; public `dots add` executes only through the separate transaction bridge.
 
 ## Registry v2 reader and mutation gates
 
@@ -208,7 +205,7 @@ array. They cannot upgrade or downgrade it. The shared 16 MiB bound includes
 import evidence and recovery expansion; reserved byte counts reject negative
 or overflowing requests. Revision headroom is checked before writes and
 ordinary transaction entry. Private Stage 2 now reserves the complete proposed import transaction before
-parent creation; public import execution remains unimplemented.
+parent creation; public `dots add` now uses this existing transaction machinery.
 
 Import phases are diagnostic evidence, never restart authority. Preserve both
 reported locations and ownership state, stop affected writers, and inspect with
@@ -247,7 +244,9 @@ identity evidence is retained across lock acquisition. The locked registry/profi
 selected paths must match the preview. It repeats path and ownership-claim
 inspection, retains descriptors/recheck evidence, hashes the original with
 identity/metadata validation, then reserves snapshot and revision capacity.
-No lower package imports the resolver; public CLI integration remains unwired.
+No lower package imports the resolver. CLI callbacks reload TOML and rebuild the
+resolver-selected request, including every provider and required directory.
+RunImport retains native preparation/completion authority inside the filesystem package.
 
 The size bound includes realized routes with maximum identity widths,
 relocated evidence, simultaneous import and M3 ownership capture, counter
@@ -312,8 +311,8 @@ a visibly completed snapshot whose durability is uncertain. All such failures
 report both locations and preserve available state; no automatic recovery or
 parent cleanup occurs. Phases are diagnostics, never restart authority.
 
-The implementation has no public caller. First-use bootstrap is private;
-public `dots add` remains deferred; administrative recovery is exposed separately through `dots recover`. Native filesystem capabilities
+Public `dots add` calls the native transaction bridge, including first-use
+bootstrap; administrative recovery remains separate through `dots recover`. Native filesystem capabilities
 are required; cross-builds do not substitute for native Linux validation.
 
 ## Selection and mapping
@@ -513,12 +512,12 @@ without acquiring flock, writing or synchronizing. Actual settlement repeats
 admission under lock. Publication failures preserve available evidence; failure
 after replacement may leave clearance visible with uncertain durability. No
 retry, reconstruction, temporary-snapshot replay or cleanup is automatic. The
-CLI requires explicit authorization for this separate operation; public
-`dots add` remains unavailable.
+CLI requires explicit authorization for this separate operation and never
+automatically resumes `dots add`.
 
 ## Command contract
 
-Proposed usage: `dots add [--config FILE] [--root DIR] [--dry-run|-n] PATH`.
+Usage: `dots [--config FILE] add [--config FILE] [--root DIR] [--dry-run|-n] PATH`.
 Require exactly one input. Exit 0 for completion or a valid preview,
 1 for conflicts or operational uncertainty, and 2 for invalid usage.
 
@@ -528,3 +527,22 @@ recovery, state writes, temporary-file creation, or filesystem mutations.
 
 Actual output distinguishes completed relocation, symlink creation, and
 ownership publication. Output or persistence failure does not undo writes.
+
+Flags precede PATH. Duplicate source/config/dry-run flags within add, `--config`
+repeated across global and command scopes, and explicit
+false dry-run values refuse rather than silently changing modes. The input and
+selected root expand `~` and relative locators without cleaning symlink/..
+traversal. Leading ./ is accepted; the input must use the configured target
+namespace and a literal suffix, so alternate target aliases and relative ..
+require the configured literal spelling. Structural source errors remain global;
+unrelated destination occupancy is selectively handled by filesystem preflight.
+
+Fresh state requires no setup command. Preliminary rejection and preview are
+zero-write. Once bootstrap begins, safe state directories and a stable lock may
+remain; after durable intent publication source parents may also remain. No
+cleanup or rollback is automatic. On interruption, preserve both reported file
+locations and state, then inspect with `dots recover`. Confirmed step flags are
+not proof that unconfirmed operations had no effect. Output failure cannot undo
+an import. `status` observes the result; `down` removes only the verified owned
+link and leaves imported source data and parents. Public import examples and
+exit codes are in the [usage guide](../README.md#importing-an-existing-dotfile).

@@ -62,11 +62,64 @@ gofmt and other hooks retain their behavior.
 Dependency-only and lint-configuration-only commits do not trigger this
 Go-file hook. `make lint` and CI still check the module unconditionally.
 
-`--config` works before or after `up`, `down`, `ls`, and `status`. On `up` and `down`, `-n`
+`--config` works before or after `up`, `down`, `ls`, `status`, and `add`. On `up`, `down`, and `add`, `-n`
 aliases `--dry-run`. Use `dots --help` or a command's `--help` for usage.
 `ls` and `status` are inherently read-only and reject `--dry-run`, `-n`,
 and installation-only flags. JSON output is not available.
-`add` and other future commands remain unavailable.
+
+## Importing an existing dotfile
+
+```sh
+dots add --dry-run ~/.zshrc
+dots add ~/.zshrc
+dots add --root ~/dotfiles-local --dry-run ~/.config/nvim/init.lua
+```
+
+Exact syntax: `dots [--config FILE] add [--config FILE] [--root DIR] [--dry-run|-n] PATH`.
+Flags precede the single PATH. Supply `--config` only once, before or after `add`.
+The input must be an existing current-user-owned
+regular file with one hard link and ordinary permissions, inside the configured
+target namespace. Directories, symlinks (including already managed links),
+special files and ambiguous path spellings refuse. Relative paths and leading
+`./` work from that namespace; relative `..` and alternate target aliases are
+not guessed. Configured symlink-plus-`..` paths retain their meaning.
+
+The sole configured source root is selected by default; multiple roots require
+`--root DIR`. Roots must already exist. There is no fallback to another root.
+`~/.zshrc` normally imports to `ROOT/zshrc`, and `.config/nvim/init.lua` to
+`ROOT/config/nvim/init.lua`. Nested names are preserved; source naming must
+round-trip through the existing resolver. Precedence, literal exclusions,
+all existing providers (including losers), and native collisions are checked.
+Existing source content is never replaced, and existing symlinks are never adopted.
+
+Preview displays ROOT, RELOCATE, SYMLINK and any missing PARENT entries. It
+creates nothing, takes no exclusive lock and performs no synchronization.
+It grants no authority: execution reloads TOML, resolves again, and repeats
+filesystem and ownership checks before bootstrap and under the stable lock.
+
+Execution preserves existing ownership history, creates private state and the
+stable lock on first use, and records a durable intent before relocating the
+file. It uses exclusive same-filesystem rename, then create-only symlink
+installation and ownership recording. There is no copy/delete or overwriting
+fallback. `IMPORTED` is reported only after successful completion. Exit codes
+are 0 for completion/valid preview, 1 for conflicts or operational/output failure,
+and 2 for invalid usage. Duplicate selection flags and false dry-run overrides
+are rejected. Repeating add on an imported file refuses; use `status` to inspect it.
+
+On failure, preserve both reported locations and registry evidence. The original
+pathname may be absent after relocation; content may remain in the repository.
+Confirmed step flags report successful operations, not proof that an uncertain
+operation had no effect. No retry, rollback, adoption or parent cleanup occurs.
+Safely created private state/lock files may remain after bootstrap failure;
+later failures may retain source parents and an unfinished barrier. Inspect with
+`dots recover` before selecting recovery. Output failure does not undo import.
+
+`dots status` checks the installed link. `dots down --dry-run` previews its
+eligibility; `dots down` removes only the verified owned link, retaining the
+imported source and parent directories. `dots up` can install the retained source
+later. Cross-filesystem imports and unsupported exclusive-rename semantics refuse.
+The documented cooperative concurrency and bounded alias protections still apply;
+see [import safety](docs/IMPORT.md).
 
 ## Inspecting and recovering interrupted imports
 
@@ -118,7 +171,7 @@ competing occupants, missing files or changed evidence can require manual
 investigation. Manual editing of `ownership.json` is unsupported. No automatic
 resume, rollback, adoption or cleanup occurs. The cooperative concurrency
 contract still applies. See [recovery details](docs/IMPORT.md#failure-and-recovery).
-Public `dots add` remains unavailable.
+Recovery never invokes `dots add` or resumes an interrupted import automatically.
 
 The target platforms are macOS and Linux on arm64 and amd64. CI uses the
 Go version declared in `go.mod` and checks formatting, vet, tests,

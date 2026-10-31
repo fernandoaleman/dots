@@ -19,6 +19,62 @@ type ImportPlan struct {
 	Providers []Link
 }
 
+// PlanImportPath expands CLI locators without cleaning parent traversal, then
+// delegates all source selection and mapping to PlanImport. Input must use the
+// configured target namespace; alternate aliases and relative .. are not guessed.
+func PlanImportPath(cfg Config, root, input, home, cwd string) (ImportPlan, error) {
+	if !filepath.IsAbs(home) || !filepath.IsAbs(cwd) {
+		return ImportPlan{}, fmt.Errorf("home and working directory must be absolute")
+	}
+	trimCurrent := func(value string) string {
+		for strings.HasPrefix(value, "./") {
+			value = strings.TrimPrefix(value, "./")
+			if value == "" {
+				return "."
+			}
+		}
+		return value
+	}
+	expand := func(value string) (string, error) {
+		if value == "" || filepath.IsAbs(value) || strings.HasPrefix(value, "~") {
+			return expandPath(value, home, cwd)
+		}
+		// Classify first: ./~ and .// are relative locators, never home or
+		// absolute paths. Removing ./ must not reinterpret the user's input.
+		value = trimCurrent(value)
+		if value == "." {
+			return cwd, nil
+		}
+		return appendPath(cwd, value), nil
+	}
+	input, err := expand(input)
+	if err != nil {
+		return ImportPlan{}, err
+	}
+	if root != "" {
+		root, err = expand(root)
+		if err != nil {
+			return ImportPlan{}, err
+		}
+		// A directory's trailing separator does not select a different root.
+		root = strings.TrimRight(root, "/")
+		if root == "" {
+			root = "/"
+		}
+		for _, configured := range cfg.DotfilesDirs {
+			if strings.TrimRight(configured, "/") == strings.TrimRight(root, "/") {
+				root = configured
+				break
+			}
+		}
+	}
+	prefix := strings.TrimRight(cfg.TargetDir, "/") + "/"
+	if !strings.HasPrefix(input, prefix) {
+		return ImportPlan{}, fmt.Errorf("input %q must use the configured target namespace %q; supply its literal path without cleaning symlink/.. traversal", input, cfg.TargetDir)
+	}
+	return PlanImport(cfg, root, strings.TrimPrefix(input, prefix))
+}
+
 // PlanImport selects a configured root and resolves a prospective regular file.
 // relativeTarget must be a literal target-root-relative name, never a cleaned
 // raw input locator. Invalid arguments return a zero result. Source diagnostics
