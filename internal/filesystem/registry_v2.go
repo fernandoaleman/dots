@@ -53,7 +53,7 @@ type importIntent struct {
 func (s snapshot) allowMutation() error {
 	if len(s.Imports) != 0 {
 		i := s.Imports[0]
-		return fmt.Errorf("pending import %s blocks mutation: original %q, source %q; preserve both locations and ownership state; import recovery support is not yet available", i.ID, i.Input, i.Source)
+		return fmt.Errorf("pending import %s blocks mutation: original %q, source %q; preserve both locations and ownership state; inspect with dots recover before explicitly selecting recovery", i.ID, i.Input, i.Source)
 	}
 	return nil
 }

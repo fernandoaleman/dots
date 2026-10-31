@@ -121,7 +121,7 @@ func inspectRecovery(path string, selection *recoverySelection, checkpoint func(
 	i := r.data.Imports[0]
 	observed := recoverySummary(i)
 	result.Intent = observed
-	result.SettlementReasons = []string{"pending import must be explicitly retired before barrier settlement; no public recovery command is available"}
+	result.SettlementReasons = []string{"pending import must be explicitly retired before barrier settlement"}
 	if selection == nil {
 		observed.check("selection", fmt.Errorf("select pending import %s at registry revision %d to inspect recorded locations", i.ID, result.Revision))
 		return result, nil

@@ -231,7 +231,7 @@ func TestPendingImportMutationGates(t *testing.T) {
 						t.Fatal(closeErr)
 					}
 				}
-				if err == nil || !strings.Contains(err.Error(), "recovery support is not yet available") {
+				if err == nil || !strings.Contains(err.Error(), "inspect with dots recover") {
 					t.Fatalf("missing pending-import diagnostic: %v", err)
 				}
 				if !reflect.DeepEqual(before, treeState(t, filepath.Dir(string(s.Imports[0].Profile)))) {

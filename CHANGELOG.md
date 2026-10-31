@@ -4,8 +4,13 @@
 
 ### Added
 
+- Configuration-independent `dots recover` inspection, strictly read-only
+  retirement/settlement previews, and explicitly selected registry-only recovery
+  actions requiring exact revisions. User files and symlinks remain untouched;
+  no automatic recovery or public `dots add` command is introduced.
+
 - Strict ownership-registry v2 reading and pending-import mutation gates,
-  preserving v1 behavior without producing import intents or exposing recovery.
+  preserving v1 behavior without producing import intents.
 
 - Isolated restrictive-umask bootstrap tests and documented permission recovery
   for newly created ownership directories and stable locks.

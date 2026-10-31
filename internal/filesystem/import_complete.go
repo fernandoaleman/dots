@@ -41,7 +41,7 @@ func (p *preparedImport) complete(ops importCompleteOps) (report importCompletio
 			} else if renameAttempted {
 				location = "rename outcome may be uncertain; original pathname may be absent; do not retry relocation"
 			}
-			err = fmt.Errorf("import stopped: %s; preserve original %q, source %q and ownership state; recovery support is not yet available: %w", location, p.request.Input, p.request.Source, err)
+			err = fmt.Errorf("import stopped: %s; preserve original %q, source %q and ownership state; inspect with dots recover before explicitly selecting recovery: %w", location, p.request.Input, p.request.Source, err)
 		}
 		err = errors.Join(err, p.Close())
 	}()
