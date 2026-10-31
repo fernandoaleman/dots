@@ -63,7 +63,7 @@ func TestRecoveryInspectionSummary(t *testing.T) {
 				if got.Intent == nil || got.Intent.Input.Kind != "not inspected" || got.Intent.RetirementObserved {
 					t.Fatal("summary inferred authority", got)
 				}
-			} else if got.Intent != nil || len(got.SettlementReasons) == 0 {
+			} else if got.Intent != nil || (len(got.SettlementReasons) == 0) != got.Unfinished {
 				t.Fatal("missing settlement diagnostic", got)
 			}
 			if mode == "history" && got.AuthorityRecords != 1 {

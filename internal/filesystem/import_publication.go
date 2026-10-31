@@ -21,6 +21,17 @@ func publicationFor(state snapshot, entry importStateEntry) (registryPublication
 	return registryPublication{entry, state.Revision, sha256.Sum256(data)}, err
 }
 
+// Observation must remain possible even without capacity for future writes.
+func observationFor(state snapshot, entry importStateEntry) (registryPublication, error) {
+	h := sha256.New()
+	encoder := json.NewEncoder(h)
+	encoder.SetIndent("", "  ")
+	err := encoder.Encode(state)
+	result := registryPublication{entry: entry, revision: state.Revision}
+	copy(result.digest[:], h.Sum(nil))
+	return result, err
+}
+
 func (s registryPublication) check(r *registry) error {
 	if err := s.entry.revalidate(); err != nil {
 		return fmt.Errorf("registry snapshot changed since live transaction publication: %w", err)
