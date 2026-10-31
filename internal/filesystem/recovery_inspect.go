@@ -3,7 +3,6 @@ package filesystem
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -78,15 +77,10 @@ func inspectRecovery(path string, selection *recoverySelection, checkpoint func(
 			return result, e
 		}
 		result.Exists = entry.exists
-		// Canonical continuity does not require spare future write capacity.
-		h := sha256.New()
-		encoder := json.NewEncoder(h)
-		encoder.SetIndent("", "  ")
-		if e := encoder.Encode(r.data); e != nil {
+		published, e := observationFor(r.data, entry)
+		if e != nil {
 			return result, e
 		}
-		published := registryPublication{entry: entry, revision: r.data.Revision}
-		copy(published.digest[:], h.Sum(nil))
 		evidence = &published
 	}
 	defer func() {
@@ -97,6 +91,9 @@ func inspectRecovery(path string, selection *recoverySelection, checkpoint func(
 		if err != nil && result.Intent != nil {
 			result.Intent.RetirementObserved = false
 			result.Intent.check("final consistency", err)
+		}
+		if err != nil {
+			result.SettlementReasons = append(result.SettlementReasons, "registry observation is inconsistent: "+err.Error())
 		}
 	}()
 	result.Version, result.Revision, result.Unfinished = r.data.Version, r.data.Revision, r.data.Unfinished
@@ -112,10 +109,12 @@ func inspectRecovery(path string, selection *recoverySelection, checkpoint func(
 		if selection != nil {
 			return result, fmt.Errorf("no pending import matches selected identifier %q", selection.ID)
 		}
-		if !result.Unfinished {
+		if !result.Exists {
+			result.SettlementReasons = []string{"ownership registry missing; no settlement needed"}
+		} else if !result.Unfinished {
 			result.SettlementReasons = []string{"no unfinished barrier to settle"}
 		} else {
-			result.SettlementReasons = []string{"barrier-only state requires separate locked M3 validation; settlement is not implemented"}
+			result.SettlementReasons = settlementBlockers(r.data)
 		}
 		return result, nil
 	}

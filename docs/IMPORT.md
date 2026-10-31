@@ -424,7 +424,8 @@ the selected intent, keeping the unfinished barrier and invalidated history.
 Success reports the verified surviving file location and that explicit barrier
 settlement is still required. It does not complete the import, install a link,
 restore ownership, remove reservations, move data, or settle the barrier. No
-live handle is returned. Barrier settlement remains unimplemented.
+live handle is returned. Settlement requires the separately selected operation
+described below; retirement never invokes it.
 
 Known preliminary refusals leave the registry unchanged and create no state.
 Failures after invalidation preserve the pending intent and revoked authority;
@@ -459,6 +460,45 @@ Present symlinks, competing occupants, changed ancestry, or uncertain
 evidence keep the gate blocked. Preserve all occupants and report both
 locations for independent recovery. Never infer ownership from an intent,
 adopt an interrupted link, or use registry editing as ordinary recovery.
+
+### Private barrier settlement
+
+Private settlement clears only the registry's unfinished marker; retirement
+removes an eligible import intent after revoking prior authority. Neither is a
+public command. Settlement requires an explicit expected registry revision,
+existing safe private state and the validated stable exclusive lock, with fresh
+strict loading and full snapshot continuity. No live TOML or historical user
+path is consulted, and a preview grants no mutation authority.
+
+No pending import may remain. To preserve every record field and phase without
+restoring blocked authority, an unfinished snapshot containing any `owned` or
+`removing` record refuses settlement across all scopes. Empty history and
+`creating`/`invalidated` history may qualify in v1 or v2. This is intentionally
+narrower than a general M3 begin/finish recovery: begin would invalidate those
+records and violate settlement's record-preservation contract. Such blocked
+history needs separate investigation or authorized invalidation, not JSON edits.
+
+Settlement reserves one publication's revision and complete snapshot capacity,
+then uses ordinary finish/save to atomically publish `unfinished=false` and the
+revision increment. The loaded version and all records remain unchanged. It
+never begins an import, retires an intent, removes reservations, repairs user
+paths or restores authority. Retained creating/invalidated records still need
+their usual handling; a cleared barrier does not certify filesystem repair.
+
+Missing state is a no-op only with revision zero, meaning absence rather than a
+verified snapshot revision. An existing clean snapshot still requires its exact
+revision and a validated existing lock. No-op results create no state, write no
+snapshot and perform no synchronization; they do not retroactively certify an
+earlier uncertain publication. Missing locks for existing state, unsafe paths,
+stale revisions, and detected changes refuse without repair or initialization.
+
+The existing read-only recovery summary now reports the same settlement blockers
+without acquiring flock, writing or synchronizing. Actual settlement repeats
+admission under lock. Publication failures preserve available evidence; failure
+after replacement may leave clearance visible with uncertain durability. No
+retry, reconstruction, temporary-snapshot replay or cleanup is automatic. The
+eventual CLI must require explicit authorization for this separate operation;
+public `dots recover` and `dots add` remain unavailable.
 
 ## Command contract
 

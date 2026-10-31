@@ -200,8 +200,8 @@ Exact stored ID/revision selection is required to inspect import locations;
 history is summarized without visiting unrelated recorded paths. Structured
 checks distinguish an observational retirement candidate from mutation authority.
 Final registry, lock, route and leaf observations reject detected changes.
-Private retirement is implemented separately under the existing exclusive lock;
-barrier settlement and public recovery commands remain unimplemented.
+Private retirement and barrier settlement are separate operations under the
+existing exclusive lock; public recovery commands remain unimplemented.
 See [private inspection](IMPORT.md#private-read-only-inspection) for evidence
 checks and limitations. Do not edit registry JSON to retire an intent.
 
@@ -215,6 +215,17 @@ Creating and invalidated records are preserved; no authority is restored and
 no user entry is moved, removed, adopted or replaced. Failure preserves available
 registry evidence, including uncertain published outcomes; no retry or settlement
 is automatic. See [private retirement](IMPORT.md#private-administrative-retirement).
+
+Private settlement accepts an exact expected revision and clears only an
+eligible unfinished barrier using ordinary finish/save, preserving version and
+every historical record and phase. Pending imports always block. Unfinished
+owned/removing history also blocks: clearing its barrier unchanged could restore
+authority, while calling begin would alter the record states. Only empty or
+creating/invalidated history qualifies. Preview reuses the read-only summary;
+actual settlement acquires the existing lock and independently revalidates.
+Missing/clean no-ops initialize and rewrite nothing. Settlement does not repair
+user paths or resolve retained reservations; any uncertain publication requires
+investigation rather than automatic retry. See [private settlement](IMPORT.md#private-barrier-settlement).
 
 `down --dry-run` opens only existing state. It never initializes or acquires
 a lock, retires records, replays transactions, or creates temporary files.
