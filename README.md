@@ -495,7 +495,7 @@ pathname writes.
 See [the handoff](docs/HANDOFF.md) for requirements and
 [migration from rcm](docs/MIGRATING_FROM_RCM.md) for manual migration.
 See [ownership and removal safety](docs/OWNERSHIP.md) for the registry-backed
-installation/removal contract. Replacement, broad cleanup, import, and
+installation/removal contract. Replacement, broad cleanup, and
 releases remain outside this milestone.
 
 ## License
