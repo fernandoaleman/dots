@@ -49,6 +49,11 @@ make check
 lint functionality. `make check` runs formatting, vet, tests, build,
 Staticcheck, and all configured hooks.
 
+Run `python3 scripts/acceptance.py` to build a disposable installation and test
+the CLI through PATH with isolated HOME/XDG fixtures. CI runs it on macOS and
+Linux. See [acceptance testing](docs/TESTING.md) for coverage, retained logs,
+explicit skips, and the distinction from future release installation testing.
+
 The native TOML `staticcheck.conf` retains recommended defaults and adds
 package documentation, identifier naming, error formatting, and exported
 comment-prefix checks. These checks validate specific conventions; they

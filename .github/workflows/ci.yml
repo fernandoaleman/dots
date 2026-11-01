@@ -43,3 +43,25 @@ jobs:
           prek-version: '0.4.4'
           extra-args: --all-files
           cache: true
+
+  acceptance:
+    name: Acceptance (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Installed CLI acceptance
+        run: python3 scripts/acceptance.py
+      - name: Native recovery and capability coverage (explicit skips)
+        run: >-
+          go test -count=1 -v -timeout=5m ./internal/filesystem
+          -run '^(TestImportCLI|TestRecoveryCLI|TestInspectImportLinuxBindConfiguration|TestImportSelectedInputMountView)$'
