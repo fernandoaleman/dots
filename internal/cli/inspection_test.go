@@ -72,10 +72,10 @@ func TestInspectionDestinationStates(t *testing.T) {
 			}
 			config := installationConfig(t, root, "dotfiles_dirs = ['local', 'shared']\ntarget_dir = 'target'\n")
 			before := snapshot(t, root)
-			for _, command := range []string{"ls", "status", "up"} {
+			for _, command := range []string{"list", "status", "up"} {
 				args := []string{command, "--config", config}
 				label, code := test.label, test.code
-				if command == "ls" {
+				if command == "list" {
 					label, code = "SELECTED", 0
 				}
 				if command == "up" {
@@ -151,7 +151,7 @@ func TestInspectionResolutionPolicies(t *testing.T) {
 				fixtureFile(t, config, fmt.Sprintf("dotfiles_dirs = [%q, %q]\ntarget_dir = %q\n", filepath.Join(root, "local"), filepath.Join(root, "shared"), filepath.Join(root, "target")))
 			}
 			before := snapshot(t, root)
-			for _, command := range []string{"ls", "status"} {
+			for _, command := range []string{"list", "status"} {
 				args := []string{"--config", config, command}
 				if mode == "canonical XDG" {
 					args = []string{command}
@@ -193,7 +193,7 @@ func TestInspectionResolutionPolicies(t *testing.T) {
 }
 
 func TestInspectionUsageAndConfigFailures(t *testing.T) {
-	for _, command := range []string{"ls", "status"} {
+	for _, command := range []string{"list", "status"} {
 		t.Run(command, func(t *testing.T) {
 			root := t.TempDir()
 			fixtureFile(t, filepath.Join(root, "source", "a"), "a")
@@ -234,7 +234,7 @@ type shortOutput struct{}
 func (shortOutput) Write(data []byte) (int, error) { return len(data) - 1, nil }
 
 func TestInspectionOutputFailures(t *testing.T) {
-	for _, command := range []string{"ls", "status"} {
+	for _, command := range []string{"list", "status"} {
 		for _, writer := range []io.Writer{failedOutput{}, shortOutput{}} {
 			root := t.TempDir()
 			fixtureFile(t, filepath.Join(root, "source", "a"), "a")
@@ -267,7 +267,7 @@ func TestInspectionPermissionFailure(t *testing.T) {
 	if _, err := os.Lstat(filepath.Join(locked, ".config")); !os.IsPermission(err) {
 		t.Skipf("fixture cannot deny inspection: %v", err)
 	}
-	for _, command := range []string{"ls", "status"} {
+	for _, command := range []string{"list", "status"} {
 		var output, stderr bytes.Buffer
 		want := 0
 		if command == "status" {
@@ -293,7 +293,7 @@ func TestInspectionPermissionFailure(t *testing.T) {
 }
 
 func TestInspectionDeterminismAndSummary(t *testing.T) {
-	for _, command := range []string{"ls", "status"} {
+	for _, command := range []string{"list", "status"} {
 		var expected string
 		for _, reverse := range []bool{false, true} {
 			root := t.TempDir()
@@ -383,8 +383,8 @@ func TestStatusPhysicalCollisions(t *testing.T) {
 				t.Fatal("distinct names conflated:", &output)
 			}
 			output.Reset()
-			if code := Run([]string{"ls", "--config", config}, &output, &stderr); code != 0 || strings.Count(output.String(), "SELECTED ") != 3 {
-				t.Fatalf("ls inspected physical destinations: %d %s %s", code, &output, &stderr)
+			if code := Run([]string{"list", "--config", config}, &output, &stderr); code != 0 || strings.Count(output.String(), "SELECTED ") != 3 {
+				t.Fatalf("list inspected physical destinations: %d %s %s", code, &output, &stderr)
 			}
 			if !reflect.DeepEqual(before, snapshot(t, root)) {
 				t.Fatal("collision inspection modified fixture")

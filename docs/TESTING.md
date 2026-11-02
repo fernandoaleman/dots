@@ -26,10 +26,17 @@ invocation. A successful import must preserve the file inode and bytes, create
 the expected link, and record the actual link identity in the v2 registry.
 Registry JSON is inspected, never fabricated or edited.
 
+The CLI suite also verifies configuration aliases and duplicate selection across
+scopes, command-specific help without HOME/configuration, version fallbacks and
+writer failures. Root executable tests build unstamped and explicitly stamped
+binaries offline, verify both version forms, check full commit metadata, and
+compare offline license output against the canonical embedded LICENSE. These
+tests do not publish releases or validate future release archives.
+
 Coverage includes fresh-state inspection and bootstrap; ordinary and nested
 imports; an existing registry; configuration selection; duplicate config scopes;
 argument/path refusals; root selection and precedence; repository collisions;
-manual links; duplicate import; ownership history; ls/status; down preview,
+manual links; duplicate import; ownership history; list/status; down preview,
 down, repeated down, up and subsequent down. Recovery inspection and missing-state
 settlement/no-op are tested without a live configuration requirement.
 

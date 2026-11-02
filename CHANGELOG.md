@@ -4,6 +4,12 @@
 
 ### Added
 
+- `dots version` and `dots --version`, with explicit development fallbacks and
+  linker-injected version/commit metadata; offline embedded `dots license`.
+- Categorized help and `dots help COMMAND`; consistent `-h` and `--help` forms.
+- `-c FILE` as an alias for `--config FILE`, rejecting duplicate or empty
+  configuration selections across both scopes before configuration loading.
+
 - `dots add PATH` with explicit root selection, strictly read-only previews,
   fresh first-use bootstrap and durable same-filesystem import transactions.
   Existing content is never replaced or adopted; failures preserve evidence
@@ -26,7 +32,7 @@
   snapshots, conservative interrupted-operation recovery, and temporary fixtures.
 - Documented cooperative concurrency requirements and legacy-link limitations.
 
-- Read-only `dots ls` for resolver-selected mappings and `dots status` for
+- Read-only `dots list` for resolver-selected mappings and `dots status` for
   deterministic destination classifications, summaries, and documented exits.
 - Structured inspection diagnostics separating wrong/broken links, occupied
   paths, blocked ancestors, and metadata or name-capability failures.
@@ -68,3 +74,7 @@
   while retaining inspection errors for permission and capability failures.
 - Detect Unicode normalization and full case-folding destination collisions.
 - Retain empty source directories through filesystem-aware structural checks.
+
+### Changed
+
+- Renamed the listing command to `dots list`; the former spelling is rejected.

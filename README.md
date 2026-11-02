@@ -5,10 +5,10 @@ directories. dots is independent of thoughtbot/rcm and is not affiliated with
 or supported by thoughtbot.
 
 `dots up` installs missing symbolic links and necessary parent directories,
-preserving existing content. `dots up --dry-run` previews the plan; `dots ls`
+preserving existing content. `dots up --dry-run` previews the plan; `dots list`
 lists selected mappings, and `dots status` inspects current destinations.
 `dots down` removes eligible recorded links; `dots down --dry-run` previews
-removal. Both dry-runs, `dots ls`, and `dots status` are deterministic and
+removal. Both dry-runs, `dots list`, and `dots status` are deterministic and
 read-only. Legacy or manually created links are never adopted automatically.
 
 ## Development and usage
@@ -67,10 +67,44 @@ gofmt and other hooks retain their behavior.
 Dependency-only and lint-configuration-only commits do not trigger this
 Go-file hook. `make lint` and CI still check the module unconditionally.
 
-`--config` works before or after `up`, `down`, `ls`, `status`, and `add`. On `up`, `down`, and `add`, `-n`
-aliases `--dry-run`. Use `dots --help` or a command's `--help` for usage.
-`ls` and `status` are inherently read-only and reject `--dry-run`, `-n`,
+`-c FILE` and `--config FILE` select the same TOML configuration before or after
+`up`, `down`, `list`, `status`, and `add`. Supply configuration only once:
+repeated, mixed-alias, cross-scope and empty selections are usage errors, even
+when duplicate values are identical. On `up`, `down`, and `add`, `-n` aliases
+`--dry-run`. Recovery supports `--dry-run` only with a selected action, not `-n`.
+There is no global dry-run flag.
+
+Use `dots help`, `dots --help`, or `dots -h` for the categorized command menu.
+`dots help add`, `dots add --help`, and `dots add -h` show the same command help;
+equivalent forms work for every command. Help lists only applicable flags and
+does not load TOML or initialize private state. `dots list` is the only listing
+command; the former listing spelling is no longer accepted.
+`list` and `status` are inherently read-only and reject `--dry-run`, `-n`,
 and installation-only flags. JSON output is not available.
+
+## Version and license
+
+`dots version` and `dots --version` print identical concise output. A stamped
+release prints, for example, `dots v0.1.0`. Ordinary source builds print
+`dots dev (commit unknown)`; a development build with injected commit metadata
+prints its full commit identity. `-v` remains reserved and is not a version alias.
+No build timestamp is injected and local tags do not imply an official release.
+
+Version and full source commit are linker strings. For a locally stamped build:
+
+```sh
+go build -ldflags '-X github.com/fernandoaleman/dots/internal/cli.version=v0.1.0 -X github.com/fernandoaleman/dots/internal/cli.commit=FULL_COMMIT_SHA' -o dots .
+```
+
+Use an actual full source SHA in place of `FULL_COMMIT_SHA`. This command stamps
+a local executable; it does not publish or authenticate a release. `go version -m`
+can inspect its build settings. Release packaging and distribution remain separate
+M5 work.
+
+`dots license` prints the embedded MIT license offline, without needing the
+source checkout. Version and license output use stdout; help uses stderr, as in
+the existing CLI. Informational commands return 0, output failures return 1, and
+invalid usage returns 2. None initializes configuration or ownership state.
 
 ## Importing an existing dotfile
 
@@ -80,8 +114,9 @@ dots add ~/.zshrc
 dots add --root ~/dotfiles-local --dry-run ~/.config/nvim/init.lua
 ```
 
-Exact syntax: `dots [--config FILE] add [--config FILE] [--root DIR] [--dry-run|-n] PATH`.
-Flags precede the single PATH. Supply `--config` only once, before or after `add`.
+Exact syntax: `dots [-c FILE|--config FILE] add [--root DIR] [--dry-run|-n] PATH`.
+Configuration may instead appear after `add`, but only once across both scopes.
+Flags precede the single PATH.
 The input must be an existing current-user-owned
 regular file with one hard link and ordinary permissions, inside the configured
 target namespace. Directories, symlinks (including already managed links),
@@ -146,7 +181,7 @@ Replace `INTENT_ID` with the displayed 32-character lowercase hexadecimal ID
 and `N` with the exact displayed unsigned decimal registry revision. Recovery
 uses `$XDG_STATE_HOME/dots/ownership.json`, falling back to
 `~/.local/state/dots/ownership.json` for unset, empty or relative XDG values.
-`--config` is rejected. Each mutation independently reloads and validates state
+`-c` and `--config` are rejected. Each mutation independently reloads and validates state
 under the existing exclusive registry lock; stale selections refuse.
 
 Retirement requires exactly one intact regular file at the recorded input or
@@ -289,11 +324,11 @@ transitions, permissions, filesystem limits, and the manual recovery policy.
 Using the disposable fixture above:
 
 ```sh
-go run . --config "$dots_fixture/config.toml" ls
+go run . --config "$dots_fixture/config.toml" list
 go run . --config "$dots_fixture/config.toml" status
 ```
 
-`ls` shows the desired mappings, regardless of destination occupancy:
+`list` shows the desired mappings, regardless of destination occupancy:
 
 ```text
 SELECTED "<fixture>/target/.config/nvim/init.lua" -> "<fixture>/shared/config/nvim/init.lua"
@@ -304,7 +339,7 @@ SUMMARY 2 selected, 0 conflicts, 0 warnings, 0 errors, 0 changes made
 It uses the same configuration, exclusions, precedence, and source structural
 checks as `up`. Source conflicts remain visible with `CONFLICT` rows, and
 warnings and errors follow the mappings. Empty source directories contribute
-structural evidence rather than mapping rows. `ls` does not inspect destination
+structural evidence rather than mapping rows. `list` does not inspect destination
 occupancy, ancestors, or physical alias/name collisions; use `status` for those.
 
 `status` inspects only the current resolver-selected destinations. After the
@@ -335,7 +370,7 @@ it does not scan for historical links or repair, relink, or remove anything.
 
 | Command | Exit 0 | Exit 1 | Exit 2 |
 | --- | --- | --- | --- |
-| `ls` | Successful or warning-only resolution, including an empty plan | Configuration/source errors, structural conflicts, or output failure | Invalid usage |
+| `list` | Successful or warning-only resolution, including an empty plan | Configuration/source errors, structural conflicts, or output failure | Invalid usage |
 | `status` | Every selected link is correct, or a valid empty plan; warnings alone are permitted | Any missing, wrong, broken, occupied, blocked, or conflicting path; inspection/configuration/source errors or output failure | Invalid usage |
 
 Unlike `status`, `up --dry-run` still succeeds when its only proposed actions

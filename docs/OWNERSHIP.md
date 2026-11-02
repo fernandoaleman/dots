@@ -243,7 +243,7 @@ investigation rather than automatic retry. See [private settlement](IMPORT.md#pr
 `down --dry-run` opens only existing state. It never initializes or acquires
 a lock, retires records, replays transactions, or creates temporary files.
 Unfinished state cannot authorize removal of a present entry. Its output is
-a point-in-time observation of an atomic snapshot. `up --dry-run`, `ls`, and
+a point-in-time observation of an atomic snapshot. `up --dry-run`, `list`, and
 `status` retain their existing state-independent read-only behavior.
 
 Actual commands can update administrative state even with no dotfile changes.

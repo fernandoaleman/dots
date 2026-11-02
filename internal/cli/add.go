@@ -12,34 +12,33 @@ import (
 	"github.com/fernandoaleman/dots/internal/resolver"
 )
 
-func addCommand(args []string, config string, configured bool, stdout, stderr io.Writer) int {
+func addCommand(args []string, config *configSelection, stdout, stderr io.Writer) int {
 	f := flag.NewFlagSet("add", flag.ContinueOnError)
 	f.SetOutput(stderr)
 	var root string
 	var dry bool
-	f.StringVar(&config, "config", config, "select a TOML configuration file")
+	config.register(f)
 	f.StringVar(&root, "root", "", "select a configured source root; required with multiple roots")
 	f.BoolVar(&dry, "dry-run", false, "preview relocation and link without writes or locking")
 	f.BoolVar(&dry, "n", false, "alias for --dry-run")
-	f.Usage = func() {
-		fmt.Fprintln(stderr, "Usage: dots [--config FILE] add [--config FILE] [--root DIR] [--dry-run|-n] PATH")
-		fmt.Fprintln(stderr, "Flags precede PATH; use -- before a filename beginning with -. Imports one existing regular file, without replacement or adoption.")
-		f.PrintDefaults()
+	helpErr := setUsage(f, "add", stderr)
+	if err := validateConfigArgs(args, config.supplied); err != nil {
+		return fail(stderr, 2, err)
 	}
-	if err := validateAddFlags(args, configured); err != nil {
+	if err := validateAddFlags(args, config.supplied); err != nil {
 		return fail(stderr, 2, err)
 	}
 	if err := f.Parse(args); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			return 0
+			return parsedHelp(*helpErr, stderr)
 		}
 		return 2
 	}
 	invalid := false
 	f.Visit(func(v *flag.Flag) {
-		invalid = invalid || v.Name == "root" && root == "" || v.Name == "config" && config == "" || (v.Name == "n" || v.Name == "dry-run") && v.Value.String() != "true"
+		invalid = invalid || v.Name == "root" && root == "" || (v.Name == "n" || v.Name == "dry-run") && v.Value.String() != "true"
 	})
-	if invalid || configured && config == "" || len(f.Args()) != 1 || f.Arg(0) == "" {
+	if invalid || len(f.Args()) != 1 || f.Arg(0) == "" {
 		return fail(stderr, 2, fmt.Errorf("add requires one nonempty PATH, nonempty supplied --config/--root, and no explicit false dry-run flags"))
 	}
 	home, err := os.UserHomeDir()
@@ -50,7 +49,7 @@ func addCommand(args []string, config string, configured bool, stdout, stderr io
 	if err != nil {
 		return fail(stderr, 1, err)
 	}
-	return runAdd(config, root, f.Arg(0), home, cwd, dry, stdout, stderr)
+	return runAdd(config.path, root, f.Arg(0), home, cwd, dry, stdout, stderr)
 }
 
 // Validate both the global prefix and add flags so a missing string value cannot
@@ -63,6 +62,9 @@ func validateAddFlags(args []string, configured bool) error {
 			break
 		}
 		key, value, assigned := strings.Cut(strings.TrimLeft(arg, "-"), "=")
+		if key == "c" {
+			key = "config"
+		}
 		if key == "n" {
 			key = "dry-run"
 		}

@@ -146,19 +146,20 @@ historical links.
 | --- | --- | --- |
 | `dots up` | Install or reconcile managed symlinks safely | `rcup` |
 | `dots down` | Remove links currently managed by dots, without deleting actual files | `rcdn` |
-| `dots ls` | List planned/resolved managed files and destinations | `lsrc` |
+| `dots list` | List planned/resolved managed files and destinations | `lsrc` |
 | `dots add PATH` | Import an existing dotfile into a chosen source directory, then manage it safely | `mkrc` |
 | `dots status` | Report correctly linked, missing, conflicting, and stale paths | New convenience command |
 | `dots version` / `dots --version` | Print build version | Standard CLI |
-| `dots help` / `dots --help` | Help and usage | Standard CLI |
+| `dots help [COMMAND]` / `dots --help` / `dots -h` | General or command help | Standard CLI |
+| `dots license` | Print the embedded MIT license offline | Standard CLI |
 
 Suggested options (design intent; specify exact compatibility in help):
 
 | Option | Expected purpose |
 | --- | --- |
 | `--dry-run` / `-n` | Preview intended actions without filesystem modifications. Available at least on `up`, `down`, `add`. |
-| `--config PATH` | Override selected dots configuration file. |
-| `--verbose` / `-v` | Display more details, including source selections. |
+| `--config PATH` / `-c PATH` | Select configuration once, in either scope; duplicates and empty selections are errors. |
+| `--verbose` / `-v` | Deferred; `-v` is reserved, not a version alias. |
 | `--quiet` / `-q` | Reduce nonessential output; errors and meaningful safety warnings remain visible. |
 | `--version` | Print version and exit. |
 | `--help` / `-h` | Help on root and individual commands. |
@@ -171,7 +172,7 @@ Proposed usage:
 dots up --dry-run
 dots --config ~/.config/dots/config.toml up --dry-run
 dots up
-dots ls
+dots list
 dots status
 dots down --dry-run
 dots add ~/.zshrc
@@ -254,7 +255,7 @@ Dry-run output should distinguish `LINK` (missing), `OK` (already correct), `CON
 
 **Milestone 1 — Safe `dots up`:** Idempotent link creation, missing parent directory handling, correct existing links as no-ops, unmanaged path conflicts as errors, dry-run parity with execution. Design link ownership and stale-link policy before changing existing links.
 
-**Milestone 2 — Visibility:** `dots ls` and `dots status` reuse the exact same resolver; show path, selected source, and current link state. Useful testable text output; JSON output can wait.
+**Milestone 2 — Visibility:** `dots list` and `dots status` reuse the exact same resolver; show path, selected source, and current link state. Useful testable text output; JSON output can wait.
 
 **Milestone 3 — Removal:** `dots down --dry-run` and `dots down` use the approved
 [creation registry and cooperative concurrency policy](OWNERSHIP.md). Never
@@ -467,8 +468,8 @@ Authoritative scope: [M2: Inspection & Status](https://github.com/fernandoaleman
 [resolver-based listing](https://github.com/fernandoaleman/dots/issues/2), and
 [destination status](https://github.com/fernandoaleman/dots/issues/3).
 
-- `ls`, `status`, and `up` use the same configuration loader and resolver.
-  `ls` stops after resolution and reports selected mappings and source
+- `list`, `status`, and `up` use the same configuration loader and resolver.
+  `list` stops after resolution and reports selected mappings and source
   diagnostics without inspecting destination occupancy. `status` and `up`
   share CLI orchestration of destination inspection and physical collision
   checks, retaining empty-directory evidence and selected source identities.
@@ -481,7 +482,7 @@ Authoritative scope: [M2: Inspection & Status](https://github.com/fernandoaleman
   row contributes to one primary classification. Standalone diagnostics remain
   separately counted. Resolver source failures are distinguished structurally
   from collision evidence without parsing diagnostic text.
-- `ls` succeeds for valid or warning-only resolution, including empty plans;
+- `list` succeeds for valid or warning-only resolution, including empty plans;
   source/configuration errors and structural conflicts fail. `status` succeeds
   only for an empty valid plan or all-correct links; missing and divergent
   states fail. Both use exit 1 for failures and exit 2 for invalid usage.

@@ -375,7 +375,7 @@ func TestReadOnlyCommandsIgnoreOwnershipState(t *testing.T) {
 			if code, output, _ := runFixtureCommand(t, config, "up"); code != 0 {
 				t.Fatal(output)
 			}
-			commands := []string{"ls", "status", "up"}
+			commands := []string{"list", "status", "up"}
 			baseline := make(map[string]string)
 			for _, command := range commands {
 				var flags []string
