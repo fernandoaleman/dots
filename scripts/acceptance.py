@@ -154,11 +154,20 @@ class Suite:
     def lifecycle(self):
         f = Fixture(self, "lifecycle")
         for args in [("--help",), ("add", "--help"), ("recover", "--help"),
-                     ("ls",), ("status",), ("up", "--dry-run"),
+                     ("list",), ("status",), ("up", "--dry-run"),
                      ("down", "--dry-run"), ("recover",),
                      ("recover", "--settle", "--revision", "0", "--dry-run"),
                      ("recover", "--settle", "--revision", "0")]:
             f.run(*args, unchanged=True)
+        for command in ("help", "add", "up", "down", "list", "status", "recover", "version", "license"):
+            f.run("help", command, unchanged=True)
+            f.run(command, "-h", unchanged=True)
+        version = f.run("version", unchanged=True)
+        require(version == f.run("--version", unchanged=True), "version forms differ")
+        canonical_license = (Path(__file__).resolve().parent.parent / "LICENSE").read_text()
+        require(f.run("license", unchanged=True) == canonical_license, "embedded license differs")
+        for args in [("ls",), ("-v",), ("version", "--build-info")]:
+            f.run(*args, code=2, unchanged=True)
         require(not f.state.exists(), "read-only setup initialized private state")
         imported = []
         for relative, name in [(".zshrc", "zshrc"), (".config/nvim/init.lua", "config/nvim/init.lua")]:
@@ -171,10 +180,10 @@ class Suite:
             f.imported(original, source, content, (info.st_dev, info.st_ino))
             imported.append((original, source, content))
         require(f.state.exists(), "first-use bootstrap missing")
-        listing = f.run("ls", unchanged=True)
+        listing = f.run("list", unchanged=True)
         status = f.run("status", unchanged=True)
         for original, source, _ in imported:
-            require(f'SELECTED "{original}" -> "{source}"' in listing, "ls omitted imported mapping")
+            require(f'SELECTED "{original}" -> "{source}"' in listing, "list omitted imported mapping")
             require(f'OK "{original}" -> "{source}"' in status, "status did not recognize imported link")
         f.run("recover", unchanged=True)
         revision = f.registry()["revision"]
@@ -220,7 +229,19 @@ class Suite:
                      ("add", "--config", alternate, "-n", original)]:
             output = f.run(*args, unchanged=True)
             require(str(second / "gitconfig") in output, "explicit config selected wrong repository")
-        for args in [("add",), ("add", original, original), ("add", "--force", original),
+        for args in [("-c", alternate, "add", "-n", original),
+                     ("add", "-c", alternate, "-n", original)]:
+            output = f.run(*args, unchanged=True)
+            require(str(second / "gitconfig") in output, "-c selected wrong repository")
+        for command in ("add", "up", "down", "list", "status"):
+            for args in [("-c", f.config, command, "--config", alternate),
+                         (command, "-c", f.config, "-c", f.config),
+                         (command, "--config=",), (command, "-c", "")]:
+                if command == "add":
+                    args = (*args, original)
+                f.run(*args, code=2, unchanged=True)
+        for args in [("recover", "-c", alternate), ("-c", alternate, "recover"),
+                     ("add",), ("add", original, original), ("add", "--force", original),
                      ("--config", f.config, "add", "--config", alternate, original),
                      ("--config", f.config, "add", "--config", f.config, original),
                      ("add", "--config", f.config, "--config", alternate, original),

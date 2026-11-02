@@ -21,16 +21,13 @@ func recoverCommand(args []string, stdout, stderr io.Writer) int {
 	f.StringVar(&revision, "revision", "", "exact observed registry revision (unsigned decimal)")
 	f.BoolVar(&settle, "settle", false, "clear an eligible barrier; does not repair files")
 	f.BoolVar(&dry, "dry-run", false, "inspect the selected action without writes or exclusive locking")
-	f.Usage = func() {
-		fmt.Fprintln(stderr, "Usage: dots recover")
-		fmt.Fprintln(stderr, "       dots recover --retire INTENT_ID --revision N [--dry-run]")
-		fmt.Fprintln(stderr, "       dots recover --settle --revision N [--dry-run]")
-		fmt.Fprintln(stderr, "Uses XDG ownership state without TOML. Mutations revalidate under the exclusive lock.")
-		f.PrintDefaults()
-	}
+	helpErr := setUsage(f, "recover", stderr)
 	seen := map[string]bool{}
 	for _, arg := range args {
 		key, _, _ := strings.Cut(strings.TrimLeft(arg, "-"), "=")
+		if strings.HasPrefix(arg, "-") && (key == "c" || key == "config") {
+			return fail(stderr, 2, fmt.Errorf("recover does not use --config or -c; recovery uses stored registry evidence"))
+		}
 		if strings.HasPrefix(arg, "-") && (key == "retire" || key == "revision" || key == "settle" || key == "dry-run") {
 			if seen[key] {
 				return fail(stderr, 2, fmt.Errorf("duplicate --%s flag", key))
@@ -40,7 +37,7 @@ func recoverCommand(args []string, stdout, stderr io.Writer) int {
 	}
 	if err := f.Parse(args); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			return 0
+			return parsedHelp(*helpErr, stderr)
 		}
 		return 2
 	}

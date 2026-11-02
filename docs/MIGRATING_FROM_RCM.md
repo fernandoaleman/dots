@@ -23,7 +23,7 @@ warn_duplicates = true
 ```
 
 Create the TOML file yourself at `~/.config/dots/config.toml`, beneath an
-absolute `XDG_CONFIG_HOME`, or at a location selected by `--config`.
+absolute `XDG_CONFIG_HOME`, or at a location selected by `-c FILE` or `--config FILE` (supply it only once).
 The first source directory retains highest priority.
 
 Existing `gitconfig` and `.gitconfig` sources map to `.gitconfig`.

@@ -198,7 +198,7 @@ Every ordinary mutation, including empty-plan installation and failed-up
 ownership revalidation, refuses pending imports across all scopes. Refusal
 preserves registry and destination contents and reports both file locations.
 Down preview also refuses removal authority. Read-only inspection takes no
-lock and performs no recovery; ls, status, and up preview remain unchanged.
+lock and performs no recovery; list, status, and up preview remain unchanged.
 
 Ordinary writes preserve the loaded version, including an empty v2 imports
 array. They cannot upgrade or downgrade it. The shared 16 MiB bound includes
