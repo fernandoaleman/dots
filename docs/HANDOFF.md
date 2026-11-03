@@ -294,14 +294,17 @@ CI should use GitHub Actions on push and pull requests, ideally an `ubuntu-lates
 
 Use **Semantic Versioning**, tagged Git releases (`v0.1.0`, etc.), and maintain a human-readable `CHANGELOG.md` from the start (Keep a Changelog format is fine). While the API/behavior is still rapidly changing, begin with `v0.x.y`, document intentional breaking changes, and move to `v1.0.0` when core behavior is stable.
 
+The current nonpublishing implementation is documented in [PACKAGING.md](PACKAGING.md).
+Publishing remains separately authorized.
+
 Suggested build targets:
 
 | GOOS | GOARCH | Example archive/binary | Intended systems |
 | --- | --- | --- | --- |
-| `darwin` | `arm64` | `dots_Darwin_arm64.tar.gz` | Apple Silicon Macs |
-| `darwin` | `amd64` | `dots_Darwin_amd64.tar.gz` | Intel Macs |
-| `linux` | `amd64` | `dots_Linux_amd64.tar.gz` | Ubuntu, Arch, other x86-64 Linux |
-| `linux` | `arm64` | `dots_Linux_arm64.tar.gz` | ARM64 Linux |
+| `darwin` | `arm64` | `dots_0.1.0_darwin_arm64.tar.gz` | Apple Silicon Macs |
+| `darwin` | `amd64` | `dots_0.1.0_darwin_amd64.tar.gz` | Intel Macs |
+| `linux` | `amd64` | `dots_0.1.0_linux_amd64.tar.gz` | Ubuntu, Arch, other x86-64 Linux |
+| `linux` | `arm64` | `dots_0.1.0_linux_arm64.tar.gz` | ARM64 Linux |
 
 Simple build examples:
 

@@ -9,9 +9,9 @@ python3 scripts/acceptance.py
 The shared macOS/Linux script runs `make build BINARY=<private-temp>/bin/dots`.
 It then invokes `dots` by name through an isolated PATH, with that bin directory
 first and only system command directories afterward. This is a disposable test
-installation from the current checkout, not a system installation. Release
-artifacts, package managers, and distribution installers belong to M5 and are
-not validated here.
+installation from the current checkout, not a system installation. This source mode does not validate packaged artifacts. The explicit existing-binary
+mode below validates local candidates; published downloads and package-manager
+installations remain later work.
 
 Each fixture has a private HOME, XDG config/state directories, temporary directory,
 repository, and known input bytes. No command runs against the developer's real
@@ -81,3 +81,25 @@ capabilities only. Verbose `PASS`/`SKIP` lines and reasons distinguish execution
 from unavailable namespace, mount, or second-filesystem prerequisites. macOS
 excludes Linux-only tests at build time; existing macOS tests cover its native
 filesystem behavior. No privileged runner configuration is required.
+
+## Nonpublishing packaged-artifact tests
+
+Run `make test-package` for isolated standard-library unit tests of metadata,
+compiler/environment checks, archive ordering/normalization, checksum corruption,
+exclusive output completion, failures and existing-binary installation without
+build fallback. `make check` includes these tests.
+
+Follow [PACKAGING.md](PACKAGING.md) to build twice, compare complete checksum
+manifests, verify all archives and extract the matching native executable. Run
+`python3 scripts/acceptance.py --binary build/extracted/dots --expected-version
+v0.1.0 --license build/extracted/LICENSE` as one command. This executes the copied
+artifact through isolated PATH/HOME/XDG fixtures and checks exact version output
+and archive license bytes. Its results.json records the executable hash and mode.
+Neither mode invokes operations against real user dotfiles.
+
+The additional read-only Packaging job uses four explicit native runner targets,
+packages all four outputs twice per runner and executes only that runner's native
+artifact. This measures repeatability within each environment, not cross-host
+checksum equality. Missing Linux mount capabilities and absent second filesystems
+remain explicit skips. macOS 12 runtime coverage is not supplied by newer runners.
+No artifacts, releases or package-manager changes are published by this job.

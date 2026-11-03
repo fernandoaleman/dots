@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Exercise the built dots CLI through PATH; retain isolated fixtures and logs."""
 
+import argparse
 import base64
 import hashlib
 import json
@@ -129,7 +130,10 @@ class Fixture:
 
 
 class Suite:
-    def __init__(self):
+    def __init__(self, expected_version=None, license_path=None):
+        self.expected_version = expected_version
+        self.license_path = license_path or Path(__file__).resolve().parents[1] / "LICENSE"
+        self.binary_sha256 = None
         # Makefile's BINARY recipe is unquoted: use the standard system temp
         # base rather than a caller TMPDIR that may contain shell metacharacters.
         self.root = Path(tempfile.mkdtemp(prefix="dots-acceptance-", dir="/tmp")).resolve()
@@ -140,6 +144,24 @@ class Suite:
         self.commands = []
         self.passed = []
         self.skipped = []
+
+    def install(self, binary=None):
+        destination = self.bin / "dots"
+        if binary is None:
+            subprocess.run(["make", "build", "BINARY=" + str(destination)],
+                           cwd=Path(__file__).resolve().parents[1], check=True, timeout=180)
+        else:
+            binary = Path(binary).absolute()
+            info = binary.lstat()
+            require(stat.S_ISREG(info.st_mode) and info.st_mode & 0o111 and os.access(binary, os.X_OK),
+                    "supplied binary must be a regular executable, not a symlink")
+            original = binary.read_bytes()
+            destination.write_bytes(original)
+            destination.chmod(0o755)
+            require(destination.read_bytes() == original and binary.read_bytes() == original,
+                    "supplied binary changed during isolated installation")
+        self.binary_sha256 = hashlib.sha256(destination.read_bytes()).hexdigest()
+        print(f"Installed executable SHA-256: {self.binary_sha256}", flush=True)
 
     def check(self, name, test):
         started = time.monotonic()
@@ -164,7 +186,9 @@ class Suite:
             f.run(command, "-h", unchanged=True)
         version = f.run("version", unchanged=True)
         require(version == f.run("--version", unchanged=True), "version forms differ")
-        canonical_license = (Path(__file__).resolve().parent.parent / "LICENSE").read_text()
+        if self.expected_version is not None:
+            require(version == f"dots {self.expected_version}\n", "supplied binary has the wrong version")
+        canonical_license = self.license_path.read_text()
         require(f.run("license", unchanged=True) == canonical_license, "embedded license differs")
         for args in [("ls",), ("-v",), ("version", "--build-info")]:
             f.run(*args, code=2, unchanged=True)
@@ -338,12 +362,18 @@ class Suite:
 
 
 def main():
-    suite = Suite()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--binary", type=Path, help="test this existing executable; never rebuild")
+    parser.add_argument("--expected-version", help="required release version with --binary")
+    parser.add_argument("--license", type=Path, help="expected license, e.g. from a verified archive")
+    args = parser.parse_args()
+    if bool(args.binary) != bool(args.expected_version) or args.license and not args.binary:
+        parser.error("--binary requires --expected-version; --license applies only to existing binaries")
+    suite = Suite(args.expected_version, args.license)
     started = time.monotonic()
     print(f"Retained acceptance fixtures and transcript: {suite.root}", flush=True)
     try:
-        subprocess.run(["make", "build", "BINARY=" + str(suite.bin / "dots")],
-                       cwd=Path(__file__).resolve().parents[1], check=True, timeout=180)
+        suite.install(args.binary)
         for name, test in [("fresh installation and managed lifecycle", suite.lifecycle),
                            ("configuration selection and zero-write usage errors", suite.arguments),
                            ("collisions, duplicate import and ownership history", suite.conflicts),
@@ -357,7 +387,8 @@ def main():
               f"{len(suite.commands)} CLI invocations; {time.monotonic() - started:.2f}s", flush=True)
     finally:
         (suite.root / "results.json").write_text(json.dumps({
-            "passed": suite.passed, "skipped": suite.skipped, "commands": suite.commands}, indent=2) + "\n")
+            "passed": suite.passed, "skipped": suite.skipped, "commands": suite.commands,
+            "binary_sha256": suite.binary_sha256, "mode": "existing" if args.binary else "source"}, indent=2) + "\n")
 
 
 if __name__ == "__main__":
