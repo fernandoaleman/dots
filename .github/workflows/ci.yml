@@ -65,3 +65,52 @@ jobs:
         run: >-
           go test -count=1 -v -timeout=5m ./internal/filesystem
           -run '^(TestImportCLI|TestRecoveryCLI|TestInspectImportLinuxBindConfiguration|TestImportSelectedInputMountView)$'
+
+
+  packaging:
+    name: Packaging (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: macos-15-intel, target: darwin/amd64}
+          - {os: macos-15, target: darwin/arm64}
+          - {os: ubuntu-24.04, target: linux/amd64}
+          - {os: ubuntu-24.04-arm, target: linux/arm64}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Read packaging compiler pin
+        id: compiler
+        shell: bash
+        run: echo "version=$(python3 scripts/package.py compiler)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ steps.compiler.outputs.version }}
+      - name: Verify native target and provision modules
+        shell: bash
+        run: |
+          test "$(go env GOOS)/$(go env GOARCH)" = '${{ matrix.target }}'
+          go version
+          go mod download
+      - run: make test-package
+      - name: Build and compare complete candidate sets
+        shell: bash
+        env:
+          GOPROXY: 'off'
+          GOSUMDB: 'off'
+        run: |
+          make package VERSION=v0.1.0 COMMIT="$GITHUB_SHA" DIST=dist/first
+          make package VERSION=v0.1.0 COMMIT="$GITHUB_SHA" DIST=dist/repeat
+          cmp dist/first/SHA256SUMS dist/repeat/SHA256SUMS
+      - name: Verify checksums and extract native candidate
+        run: >-
+          python3 scripts/package.py verify --version v0.1.0 --directory dist/first
+          --extract-target '${{ matrix.target }}' --extract-to build/extracted
+      - name: Execute verified installed artifact (no rebuild)
+        run: >-
+          python3 scripts/acceptance.py --binary build/extracted/dots
+          --expected-version v0.1.0 --license build/extracted/LICENSE

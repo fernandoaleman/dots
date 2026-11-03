@@ -1,8 +1,11 @@
 .DEFAULT_GOAL := help
-.PHONY: help setup install-staticcheck fmt vet test test-race cover build clean lint hooks lint-fix check
+.PHONY: help setup install-staticcheck fmt vet test test-race cover build clean lint hooks lint-fix check package test-package
 
 GO ?= go
 BINARY ?= dots
+VERSION ?=
+COMMIT ?=
+DIST ?= dist/$(VERSION)
 STATICCHECK ?= staticcheck
 STATICCHECK_VERSION := v0.8.2
 
@@ -35,6 +38,12 @@ cover: ## Generate test coverage report
 build: ## Build dots for the host OS/architecture
 	$(GO) build -o $(BINARY) .
 
+package: ## Build four local release-candidate archives; never publish
+	python3 scripts/package.py build --version "$(VERSION)" --commit "$(COMMIT)" --output "$(DIST)" --go "$(GO)"
+
+test-package: ## Test packaging and existing-binary acceptance without publishing
+	python3 -m unittest discover -s scripts -p 'test_*.py'
+
 lint: ## Run Staticcheck across the entire Go module without fixes
 	@command -v "$(STATICCHECK)" >/dev/null 2>&1 || { printf '%s\n' "Staticcheck $(STATICCHECK_VERSION) is missing; run make install-staticcheck and add GOBIN (or GOPATH/bin) to PATH" >&2; exit 1; }
 	"$(STATICCHECK)" ./...
@@ -46,7 +55,7 @@ lint-fix: ## Run auto-fixing whitespace hooks
 	prek run trailing-whitespace --all-files
 	prek run end-of-file-fixer --all-files
 
-check: fmt vet test build lint hooks ## Run all local quality checks
+check: fmt vet test test-package build lint hooks ## Run all local quality checks
 
 clean: ## Remove locally generated build and coverage outputs
 	rm -f $(BINARY) $(BINARY).exe coverage.out coverage.html

@@ -30,3 +30,6 @@ coverage.out
 
 # Unrelated local npm artifact; this project uses Go tooling only.
 /package-lock.json
+
+# Python test/import bytecode
+__pycache__/

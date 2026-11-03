@@ -82,6 +82,15 @@ command; the former listing spelling is no longer accepted.
 `list` and `status` are inherently read-only and reject `--dry-run`, `-n`,
 and installation-only flags. JSON output is not available.
 
+## Local release candidates
+
+`make package` builds four versioned macOS/Linux amd64/arm64 archives and
+SHA-256 checksums without publishing anything. It requires the exact pinned
+packaging compiler and an explicit version/full source commit. See
+[packaging and extracted-binary testing](docs/PACKAGING.md) for commands,
+repeatability checks and compatibility limitations. v0.1.0 is not yet published;
+package-manager installation is not available.
+
 ## Version and license
 
 `dots version` and `dots --version` print identical concise output. A stamped
@@ -98,8 +107,8 @@ go build -ldflags '-X github.com/fernandoaleman/dots/internal/cli.version=v0.1.0
 
 Use an actual full source SHA in place of `FULL_COMMIT_SHA`. This command stamps
 a local executable; it does not publish or authenticate a release. `go version -m`
-can inspect its build settings. Release packaging and distribution remain separate
-M5 work.
+can inspect its build settings. Local candidate packaging is documented in [PACKAGING.md](docs/PACKAGING.md).
+Release publication and distribution remain separately authorized M5 work.
 
 `dots license` prints the embedded MIT license offline, without needing the
 source checkout. Version and license output use stdout; help uses stderr, as in

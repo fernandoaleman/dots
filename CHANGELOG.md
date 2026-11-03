@@ -4,6 +4,9 @@
 
 ### Added
 
+- Nonpublishing four-platform release-candidate archives, normalized metadata,
+  checksum verification and explicit existing-binary acceptance testing.
+
 - `dots version` and `dots --version`, with explicit development fallbacks and
   linker-injected version/commit metadata; offline embedded `dots license`.
 - Categorized help and `dots help COMMAND`; consistent `-h` and `--help` forms.
