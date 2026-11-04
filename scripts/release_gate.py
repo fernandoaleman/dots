@@ -158,17 +158,22 @@ def check_no_release(version):
     require(not any(r.get("tag_name") == version for r in releases), "release or draft already exists")
 
 
-def check_ci(commit):
+def check_ci(commit, *, pinned_only=False):
     runs = api("/actions/workflows/ci.yml/runs?event=push&status=success&head_sha=" + commit + "&per_page=100")
-    expected = {"check (ubuntu-latest)", "check (macos-latest)", "Acceptance (ubuntu-latest)",
-                "Acceptance (macos-latest)", "Packaging (darwin/amd64)", "Packaging (darwin/arm64)",
-                "Packaging (linux/amd64)", "Packaging (linux/arm64)"}
+    packaging = {"Packaging (darwin/amd64)", "Packaging (darwin/arm64)",
+                 "Packaging (linux/amd64)", "Packaging (linux/arm64)"}
+    # Historical source commits retain their original successful CI job names.
+    legacy = packaging | {"check (ubuntu-latest)", "check (macos-latest)",
+                          "Acceptance (ubuntu-latest)", "Acceptance (macos-latest)"}
+    pinned = packaging | {"check (ubuntu-24.04)", "check (xcode-27)",
+                          "Acceptance (ubuntu-24.04)", "Acceptance (xcode-27)"}
+    acceptable = (pinned,) if pinned_only else (legacy, pinned)
     for run in runs.get("workflow_runs", []):
         if run.get("head_sha") != commit or run.get("head_branch") != "master" or run.get("conclusion") != "success":
             continue
         jobs = api("/actions/runs/" + str(run["id"]) + "/attempts/" + str(run["run_attempt"]) + "/jobs?per_page=100")
         rows = jobs.get("jobs", [])
-        if jobs.get("total_count") == len(rows) and {r.get("name") for r in rows} == expected and len(rows) == len(expected) and all(r.get("conclusion") == "success" for r in rows):
+        if jobs.get("total_count") == len(rows) == 8 and {r.get("name") for r in rows} in acceptable and all(r.get("conclusion") == "success" for r in rows):
             return
     raise ValueError("no complete successful master CI run for the authorized commit")
 
@@ -179,9 +184,9 @@ def verify_request(job, publishing):
     ctx = context(job)
     check_identity(version, commit, ctx)
     check_no_release(version)
-    check_ci(commit)
+    check_ci(commit, pinned_only=ctx["workflow_sha"] == commit)
     if ctx["workflow_sha"] != commit:
-        check_ci(ctx["workflow_sha"])
+        check_ci(ctx["workflow_sha"], pinned_only=True)
     if publishing:
         env_id = check_environment(int(os.environ["ENVIRONMENT_ID"]) if job == "publish" else None)
         check_tag_protection()

@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-24.04, xcode-27]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -23,6 +23,25 @@ jobs:
             go.sum
             Makefile
             staticcheck.conf
+      - name: Verify runner OS, architecture, and Go
+        shell: bash
+        env:
+          RUNNER_LABEL: ${{ matrix.os }}
+        run: |
+          case "$RUNNER_LABEL:$(uname -s):$(uname -m)" in
+            xcode-27:Darwin:arm64)
+              version="$(sw_vers -productVersion)"
+              case "$version" in 27|27.*) ;; *) echo "expected macOS 27, got $version" >&2; exit 1 ;; esac
+              test "$(go env GOOS)/$(go env GOARCH)" = darwin/arm64 ;;
+            ubuntu-24.04:Linux:x86_64)
+              . /etc/os-release
+              test "$ID" = ubuntu
+              test "$VERSION_ID" = 24.04
+              test "$(go env GOOS)/$(go env GOARCH)" = linux/amd64 ;;
+            *) echo "unexpected runner OS or architecture" >&2; exit 1 ;;
+          esac
+          go version
+          case "$(go env GOVERSION)" in go1.23.*) ;; *) echo "expected Go 1.23" >&2; exit 1 ;; esac
       - name: Install pinned Staticcheck
         run: make install-staticcheck
       - name: Check formatting
@@ -49,7 +68,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-24.04, xcode-27]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
@@ -59,6 +78,25 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
+      - name: Verify runner OS, architecture, and Go
+        shell: bash
+        env:
+          RUNNER_LABEL: ${{ matrix.os }}
+        run: |
+          case "$RUNNER_LABEL:$(uname -s):$(uname -m)" in
+            xcode-27:Darwin:arm64)
+              version="$(sw_vers -productVersion)"
+              case "$version" in 27|27.*) ;; *) echo "expected macOS 27, got $version" >&2; exit 1 ;; esac
+              test "$(go env GOOS)/$(go env GOARCH)" = darwin/arm64 ;;
+            ubuntu-24.04:Linux:x86_64)
+              . /etc/os-release
+              test "$ID" = ubuntu
+              test "$VERSION_ID" = 24.04
+              test "$(go env GOOS)/$(go env GOARCH)" = linux/amd64 ;;
+            *) echo "unexpected runner OS or architecture" >&2; exit 1 ;;
+          esac
+          go version
+          case "$(go env GOVERSION)" in go1.23.*) ;; *) echo "expected Go 1.23" >&2; exit 1 ;; esac
       - name: Installed CLI acceptance
         run: python3 scripts/acceptance.py
       - name: Native recovery and capability coverage (explicit skips)
@@ -74,7 +112,7 @@ jobs:
       matrix:
         include:
           - {os: macos-15-intel, target: darwin/amd64}
-          - {os: macos-15, target: darwin/arm64}
+          - {os: xcode-27, target: darwin/arm64}
           - {os: ubuntu-24.04, target: linux/amd64}
           - {os: ubuntu-24.04-arm, target: linux/arm64}
     runs-on: ${{ matrix.os }}
@@ -92,9 +130,23 @@ jobs:
           go-version: ${{ steps.compiler.outputs.version }}
       - name: Verify native target and provision modules
         shell: bash
+        env:
+          NATIVE_TARGET: ${{ matrix.target }}
         run: |
-          test "$(go env GOOS)/$(go env GOARCH)" = '${{ matrix.target }}'
+          case "$NATIVE_TARGET:$(uname -s):$(uname -m)" in
+            darwin/amd64:Darwin:x86_64) sw_vers -productVersion ;;
+            darwin/arm64:Darwin:arm64)
+              version="$(sw_vers -productVersion)"
+              case "$version" in 27|27.*) ;; *) echo "expected macOS 27, got $version" >&2; exit 1 ;; esac ;;
+            linux/amd64:Linux:x86_64|linux/arm64:Linux:aarch64)
+              . /etc/os-release
+              test "$ID" = ubuntu
+              test "$VERSION_ID" = 24.04 ;;
+            *) echo "unexpected runner OS or architecture" >&2; exit 1 ;;
+          esac
+          test "$(go env GOOS)/$(go env GOARCH)" = "$NATIVE_TARGET"
           go version
+          test "$(go env GOVERSION)" = "go$(python3 scripts/package.py compiler)"
           go mod download
       - run: make test-package
       - name: Build and compare complete candidate sets

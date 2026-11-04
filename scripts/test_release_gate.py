@@ -7,6 +7,7 @@ import json
 import urllib.error
 from io import BytesIO
 import os
+import re
 from pathlib import Path
 import subprocess
 import tempfile
@@ -136,6 +137,63 @@ class GateTests(unittest.TestCase):
         with patch.object(gate, "api", side_effect=[runs, jobs]), self.assertRaises(ValueError):
             gate.check_ci(self.sha)
 
+    def test_ci_accepts_complete_pinned_and_historical_matrices_only(self):
+        packaging = ["Packaging (darwin/amd64)", "Packaging (darwin/arm64)",
+                     "Packaging (linux/amd64)", "Packaging (linux/arm64)"]
+        old = ["check (ubuntu-latest)", "check (macos-latest)",
+               "Acceptance (ubuntu-latest)", "Acceptance (macos-latest)"] + packaging
+        new = ["check (ubuntu-24.04)", "check (xcode-27)",
+               "Acceptance (ubuntu-24.04)", "Acceptance (xcode-27)"] + packaging
+        mixed = old[:2] + new[2:4] + packaging
+        runs = {"workflow_runs": [{"id": 9, "run_attempt": 1, "head_sha": self.sha,
+                                    "head_branch": "master", "conclusion": "success"}]}
+        for names in (old, new, mixed):
+            jobs = {"total_count": 8, "jobs": [{"name": n, "conclusion": "success"} for n in names]}
+            with self.subTest(names=names), patch.object(gate, "api", side_effect=[runs, jobs]):
+                if names == mixed:
+                    with self.assertRaises(ValueError):
+                        gate.check_ci(self.sha)
+                else:
+                    gate.check_ci(self.sha)
+
+    def test_current_workflow_ci_requires_pinned_matrix(self):
+        packaging = ["Packaging (darwin/amd64)", "Packaging (darwin/arm64)",
+                     "Packaging (linux/amd64)", "Packaging (linux/arm64)"]
+        legacy = ["check (ubuntu-latest)", "check (macos-latest)",
+                  "Acceptance (ubuntu-latest)", "Acceptance (macos-latest)"] + packaging
+        pinned = ["check (ubuntu-24.04)", "check (xcode-27)",
+                  "Acceptance (ubuntu-24.04)", "Acceptance (xcode-27)"] + packaging
+        runs = {"workflow_runs": [{"id": 9, "run_attempt": 1, "head_sha": self.sha,
+                                    "head_branch": "master", "conclusion": "success"}]}
+        for names in (legacy, pinned):
+            jobs = {"total_count": 8, "jobs": [{"name": n, "conclusion": "success"} for n in names]}
+            with self.subTest(names=names), patch.object(gate, "api", side_effect=[runs, jobs]):
+                if names == legacy:
+                    with self.assertRaises(ValueError):
+                        gate.check_ci(self.sha, pinned_only=True)
+                else:
+                    gate.check_ci(self.sha, pinned_only=True)
+
+    def test_workflow_runner_matrix_and_release_control_checks(self):
+        root = Path(__file__).resolve().parents[1]
+        ci = (root / ".github/workflows/ci.yml").read_text()
+        release = (root / ".github/workflows/release.yml").read_text()
+        self.assertEqual(ci.count("os: [ubuntu-24.04, xcode-27]"), 2)
+        for workflow in (ci, release):
+            for entry in ("{os: macos-15-intel, target: darwin/amd64}",
+                          "{os: xcode-27, target: darwin/arm64}",
+                          "{os: ubuntu-24.04, target: linux/amd64}",
+                          "{os: ubuntu-24.04-arm, target: linux/arm64}"):
+                self.assertIn(entry, workflow)
+            self.assertIn('test "$VERSION_ID" = 24.04', workflow)
+            self.assertIn('case "$version" in 27|27.*)', workflow)
+        self.assertNotIn("ubuntu-latest", ci)
+        self.assertNotIn("macos-latest", ci)
+        for job in ("validate", "package", "publish"):
+            section = re.split(r"\n  (?=[A-Za-z][A-Za-z0-9_-]*:)", release.split("\n  " + job + ":\n", 1)[1], maxsplit=1)[0]
+            self.assertEqual(section.count("- name: Verify Ubuntu 24.04 runner"), 1)
+            self.assertIn('test "$(uname -s):$(uname -m)" = Linux:x86_64', section)
+
     def test_publish_retains_partial_draft_and_never_publishes_on_error(self):
         with tempfile.TemporaryDirectory() as tmp:
             p = Path(tmp) / "a"
@@ -217,6 +275,7 @@ class GateTests(unittest.TestCase):
              patch.object(gate, "check_ci") as ci:
             gate.verify_request("validate", False)
         self.assertEqual([c.args[0] for c in ci.call_args_list], [self.sha, workflow_sha])
+        self.assertEqual([c.kwargs for c in ci.call_args_list], [{"pinned_only": False}, {"pinned_only": True}])
 
     def test_moved_tag_or_changed_assets_after_upload_never_publish(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -257,8 +316,8 @@ class GateTests(unittest.TestCase):
                "WORKFLOW_SHA": self.sha, "GITHUB_SHA": self.sha, "GITHUB_RUN_ID": "91",
                "GITHUB_RUN_ATTEMPT": "1", "GITHUB_JOB": "validate",
                "RELEASE_VERSION": self.version, "RELEASE_COMMIT": self.sha}
-        names = ["check (ubuntu-latest)", "check (macos-latest)", "Acceptance (ubuntu-latest)",
-                 "Acceptance (macos-latest)", "Packaging (darwin/amd64)", "Packaging (darwin/arm64)",
+        names = ["check (ubuntu-24.04)", "check (xcode-27)", "Acceptance (ubuntu-24.04)",
+                 "Acceptance (xcode-27)", "Packaging (darwin/amd64)", "Packaging (darwin/arm64)",
                  "Packaging (linux/amd64)", "Packaging (linux/arm64)"]
         responses = {
             "/actions/runs/91": {"id": 91, "run_attempt": 1, "event": "workflow_dispatch", "head_sha": self.sha,
@@ -277,6 +336,15 @@ class GateTests(unittest.TestCase):
         with patch.dict(os.environ, env, clear=True), patch.object(gate, "shell", return_value=self.sha), \
              patch.object(gate, "api", side_effect=lambda path, **kw: responses[path]):
             self.assertEqual(gate.verify_request("validate", False)[:2], (self.version, self.sha))
+        ci_key = "/actions/runs/12/attempts/1/jobs?per_page=100"
+        legacy_names = ["check (ubuntu-latest)", "check (macos-latest)",
+                        "Acceptance (ubuntu-latest)", "Acceptance (macos-latest)"] + names[4:]
+        legacy_responses = dict(responses, **{ci_key: {"total_count": 8, "jobs": [
+            {"name": name, "conclusion": "success"} for name in legacy_names]}})
+        with patch.dict(os.environ, env, clear=True), patch.object(gate, "shell", return_value=self.sha), \
+             patch.object(gate, "api", side_effect=lambda path, **kw: legacy_responses[path]), \
+             self.assertRaises(ValueError):
+            gate.verify_request("validate", False)
         for key, value in [("GITHUB_REPOSITORY", "wrong/repo"), ("GITHUB_RUN_ATTEMPT", "2"),
                            ("GITHUB_JOB", "publish"), ("WORKFLOW_REF", "wrong"), ("RELEASE_COMMIT", "bad")]:
             changed = dict(env, **{key: value})
