@@ -102,4 +102,12 @@ packages all four outputs twice per runner and executes only that runner's nativ
 artifact. This measures repeatability within each environment, not cross-host
 checksum equality. Missing Linux mount capabilities and absent second filesystems
 remain explicit skips. macOS 12 runtime coverage is not supplied by newer runners.
+The pinned CI matrix uses macOS 27 ARM64 (`xcode-27`), macOS 15 Intel,
+and Ubuntu 24.04 x86-64 and ARM64. Earlier CI ran ARM64 packaging on macOS 15
+and CLI acceptance on macOS 26 ([run evidence](https://github.com/fernandoaleman/dots/actions/runs/41854994356));
+these do not establish macOS 27 support. That requires a successful native run
+of the new matrix. The current release workflow commit requires the pinned CI
+job set. The release gate also accepts the complete historical job set for a
+different, older authorized source commit; those results retain their original
+OS coverage. Runner labels do not guarantee capacity.
 No artifacts, releases or package-manager changes are published by this job.

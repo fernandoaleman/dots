@@ -91,3 +91,6 @@ but neither newer native macOS runners nor a Mach-O deployment target prove that
 dots works on Monterey. Record that gap until native macOS 12 testing exists.
 Darwin binaries depend on system libraries; Linux filesystem/kernel limitations
 and capability-dependent acceptance skips remain documented in TESTING.md.
+
+For the separately authorized GitHub release process and mandatory personal
+verification checkpoint, see [the release procedure](RELEASING.md).
