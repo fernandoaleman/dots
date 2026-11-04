@@ -127,9 +127,16 @@ def check_tag_protection():
     rulesets = api("/rulesets?targets=tag&includes_parents=true&per_page=100")
     require(isinstance(rulesets, list), "cannot verify tag rulesets")
     for entry in rulesets:
-        if entry.get("target") != "tag" or entry.get("enforcement") != "active":
-            continue
+        require(isinstance(entry, dict) and type(entry.get("id")) is int and entry["id"] > 0,
+                "invalid ruleset summary")
         ruleset = api("/rulesets/" + str(entry["id"]))
+        require(isinstance(ruleset, dict) and ruleset.get("id") == entry["id"],
+                "ruleset detail identity mismatch")
+        for field in ("target", "enforcement"):
+            require(field in ruleset and (field not in entry or entry[field] == ruleset[field]),
+                    "incomplete or contradictory ruleset detail")
+        if ruleset["target"] != "tag" or ruleset["enforcement"] != "active":
+            continue
         refs = ruleset.get("conditions", {}).get("ref_name", {})
         types = {rule.get("type") for rule in ruleset.get("rules", [])}
         # GitHub withholds bypass actors from the read-only token. The maintainer

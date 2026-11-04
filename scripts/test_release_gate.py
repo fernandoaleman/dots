@@ -69,6 +69,60 @@ class GateTests(unittest.TestCase):
         with patch.object(gate, "api", side_effect=[[broad], broad]), self.assertRaises(ValueError):
             gate.check_tag_protection()
 
+    def test_ruleset_summary_details_and_refusals(self):
+        summary = {"id": 4, "name": "release tags", "enforcement": "active"}
+        with patch.object(gate, "api", side_effect=[[summary], self.rules]) as api:
+            gate.check_tag_protection()
+        self.assertEqual(api.call_args_list[1].args[0], "/rulesets/4")
+        invalid = [dict(self.rules, target="branch"), dict(self.rules, enforcement="disabled"),
+                   dict(self.rules, enforcement="evaluate"),
+                   dict(self.rules, conditions={"ref_name": {"include": ["refs/tags/other*"], "exclude": []}}),
+                   dict(self.rules, id=5), {}, None]
+        invalid.extend(dict(self.rules, rules=[r for r in self.rules["rules"] if r["type"] != kind])
+                       for kind in ("creation", "update", "deletion"))
+        for detail in invalid:
+            with self.subTest(detail=detail), patch.object(gate, "api", side_effect=[[{"id": 4}], detail]), \
+                 self.assertRaises((ValueError, TypeError)):
+                gate.check_tag_protection()
+        with patch.object(gate, "api", side_effect=[[summary], OSError("unavailable")]), self.assertRaises(OSError):
+            gate.check_tag_protection()
+        with patch.object(gate, "api", side_effect=[[summary], dict(self.rules, enforcement="disabled")]), \
+             self.assertRaises(ValueError):
+            gate.check_tag_protection()
+        other = dict(self.rules, id=7, target="branch")
+        with patch.object(gate, "api", side_effect=[[{"id": 7}, summary], other, self.rules]):
+            gate.check_tag_protection()
+        inherited = dict(self.rules, source_type="Organization", source="example")
+        with patch.object(gate, "api", side_effect=[[{"id": 4, "source_type": "Organization"}], inherited]) as api:
+            gate.check_tag_protection()
+        self.assertEqual(api.call_args_list[1].args[0], "/rulesets/4")
+        for bad_id in (None, True, 0, "4"):
+            with self.subTest(bad_id=bad_id), patch.object(gate, "api", return_value=[{"id": bad_id}]), \
+                 self.assertRaises(ValueError):
+                gate.check_tag_protection()
+        for field in ("target", "enforcement"):
+            missing = dict(self.rules)
+            del missing[field]
+            with self.subTest(field=field), patch.object(gate, "api", side_effect=[[{"id": 4}], missing]), \
+                 self.assertRaises(ValueError):
+                gate.check_tag_protection()
+
+    def test_ruleset_pagination_reaches_later_applicable_ruleset(self):
+        class Response(BytesIO):
+            def __init__(self, payload, link=None):
+                super().__init__(json.dumps(payload).encode())
+                self.headers = {"Link": link} if link else {}
+            def __enter__(self):
+                return self
+            def __exit__(self, *_):
+                self.close()
+        next_page = "<" + gate.API + "/rulesets?page=2>; rel=\"next\""
+        responses = [Response([{"id": 7}], next_page), Response([{"id": 4}]),
+                     Response(dict(self.rules, id=7, target="branch")), Response(self.rules)]
+        with patch.dict(os.environ, {"GH_TOKEN": "fixture"}), \
+             patch.object(gate.urllib.request, "urlopen", side_effect=responses):
+            gate.check_tag_protection()
+
     def test_required_ci_jobs_must_all_succeed(self):
         names = ["check (ubuntu-latest)", "check (macos-latest)", "Acceptance (ubuntu-latest)",
                  "Acceptance (macos-latest)", "Packaging (darwin/amd64)", "Packaging (darwin/arm64)",
