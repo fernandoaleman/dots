@@ -1,0 +1,162 @@
+name: Release candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Existing authorized release tag, e.g. v0.1.0
+        required: true
+        type: string
+      commit:
+        description: Full authorized source commit SHA
+        required: true
+        type: string
+      publish:
+        description: Request protected publication after all checks
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: dots-release-publication
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    outputs:
+      environment_id: ${{ steps.gate.outputs.environment_id }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate release request and source
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_COMMIT: ${{ inputs.commit }}
+          RELEASE_PUBLISH: ${{ inputs.publish }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+        run: python3 scripts/release_gate.py validate
+
+  package:
+    needs: validate
+    runs-on: ubuntu-24.04
+    outputs:
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
+      sums_sha256: ${{ steps.digest.outputs.sums_sha256 }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.commit }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Confirm exact packaging input commit
+        env:
+          RELEASE_COMMIT: ${{ inputs.commit }}
+        run: test "$(git rev-parse HEAD)" = "$RELEASE_COMMIT" && test -z "$(git status --porcelain)"
+      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+        with:
+          go-version: '1.26.10'
+      - run: go mod download
+      - name: Build authoritative artifacts
+        env:
+          GOPROXY: 'off'
+          GOSUMDB: 'off'
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_COMMIT: ${{ inputs.commit }}
+        run: python3 scripts/package.py build --version "$RELEASE_VERSION" --commit "$RELEASE_COMMIT" --output dist/release
+      - name: Verify artifact set and record identity
+        id: digest
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python3 scripts/package.py verify --version "$RELEASE_VERSION" --directory dist/release
+          echo "sums_sha256=$(sha256sum dist/release/SHA256SUMS | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        id: upload
+        with:
+          name: authoritative-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dist/release/
+          if-no-files-found: error
+          retention-days: 7
+
+  native:
+    needs: [validate, package]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: macos-15-intel, target: darwin/amd64}
+          - {os: macos-15, target: darwin/arm64}
+          - {os: ubuntu-24.04, target: linux/amd64}
+          - {os: ubuntu-24.04-arm, target: linux/arm64}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ inputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+        with:
+          go-version: '1.26.10'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          artifact-ids: ${{ needs.package.outputs.artifact_id }}
+          path: dist/release
+      - name: Verify and extract the authoritative native artifact
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          EXPECTED_SUMS: ${{ needs.package.outputs.sums_sha256 }}
+          NATIVE_TARGET: ${{ matrix.target }}
+        run: |
+          case "$NATIVE_TARGET:$(uname -s):$(uname -m)" in
+            darwin/amd64:Darwin:x86_64|darwin/arm64:Darwin:arm64|linux/amd64:Linux:x86_64|linux/arm64:Linux:aarch64) ;;
+            *) echo "unexpected native operating system or architecture" >&2; exit 1 ;;
+          esac
+          test "$(go env GOOS)/$(go env GOARCH)" = "$NATIVE_TARGET"
+          test "$(shasum -a 256 dist/release/SHA256SUMS | cut -d ' ' -f 1)" = "$EXPECTED_SUMS"
+          python3 scripts/package.py verify --version "$RELEASE_VERSION" --directory dist/release --extract-target "$NATIVE_TARGET" --extract-to build/extracted
+      - name: Execute the extracted artifact without rebuilding
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_COMMIT: ${{ inputs.commit }}
+        run: |
+          go version -m build/extracted/dots | grep -F "vcs.revision=$RELEASE_COMMIT"
+          python3 scripts/acceptance.py --binary build/extracted/dots --expected-version "$RELEASE_VERSION" --license build/extracted/LICENSE
+
+  publish:
+    if: ${{ inputs.publish && github.run_attempt == 1 }}
+    needs: [validate, package, native]
+    runs-on: ubuntu-24.04
+    environment: release
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          artifact-ids: ${{ needs.package.outputs.artifact_id }}
+          path: dist/release
+      - name: Revalidate approval gate, artifacts and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_COMMIT: ${{ inputs.commit }}
+          RELEASE_PUBLISH: 'true'
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+          ENVIRONMENT_ID: ${{ needs.validate.outputs.environment_id }}
+          EXPECTED_SUMS: ${{ needs.package.outputs.sums_sha256 }}
+        run: python3 scripts/release_gate.py publish
